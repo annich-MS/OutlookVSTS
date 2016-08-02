@@ -7,10 +7,7 @@ import { Provider } from 'react-redux';
 import { Dogfood } from './Dogfood/dogfood';
 import { VSTS } from './VSTS/VSTS';
 import { Done } from './Authenticate/done';
-
-import { testreducer } from './Reducers/ReducersET'
-import { CreateWorkItem } from './VSTS/CreateWorkItem';
-import { changeTitle } from './Reducers/ActionsET';
+import { testreducer } from './Reducers/ReducersET';
 
 
 declare const require: (name: String) => any;
@@ -23,8 +20,7 @@ declare const module: IHotModule;
 
 
 function configureStore(): Store {
-//  const store: Store = createStore(vsoAddin);
-    const store: Store = createStore(testreducer);
+  const store: Store = createStore(testreducer);
   if (module.hot) {
     module.hot.accept('./ReducersET', () => {
       const nextRootReducer: any = require('./ReducersET').vsoAddin;
@@ -36,10 +32,7 @@ function configureStore(): Store {
 }
 
 
-const store : Store = configureStore();
-//store.dispatch (changeTitle ('turtles'));
-//store.dispatch (changeTitle ('no fish'));
-
+const store: Store = configureStore();
 
 class Main extends React.Component<{}, {}> {
 
@@ -55,7 +48,6 @@ class Main extends React.Component<{}, {}> {
   }
 
   public render(): React.ReactElement<Provider> {
-    
     const route: string = this.getRoute();
     switch (route) {
       case 'dogfood':
@@ -73,9 +65,3 @@ class Main extends React.Component<{}, {}> {
 }
 
 ReactDOM.render(<Main />, document.getElementById('app'));
-/*ReactDOM.render(
-  <Provider store={store}>
-    <Main />
-  </Provider>,
-  document.getElementById('app')
-)*/
