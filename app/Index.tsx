@@ -1,12 +1,13 @@
 /// <reference path="../typings/tsd.d.ts" />
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-// import { Store, createStore } from 'redux';
+import { Store, createStore } from 'redux';
 // import { vsoAddin } from './reducers';
 import { Provider } from 'react-redux';
 import { Dogfood } from './Dogfood/dogfood';
 import { VSTS } from './VSTS/VSTS';
 import { Done } from './Authenticate/done';
+import { testreducer } from './Reducers/ReducersET';
 
 
 declare const require: (name: String) => any;
@@ -17,13 +18,12 @@ interface IHotModule {
 
 declare const module: IHotModule;
 
-/*
-function configureStore(): Store {
-  const store: Store = createStore(vsoAddin);
 
+function configureStore(): Store {
+  const store: Store = createStore(testreducer);
   if (module.hot) {
-    module.hot.accept('./reducers', () => {
-      const nextRootReducer: any = require('./reducers').vsoAddin;
+    module.hot.accept('./ReducersET', () => {
+      const nextRootReducer: any = require('./ReducersET').vsoAddin;
       store.replaceReducer(nextRootReducer);
     });
   }
@@ -31,8 +31,8 @@ function configureStore(): Store {
   return store;
 }
 
- const store: Store = configureStore();
- */
+
+const store: Store = configureStore();
 
 class Main extends React.Component<{}, {}> {
 
@@ -45,6 +45,7 @@ class Main extends React.Component<{}, {}> {
       output = output.slice(0, strings[3].indexOf('?'));
     }
     return output;
+
   }
 
   public render(): React.ReactElement<Provider> {
@@ -53,7 +54,9 @@ class Main extends React.Component<{}, {}> {
       case 'dogfood':
         return(<Dogfood />);
       case 'vsts':
-        return(<VSTS />);
+        return(<Provider store={store}>
+               <VSTS />
+               </Provider>);
       case 'done':
         return(<Done />);
       default:
