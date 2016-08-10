@@ -78,10 +78,11 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * @return {void}
    */
   public componentWillMount(): void {
-    let defaultProject: string = Office.context.roamingSettings.get('default_project');
+    console.log("willcomponentmount");
+    /*let defaultProject: string = Office.context.roamingSettings.get('default_project');
     if (defaultProject !== undefined) {
       this.props.dispatch(updateProjectSettingsAction(defaultProject, this.props.projects));
-    }
+    }*/
   }
 
   /**
@@ -90,8 +91,16 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * @param {any} nextState
    */
   public shouldComponentUpdate(nextProps: any, nextState: any): boolean {
+    console.log("shouldcomponentupdate");
     return this.props.account !== nextProps.account || this.props.project !== nextProps.project ||
       JSON.stringify(this.props.projects) !== JSON.stringify(nextProps.projects); // this.props.projects !== nextProps.projects;
+  }
+
+  public componentWillUpdate(nextProps: any, nextState: any): void {
+    console.log("willcomponentupdate");
+    if(this.props.account !== nextProps.account && nextProps.account !== ''){
+      this.populateProjects(nextProps.account);
+    }
   }
 
   /**
@@ -100,7 +109,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * @returns {void}
    */
   public onProjectSelect(option: any): void {
-    let project: string = option.label;
+    let project: string = option;
     this.props.dispatch(updateProjectSettingsAction(project, this.props.projects));
   }
 
@@ -108,7 +117,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
     * Renders the react-select dropdown component
     */
   public render(): React.ReactElement<Provider> {
-    this.populateProjects(this.props.account);
+    
     return (
         <Select
             name='form-field-name'
@@ -129,15 +138,23 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
     let projectOptions: ISettingsInfo[] = [];
     let projectNamesOnly: string[] = [];
     let selectedProject: string = this.props.project;
+    console.log("populating projects");
 
     Rest.getProjects(this.props.email, account, (projects: Project[]) => {
       projects.forEach(project => {
         projectOptions.push({ label: project.name, value: project.name });
         projectNamesOnly.push(project.name);
       });
-      if (selectedProject === '' || (projectNamesOnly.indexOf(selectedProject) === -1)) {
+      console.log("ProjectList: "+JSON.stringify(projects));
+      let defaultProject: string = Office.context.roamingSettings.get('default_project');
+      if (defaultProject !== undefined && defaultProject !== '') {
+        selectedProject = defaultProject;
+        console.log("setting default project:"+defaultProject);
+      } else if (selectedProject === '' || (projectNamesOnly.indexOf(selectedProject) === -1)) { // very first time user
         selectedProject = projectNamesOnly[0];
+        console.log("setting first project:"+selectedProject);
       }
+      
       this.props.dispatch(updateProjectSettingsAction(selectedProject, projectOptions));
   });
   }
