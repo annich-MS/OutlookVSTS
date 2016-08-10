@@ -82,10 +82,10 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    * @return {void}
    */
   public componentWillMount(): void {
-    let defaultTeam: string = Office.context.roamingSettings.get('default_team');
+    /*let defaultTeam: string = Office.context.roamingSettings.get('default_team');
     if (defaultTeam !== undefined) {
       this.props.dispatch(updateTeamSettingsAction(defaultTeam, this.props.teams));
-    }
+    }*/
   }
 
   /**
@@ -94,16 +94,24 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    * @param {any} nextState
    */
   public shouldComponentUpdate(nextProps: any, nextState: any): boolean {
-    return this.props.project !== nextProps.project || JSON.stringify(this.props.teams)!==JSON.stringify(nextProps.teams);
+    console.log("shouldcomponentupdate: team");
+    return this.props.project !== nextProps.project || this.props.team !== nextProps.team ||
+      JSON.stringify(this.props.teams) !== JSON.stringify(nextProps.teams); // this.props.projects !== nextProps.projects;
   }
 
+  public componentWillUpdate(nextProps: any, nextState: any): void {
+    console.log("willcomponentupdate: team");
+    if(this.props.project !== nextProps.project && nextProps.project !== ''){
+      this.populateTeams(nextProps.account, nextProps.project);
+    }
+  }
   /**
    * Reaction to selection of team option from dropdown list
    * @param {any} option
    * @returns {void}
    */
   public onTeamSelect(option: any): void {
-    let team: string = option.label;
+    let team: string = option;
     this.props.dispatch(updateTeamSettingsAction(team, this.props.teams));
   }
 
@@ -111,7 +119,6 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    * Renders the react-select dropdown component
    */
   public render(): React.ReactElement<Provider> {
-    this.populateTeams(this.props.account, this.props.project);
     return (
         <Select
             name='form-field-name'
@@ -138,6 +145,15 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
           teamOptions.push({label: team.name, value: team.name});
           teamNamesOnly.push(team.name);
         });
+        console.log("teamList: "+JSON.stringify(teams));
+      let defaultTeam: string = Office.context.roamingSettings.get('default_team');
+      if (defaultTeam !== undefined && defaultTeam !== '') {
+        selectedTeam = defaultTeam;
+        console.log("setting default project:"+defaultTeam);
+      } else if (selectedTeam === '' || (teamNamesOnly.indexOf(selectedTeam) === -1)) { // very first time user
+        selectedTeam = teamNamesOnly[0];
+        console.log("setting first project:"+selectedTeam);
+      }
         if (selectedTeam === '' || (teamNamesOnly.indexOf(selectedTeam) === -1)) {
             selectedTeam = teamNamesOnly[0];
         }

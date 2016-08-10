@@ -33,7 +33,7 @@ function getRequest(query, path, headers, host, callback) {
     headers: headers
   };
   console.log('get: ' + options.path)
-  https.get(options, function (response) { parseResponse(response, callback); console.log("response:"+callback)});
+  https.get(options, function (response) { parseResponse(response, callback); console.log("response:" + response)});
 }
 
 function patchRequest(query, body, path, headers, host, callback) {
@@ -101,7 +101,7 @@ router.me = function (req, res) {
       headers.Authorization = wrapToken(token);
       getRequest(query, path, headers, host, (output) => { res.send(output) });
     } else {
-      console.log("could not find token for user " + input.user);
+      console.log('could not find token for user ' + input.user);
     }
   });
 }

@@ -158,7 +158,7 @@ router.use('/', router.authorize);
 router.refreshToken = function (state, res) {
   console.log("refresh token")
   router.credentials = JSON.parse(getClientSecret());
-  console.log("token:"+state.refresh);
+  // console.log("token:"+state.refresh);
   var data = querystring.stringify({
     assertion: state.refresh,
     client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",

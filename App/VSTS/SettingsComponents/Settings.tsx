@@ -60,7 +60,7 @@ export class Settings extends React.Component<ISettingsProps, any> {
     return (
       <div>
         <Error />
-        <image style = {style_image} src = '../../../public/Images/VSTSLogo_Long.png'/>
+        <image style = {style_image} src = '../../../public/Images/VSTSLogo_long.png'/>
         <div>
           <p style = {style_text}> Welcome {this.props.name}!</p>
           <p/>

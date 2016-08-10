@@ -37,7 +37,7 @@ function mapStateToProps(state: any): IQuickActionProps {
  * @returns { React.ReactElement } ReactHTML div
  */
 @connect(mapStateToProps)
-export class QuickActions extends React.Component<IQuickActionProps, {isReady: boolean}> {
+export class QuickActions extends React.Component<IQuickActionProps, {}> {
   /**
    * Builds the HTML element in the form <item type><item ID>: <item title>
    * @returns { string }
@@ -70,19 +70,4 @@ export class QuickActions extends React.Component<IQuickActionProps, {isReady: b
       </div>
     );
   }
-
-  // work-around for Office.initialize: REMOVE LATER
-  public constructor() {
-    super();
-    this.setState({isReady: false});
-    this.Initialize = this.Initialize.bind(this);
-    Office.initialize = this.Initialize;
-  }
-
-
-   private Initialize(): any {
-    this.setState({isReady: true});
-   }
-
-  // end work-around
 }

@@ -1,3 +1,5 @@
+import { updateSave } from '../Redux/WorkItemActions'; 
+
 export class UserProfile {
     public displayName: string;
     public publicAlias: string;
@@ -53,17 +55,29 @@ export class Team {
     }
 }
 
+export class WorkItemInfo {
+    public id: string;
+    public VSTShtmlLink: string;
+
+    public constructor(blob: any) {
+        this.id = blob.id;
+        this.VSTShtmlLink = blob._links.html.href;
+    }
+}
+
 interface IRestCallback { (output: string): void; }
 interface IItemCallback { (item: string): void; }
 interface IUserProfileCallback { (profile: UserProfile): void; }
 interface IProjectsCallback { (projects: Project[]): void; }
 interface IAccountsCallback { (accounts: Account[]): void; }
 interface ITeamsCallback { (teams: Team[]): void; }
+interface IWorkItemCallback { (workItemInfo: WorkItemInfo): void; }
 
 export class Rest {
 
     private static userProfile: UserProfile;
     private static accounts: Account[];
+    private static workItemInfo: WorkItemInfo;
 
     public static getItem(user: string, item: number, callback: IItemCallback): void {
         this.makeRestCallWithArgs('getItem', user, { fields: 'System.TeamProject', ids: item, instance: 'o365exchange' }, (output) => {
@@ -73,6 +87,7 @@ export class Rest {
 
     public static getUserProfile(user: string, callback: IUserProfileCallback): void {
         this.makeRestCall('me', user, (output) => {
+            // console.log('get user prof' + output);
             this.userProfile = new UserProfile(JSON.parse(output));
             callback(this.userProfile);
         });
@@ -143,23 +158,25 @@ export class Rest {
 
     public static createWorkItemCall(user: string, options: any, currentIteration: string, type: string, title: string, body: string, callback: IRestCallback): void {
         this.getTeamAreaPath(user, options.account, options.project, options.teamName, (areaPath) => {
-            console.log(areaPath);
+            // console.log(areaPath);
             this.makeRestCallWithArgs(
                 'newWorkItem',
                 user,
                 { account: options.account, areaPath: areaPath, body: body, currentIteration: currentIteration, project: options.project, title: title, type: type },
                 (output) => {
-                    console.log(output);
+                    // console.log(output);
+                    // updateSave(JSON.parse(output)._links.html.href, JSON.parse(output).id);
                     callback(output);
+                    // callback(JSON.parse(output))
                 });
         });
     }
 
-    public static getCurrentIteration(user: string, options: any, type: string, title: string, body: string, callback: IRestCallback): void {
+    public static getCurrentIteration(user: string, options: any, type: string, title: string, body: string, callback: IWorkItemCallback): void {
         this.getCurrentIterationCall(user, options, type, title, body, callback);
     }
 
-    public static getCurrentIterationCall(user: string, options: any, type: string, title: string, body: string, callback: IRestCallback): void {
+    public static getCurrentIterationCall(user: string, options: any, type: string, title: string, body: string, callback: IWorkItemCallback): void {
         this.getTeams(user, options.project, options.account, (teams: Team[]) => {
             let guid: string;
             teams.forEach(team => {
@@ -173,22 +190,23 @@ export class Rest {
                 { account: options.account, project: options.project, team: guid},
                 (output) => {
                     console.log(options);
-                    Rest.createWorkItem('t-emtenc@microsoft.com', options, JSON.parse(output).value[0].path,
+                    Rest.createWorkItem(user, options, JSON.parse(output).value[0].path,
                     type, title, body,
-                    (output) => callback(output));
+                    (output) => {this.workItemInfo = new WorkItemInfo(JSON.parse(output)); callback(this.workItemInfo)});
                 });
         });
     }
        
-       public static getAccountsNew(email: string, memberId: string, callback: IAccountsCallback): void {
-            this.makeRestCallWithArgs('accounts', email, {memberId: memberId} , (output) => {
-                let parsed: any = JSON.parse(output);
-                this.accounts = [];
-                parsed.value.forEach(account => {
-                    this.accounts.push(new Account(account));
-                });
-                callback(this.accounts); //return special array for error
+    public static getAccountsNew(email: string, memberId: string, callback: IAccountsCallback): void {
+        this.makeRestCallWithArgs('accounts', email, {memberId: memberId} , (output) => {
+            console.log('getaccountsnew'+output);
+            let parsed: any = JSON.parse(output);
+            this.accounts = [];
+            parsed.value.forEach(account => {
+                this.accounts.push(new Account(account));
             });
+            callback(this.accounts); //return special array for error
+        });
     }
 
     public static getAccounts(user: string, callback: IAccountsCallback): void {

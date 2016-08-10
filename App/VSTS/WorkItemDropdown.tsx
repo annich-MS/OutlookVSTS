@@ -39,7 +39,7 @@ export class WorkItemDropdown extends React.Component<IWorkItemTypeDropdownProps
  * @param {any} option
  */
 public handleTypeChange(option: any): void {
-    let type: string = option.label;
+    let type: string = option;
     console.log('Selected: ' + type);
     this.props.dispatch(updateWorkItemType(type));
 }

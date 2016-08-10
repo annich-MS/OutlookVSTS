@@ -35,7 +35,7 @@ interface IAccountProps {
    * list of accounts associated with user's VSTS profile
    * @type {ISettingsInfo[]}
    */
-  accounts?: ISettingsInfo[];
+  accountList?: ISettingsInfo[];
 }
 
 /**
@@ -45,14 +45,13 @@ interface IAccountProps {
 function mapStateToProps(state: any): IAccountProps {
   return ({
     account: state.currentSettings.settings.account,
-    accounts: state.currentSettings.lists.accountList,
+    accountList: state.currentSettings.lists.accountList,
     email: state.userProfile.email,
     memberId: state.userProfile.memberID,
   });
 }
 
 @connect(mapStateToProps)
-
 /**
  * Smart component
  * Renders account dropdowns
@@ -70,10 +69,11 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * @returns {void}
    */
   public componentWillMount(): void {
-    let defaultAccount: string = Office.context.roamingSettings.get('default_account');
-    if (defaultAccount !== undefined) {
-      this.props.dispatch(updateAccountSettingsAction(defaultAccount, this.props.accounts));
-    }
+    // let defaultAccount: string = Office.context.roamingSettings.get('default_account');
+    // console.log('comp will mount'+defaultAccount);
+    // if (defaultAccount !== undefined) {
+    //   this.props.dispatch(updateAccountSettingsAction(defaultAccount, this.props.accountList));
+    // }
     this.populateAccounts();
   }
 
@@ -84,8 +84,10 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * @returns {void}
    */
   public onAccountSelect(option: any): void {
-    let account: string = option.label;
-    this.props.dispatch(updateAccountSettingsAction(account, this.props.accounts));
+    console.log("AccountList: "+JSON.stringify(option));
+    let account: string = option;
+    console.log("onAccountSelect"+account);
+    this.props.dispatch(updateAccountSettingsAction(account, this.props.accountList));
   }
 
   /**
@@ -95,7 +97,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
     return (
         <Select
             name='form-field-name'
-            options={this.props.accounts}
+            options={this.props.accountList}
             value={this.props.account}
             onChange={this.onAccountSelect.bind(this)}/>
     );
@@ -110,15 +112,22 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
     let accountOptions: ISettingsInfo[] = [];
     let accountNamesOnly: string[] = [];
     let selectedAccount: string = this.props.account;
-
-    Rest.getAccountsNew(this.props.email, this.props.memberId, (accounts: Account[]) => {
-      accounts.forEach(acc => {
+    console.log("populating accounts");
+    Rest.getAccountsNew(this.props.email, this.props.memberId, (accountList: Account[]) => {
+      accountList.forEach(acc => {
         accountOptions.push({ label: acc.name, value: acc.name });
         accountNamesOnly.push(acc.name);
       });
-      if (selectedAccount === '' || (accountNamesOnly.indexOf(selectedAccount) === -1)) { // very first time user
+      console.log("AccountList: "+JSON.stringify(accountList));
+      let defaultAccount: string = Office.context.roamingSettings.get('default_account');
+      if (defaultAccount !== undefined && defaultAccount !== '') {
+        selectedAccount = defaultAccount;
+        console.log("setting default account:"+defaultAccount);
+      } else if (selectedAccount === '' || (accountNamesOnly.indexOf(selectedAccount) === -1)) { // very first time user
         selectedAccount = accountNamesOnly[0];
+        console.log("setting first account:"+selectedAccount);
       }
+      console.log('popaccounts'+defaultAccount);
       this.props.dispatch(updateAccountSettingsAction(selectedAccount, accountOptions));
     });
   }
