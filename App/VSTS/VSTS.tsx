@@ -11,6 +11,7 @@ import { PageVisibility, AuthState, updateAuthAction, IErrorStateAction, updateP
 import { UserProfile } from '../RestHelpers/rest';
 import { CreateWorkItem } from './CreateWorkItem';
 import { QuickActions } from './QuickActions';
+import { Rest } from '../RestHelpers/rest';
 
 interface IRefreshCallback { (): void; }
 interface IUserProfileCallback { (profile: UserProfile): void; }
@@ -31,7 +32,7 @@ interface IVSTSProps {
  * @param {any} state
  */
 function mapStateToProps(state: any): IVSTSProps {
-  console.log('state:' + JSON.stringify(state));
+  // console.log('state:' + JSON.stringify(state));
   return ({
       authState: state.controlState.authState,
       error: state.controlState.error,
@@ -71,13 +72,38 @@ export class VSTS extends React.Component<IVSTSProps, any> {
     const name: string = Office.context.mailbox.userProfile.displayName;
     Auth.getAuthState(email, function (state: string): void {
       if (state === 'success') {
+        var id =  Office.context.roamingSettings.get('memberID');
+        if ( id ) {
           dispatch(updateUserProfileAction(name, email, Office.context.roamingSettings.get('member_ID')));
           if (Office.context.roamingSettings.get('default_team') !== undefined) {
             dispatch(updatePageAction(PageVisibility.CreateItem)); // todo - may cause issues here
           }
           dispatch(updateAuthAction(AuthState.Authorized));
-      }else {
-          dispatch(updateAuthAction(AuthState.NotAuthorized));
+        } else {
+          // MAKE GET USER PROFILE CALL HERE
+          Rest.getUserProfile(email, (profile: UserProfile) => {
+            id = profile.id;
+            Office.context.roamingSettings.set('member_ID', id);
+            Office.context.roamingSettings.saveAsync();
+            dispatch(updateUserProfileAction(name, email, id));
+            dispatch(updateAuthAction(AuthState.Authorized));
+          });
+
+          if (Office.context.roamingSettings.get('default_team') !== undefined) {
+            dispatch(updatePageAction(PageVisibility.CreateItem)); // todo - may cause issues here
+          }
+        }
+
+        /// Make this a fn (name, email, id)
+        // dispatch(updateUserProfileAction(name, email, Office.context.roamingSettings.get('member_ID')));
+        // // dispatch(updateUserProfileAction(name, email, null));
+        // if (Office.context.roamingSettings.get('default_team') !== undefined) {
+        //   dispatch(updatePageAction(PageVisibility.CreateItem)); // todo - may cause issues here
+        // }
+        // dispatch(updateAuthAction(AuthState.Authorized));
+        ///
+      } else {
+        dispatch(updateAuthAction(AuthState.NotAuthorized));
       }
     });
   }
@@ -86,7 +112,6 @@ export class VSTS extends React.Component<IVSTSProps, any> {
     * Renders the add-in. Contains logic to determine which component/page to display
     */
   public render(): React.ReactElement<Provider> {
-    console.log('got to vsts');
     switch (this.props.authState) {
       case AuthState.None:
         return (<Loading />);
