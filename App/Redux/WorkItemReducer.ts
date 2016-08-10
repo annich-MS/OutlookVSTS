@@ -50,7 +50,7 @@ export interface IWorkItem {
  * The initial state of the workItem state 
  * @const
  */
-export const initalState: IWorkItem = {
+export const initialState: IWorkItem = {
   VSTShtmlLink: 'https://www.visualstudio.com/products/what-is-visual-studio-online-vs?WT.srch=1&WT.mc_ID=SEM_xXsQTNj1',
   addAsAttachment: true,
   description: 'For more details, please refer to the attached email thread. ',
@@ -66,7 +66,7 @@ export const initalState: IWorkItem = {
    * @param {IWorkItem} state
    * @param {any} action
    */
-export function workItemReducer(state: IWorkItem = initalState, action: any): IWorkItem {
+export function workItemReducer(state: IWorkItem = initialState, action: any): IWorkItem {
   switch (action.type) {
     case ACTION.STAGE:
       return Object.assign( {}, state, {stage : action.stage});
@@ -79,7 +79,7 @@ export function workItemReducer(state: IWorkItem = initalState, action: any): IW
     case ACTION.ADDASATTACHMENT:
       return Object.assign( {}, state, {addAsAttachment : action.addAsAttachment});
     case ACTION.SAVE:
-      return Object.assign({}, state, {VSTShtmlLink: action.VSTShtmlLink, id: action.id});
+      return Object.assign( {}, state, {VSTShtmlLink: action.VSTShtmlLink, id: action.id});
     default:
       return state;
  }

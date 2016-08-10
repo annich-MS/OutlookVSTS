@@ -69,7 +69,7 @@ export function updateSettingsAndListsReducer(state: ISettingsAndListsReducer = 
  * Represents the user's profile information in the store
  * @interface IUserProfileReducer
  */
-export interface IUserProfileReducer {
+export interface IUserProfileReducer { // naming convention here??? 
   /**
    * Represents the current selected area path
    */

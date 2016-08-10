@@ -37,7 +37,7 @@ function mapStateToProps(state: any): IQuickActionProps {
  * @returns { React.ReactElement } ReactHTML div
  */
 @connect(mapStateToProps)
-export class QuickActions extends React.Component<IQuickActionProps, {isReady: boolean}> {
+export class QuickActions extends React.Component<IQuickActionProps, {}> {
   /**
    * Builds the HTML element in the form <item type><item ID>: <item title>
    * @returns { string }
