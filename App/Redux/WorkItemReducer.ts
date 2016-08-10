@@ -78,6 +78,8 @@ export function workItemReducer(state: IWorkItem = initalState, action: any): IW
       return Object.assign( {}, state, {description : action.description});
     case ACTION.ADDASATTACHMENT:
       return Object.assign( {}, state, {addAsAttachment : action.addAsAttachment});
+    case ACTION.SAVE:
+      return Object.assign({}, state, {VSTShtmlLink: action.VSTShtmlLink, id: action.id});
     default:
       return state;
  }

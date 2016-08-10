@@ -189,5 +189,6 @@ export function updateAddAsAttachment (addAsAttachment: boolean): IAddAsAttachme
    * @param {string} id
    */
 export function updateSave (VSTShtmlLink: string, id: string): ISaveAction {
+  console.log('here in updateSave'+VSTShtmlLink+" "+id);
   return {type: ACTION.SAVE, VSTShtmlLink, id};
 }
