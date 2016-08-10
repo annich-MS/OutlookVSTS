@@ -49,22 +49,63 @@ export class Save extends React.Component<ISaveProps, {}> {
    * @returns {void}
    */
   public handleSave(): void {
-    let options: any = { account: this.props.currentSettings.settings.account, project: this.props.currentSettings.settings.project, teamName: this.props.currentSettings.settings.team };
-    let token: any = Office.context.mailbox.getCallbackTokenAsync;
-    let OutlookitemID: any = Office.context.mailbox.item.itemId;
-    let ewsURL: any = Office.context.mailbox.ewsUrl;
-    let returnInfo: WorkItemInfo;
-    /*    Rest.createWorkItem('t-emtenc@microsoft.com', options, token, OutlookitemID, ewsURL,
-    this.props.workItem.workItemType, this.props.workItem.title, this.props.workItem.description, (output) => console.log(output));*/
-    Rest.getCurrentIteration(this.props.userProfile.email, options, this.props.workItem.workItemType,
-      this.props.workItem.title, this.props.workItem.description,
-      (workItemInfo: WorkItemInfo) => {
-        returnInfo = workItemInfo;
-        this.props.dispatch(updateSave(returnInfo.VSTShtmlLink, returnInfo.id));
-        this.props.dispatch(updateStage(Stage.Saved));
-        this.props.dispatch(updatePageAction(PageVisibility.QuickActions));
-      });
+
+    let options: any = {
+      account: this.props.currentSettings.settings.account,
+      project: this.props.currentSettings.settings.project,
+      teamName: this.props.currentSettings.settings.team,
+    };
+    let mimeString: string = '';
+    let addAsAttachment: boolean = this.props.workItem.addAsAttachment;
+    let workItemType: string = this.props.workItem.workItemType;
+    let title: string = this.props.workItem.title;
+    let description: string = this.props.workItem.description;
+    let dispatch: any = this.props.dispatch;
+    let user: string = this.props.userProfile.email;
+    this.props.dispatch(updateStage(Stage.Saved));
+    if (this.props.workItem.addAsAttachment) {
+      let request = '<?xml version="1.0" encoding="utf-8"?>' +
+        '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"> <soap:Header>' +
+        '<RequestServerVersion Version="Exchange2013" xmlns="http://schemas.microsoft.com/exchange/services/2006/types" soap:mustUnderstand="0" />' +
+        '</soap:Header>' +
+        '<soap:Body>' +
+        '<GetItem xmlns="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"> <ItemShape>' +
+        '<t:BaseShape>IdOnly</t:BaseShape> <t:IncludeMimeContent>true</t:IncludeMimeContent>' +
+        '</ItemShape>' +
+        '<ItemIds>' +
+        '<t:ItemId Id="' + Office.context.mailbox.item.itemId + '"/>' +
+        '</ItemIds>' +
+        '</GetItem>' +
+        '</soap:Body>' +
+        '</soap:Envelope>';
+      Office.context.mailbox.makeEwsRequestAsync(
+        request,
+        function (asyncResult, result) {
+          if (asyncResult.status === 'failed') {
+            return;
+          }
+          let response: any = $.parseXML(asyncResult.value);
+          let value: string = $(response).find('MimeContent').text();
+          mimeString = value;
+          Rest.getCurrentIteration(user, options, addAsAttachment, mimeString, workItemType, title,
+                                   description, (workItemInfo: WorkItemInfo) => {
+              console.log('in callback for get curr iteration');
+              dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
+              dispatch(updateStage(Stage.Saved));
+              dispatch(updatePageAction(PageVisibility.QuickActions));
+            });
+        });
+    } else {
+      Rest.getCurrentIteration(user, options, addAsAttachment, mimeString, workItemType, title,
+                               description, (workItemInfo: WorkItemInfo) => {
+          console.log('in callback for get curr iteration');
+          dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
+          dispatch(updateStage(Stage.Saved));
+          dispatch(updatePageAction(PageVisibility.QuickActions));
+        });
+    }
   }
+
 
   /**
    * Renders the Save button and disables it on click

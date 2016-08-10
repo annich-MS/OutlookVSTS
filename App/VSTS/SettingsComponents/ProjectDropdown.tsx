@@ -78,7 +78,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * @return {void}
    */
   public componentWillMount(): void {
-    console.log("willcomponentmount");
+    console.log('willcomponentmount');
     /*let defaultProject: string = Office.context.roamingSettings.get('default_project');
     if (defaultProject !== undefined) {
       this.props.dispatch(updateProjectSettingsAction(defaultProject, this.props.projects));
@@ -91,14 +91,14 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * @param {any} nextState
    */
   public shouldComponentUpdate(nextProps: any, nextState: any): boolean {
-    console.log("shouldcomponentupdate");
+    console.log('shouldcomponentupdate project');
     return this.props.account !== nextProps.account || this.props.project !== nextProps.project ||
       JSON.stringify(this.props.projects) !== JSON.stringify(nextProps.projects); // this.props.projects !== nextProps.projects;
   }
 
   public componentWillUpdate(nextProps: any, nextState: any): void {
-    console.log("willcomponentupdate");
-    if(this.props.account !== nextProps.account && nextProps.account !== ''){
+    console.log('willcomponentupdate project');
+    if (this.props.account !== nextProps.account && nextProps.account !== '') {
       this.populateProjects(nextProps.account);
     }
   }
@@ -109,54 +109,57 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * @returns {void}
    */
   public onProjectSelect(option: any): void {
-    let project: string = option;
+    let project: string;
+    if (option.label) {
+      project = option.label;
+    } else {
+      project = option;
+    }
     this.props.dispatch(updateProjectSettingsAction(project, this.props.projects));
   }
 
-   /**
-    * Renders the react-select dropdown component
-    */
+  /**
+   * Renders the react-select dropdown component
+   */
   public render(): React.ReactElement<Provider> {
-    
     return (
-        <Select
-            name='form-field-name'
-            options={this.props.projects}
-            value={this.props.project}
-            onChange={this.onProjectSelect.bind(this)}
-            />
+      <Select
+        name='form-field-name'
+        options={this.props.projects}
+        value={this.props.project}
+        onChange={this.onProjectSelect.bind(this) }
+        />
     );
   }
 
-   /**
-    * Populates list of projects for given account from VSTS rest call
-    * Updates the store for current settings and current options lists
-    * @param {string} account
-    * @returns {void}
-    */
+  /**
+   * Populates list of projects for given account from VSTS rest call
+   * Updates the store for current settings and current options lists
+   * @param {string} account
+   * @returns {void}
+   */
   public populateProjects(account: string): void {
     let projectOptions: ISettingsInfo[] = [];
     let projectNamesOnly: string[] = [];
     let selectedProject: string = this.props.project;
-    console.log("populating projects");
+    console.log('populating projects');
 
     Rest.getProjects(this.props.email, account, (projects: Project[]) => {
       projects.forEach(project => {
         projectOptions.push({ label: project.name, value: project.name });
         projectNamesOnly.push(project.name);
       });
-      console.log("ProjectList: "+JSON.stringify(projects));
+      // console.log('ProjectList: ' + JSON.stringify(projects));
       let defaultProject: string = Office.context.roamingSettings.get('default_project');
       if (defaultProject !== undefined && defaultProject !== '') {
         selectedProject = defaultProject;
-        console.log("setting default project:"+defaultProject);
+        console.log('setting default project:' + defaultProject);
       } else if (selectedProject === '' || (projectNamesOnly.indexOf(selectedProject) === -1)) { // very first time user
         selectedProject = projectNamesOnly[0];
-        console.log("setting first project:"+selectedProject);
+        console.log('setting first project:' + selectedProject);
       }
-      
       this.props.dispatch(updateProjectSettingsAction(selectedProject, projectOptions));
-  });
+    });
   }
 
 }
