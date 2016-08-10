@@ -1,7 +1,7 @@
 /// <reference path="../../../office.d.ts" />
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import { updateAccountSettingsAction , ISettingsInfo} from '../../Redux/LoginActions';
+import { updateAccountSettingsAction, ISettingsInfo} from '../../Redux/LoginActions';
 import {Rest, Account} from '../../RestHelpers/rest';
 require('react-select/dist/react-select.css');
 let Select: any = require('react-select');
@@ -84,9 +84,14 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * @returns {void}
    */
   public onAccountSelect(option: any): void {
-    console.log("AccountList: "+JSON.stringify(option));
-    let account: string = option;
-    console.log("onAccountSelect"+account);
+    console.log('AccountList: ' + JSON.stringify(option));
+    let account: string;
+    if (option.label) {
+      account = option.label;
+    } else {
+      account = option;
+    }
+    console.log('onAccountSelect' + account);
     this.props.dispatch(updateAccountSettingsAction(account, this.props.accountList));
   }
 
@@ -95,39 +100,39 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    */
   public render(): React.ReactElement<Provider> {
     return (
-        <Select
-            name='form-field-name'
-            options={this.props.accountList}
-            value={this.props.account}
-            onChange={this.onAccountSelect.bind(this)}/>
+      <Select
+        name='form-field-name'
+        options={this.props.accountList}
+        value={this.props.account}
+        onChange={this.onAccountSelect.bind(this) }/>
     );
   }
 
-   /**
-    * Populates list of accounts for given profile from VSTS rest call
-    * Updates the store for current settings and current options lists
-    * @returns {void}
-    */
+  /**
+   * Populates list of accounts for given profile from VSTS rest call
+   * Updates the store for current settings and current options lists
+   * @returns {void}
+   */
   public populateAccounts(): void {
     let accountOptions: ISettingsInfo[] = [];
     let accountNamesOnly: string[] = [];
     let selectedAccount: string = this.props.account;
-    console.log("populating accounts");
+    console.log('populating accounts');
     Rest.getAccountsNew(this.props.email, this.props.memberId, (accountList: Account[]) => {
       accountList.forEach(acc => {
         accountOptions.push({ label: acc.name, value: acc.name });
         accountNamesOnly.push(acc.name);
       });
-      console.log("AccountList: "+JSON.stringify(accountList));
+      // console.log('AccountList: ' + JSON.stringify(accountList));
       let defaultAccount: string = Office.context.roamingSettings.get('default_account');
       if (defaultAccount !== undefined && defaultAccount !== '') {
         selectedAccount = defaultAccount;
-        console.log("setting default account:"+defaultAccount);
+        console.log('setting default account:' + defaultAccount);
       } else if (selectedAccount === '' || (accountNamesOnly.indexOf(selectedAccount) === -1)) { // very first time user
         selectedAccount = accountNamesOnly[0];
-        console.log("setting first account:"+selectedAccount);
+        console.log('setting first account:' + selectedAccount);
       }
-      console.log('popaccounts'+defaultAccount);
+      console.log('popaccounts' + defaultAccount);
       this.props.dispatch(updateAccountSettingsAction(selectedAccount, accountOptions));
     });
   }

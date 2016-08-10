@@ -94,14 +94,14 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    * @param {any} nextState
    */
   public shouldComponentUpdate(nextProps: any, nextState: any): boolean {
-    console.log("shouldcomponentupdate: team");
+    console.log('shouldcomponentupdate: team');
     return this.props.project !== nextProps.project || this.props.team !== nextProps.team ||
       JSON.stringify(this.props.teams) !== JSON.stringify(nextProps.teams); // this.props.projects !== nextProps.projects;
   }
 
   public componentWillUpdate(nextProps: any, nextState: any): void {
-    console.log("willcomponentupdate: team");
-    if(this.props.project !== nextProps.project && nextProps.project !== ''){
+    console.log('willcomponentupdate: team');
+    if (this.props.project !== nextProps.project && nextProps.project !== '') {
       this.populateTeams(nextProps.account, nextProps.project);
     }
   }
@@ -111,7 +111,12 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    * @returns {void}
    */
   public onTeamSelect(option: any): void {
-    let team: string = option;
+    let team: string;
+    if (option.label) {
+      team = option.label;
+    } else {
+      team = option;
+    }
     this.props.dispatch(updateTeamSettingsAction(team, this.props.teams));
   }
 
@@ -120,44 +125,44 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    */
   public render(): React.ReactElement<Provider> {
     return (
-        <Select
-            name='form-field-name'
-            options={this.props.teams}
-            value={this.props.team}
-            onChange={this.onTeamSelect.bind(this)}
-            />
+      <Select
+        name='form-field-name'
+        options={this.props.teams}
+        value={this.props.team}
+        onChange={this.onTeamSelect.bind(this) }
+        />
     );
   }
 
-    /**
-     * Populates list of teams for given project from VSTS rest call
-     * Updates the store for current sesttings and current options lists
-     * @param {string} account, {string} project
-     * @returns {void}
-     */
-    public populateTeams(account: string, project: string): void {
-      let teamOptions: ISettingsInfo[] = [];
-      let teamNamesOnly: string[] = [];
-      let selectedTeam: string = this.props.team;
+  /**
+   * Populates list of teams for given project from VSTS rest call
+   * Updates the store for current sesttings and current options lists
+   * @param {string} account, {string} project
+   * @returns {void}
+   */
+  public populateTeams(account: string, project: string): void {
+    let teamOptions: ISettingsInfo[] = [];
+    let teamNamesOnly: string[] = [];
+    let selectedTeam: string = this.props.team;
 
-      Rest.getTeams(this.props.email, project, account, (teams: Team[]) => {
-        teams.forEach(team => {
-          teamOptions.push({label: team.name, value: team.name});
-          teamNamesOnly.push(team.name);
-        });
-        console.log("teamList: "+JSON.stringify(teams));
+    Rest.getTeams(this.props.email, project, account, (teams: Team[]) => {
+      teams.forEach(team => {
+        teamOptions.push({ label: team.name, value: team.name });
+        teamNamesOnly.push(team.name);
+      });
+      console.log('teamList: ' + JSON.stringify(teams));
       let defaultTeam: string = Office.context.roamingSettings.get('default_team');
       if (defaultTeam !== undefined && defaultTeam !== '') {
         selectedTeam = defaultTeam;
-        console.log("setting default project:"+defaultTeam);
+        console.log('setting default project:' + defaultTeam);
       } else if (selectedTeam === '' || (teamNamesOnly.indexOf(selectedTeam) === -1)) { // very first time user
         selectedTeam = teamNamesOnly[0];
-        console.log("setting first project:"+selectedTeam);
+        console.log('setting first project:' + selectedTeam);
       }
-        if (selectedTeam === '' || (teamNamesOnly.indexOf(selectedTeam) === -1)) {
-            selectedTeam = teamNamesOnly[0];
-        }
-        this.props.dispatch(updateTeamSettingsAction(selectedTeam, teamOptions));
-      });
+      if (selectedTeam === '' || (teamNamesOnly.indexOf(selectedTeam) === -1)) {
+        selectedTeam = teamNamesOnly[0];
+      }
+      this.props.dispatch(updateTeamSettingsAction(selectedTeam, teamOptions));
+    });
   }
 }

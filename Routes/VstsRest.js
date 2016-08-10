@@ -4,6 +4,7 @@ var https = require('https');
 var querystring = require('querystring');
 var DEBUG = require('../debug');
 var Authenticate = require('./Authenticate');
+var Buffer = require('buffer').Buffer;
 
 var router = express.Router({ mergeParams: true });
 module.exports = router;
@@ -44,6 +45,21 @@ function patchRequest(query, body, path, headers, host, callback) {
     method: 'PATCH',
     headers: headers
   };
+  console.log('PATCH: ' + options.path);
+  var request = https.request(options, function (response) { parseResponse(response, callback) });
+  request.write(body);
+  request.end();
+}
+
+function postRequest(query, body, path, headers, host, callback) {
+  headers['Content-Length'] = body.length;
+  var options = {
+    host: host,
+    path: encodeURI(path) + '?' + querystring.stringify(query),
+    method: 'POST',
+    headers: headers
+  };
+  console.log('POST: ' + options.path);
   var request = https.request(options, function (response) { parseResponse(response, callback) });
   request.write(body);
   request.end();
@@ -243,7 +259,6 @@ router.newWorkItem = function (req, res) {
 
   getToken(input.user, (token) => {
     if (token) {
-      console.log('good token');
       headers.Authorization = wrapToken(token);
       patchRequest(query, body, path, headers, host, (output) => { res.send(output) });
     } else {
@@ -274,25 +289,69 @@ router.getCurrentIteration = function (req, res) {
   })
 }
 router.use('/getCurrentIteration', router.getCurrentIteration);
-/*
-router.newAttachment = function (req, res) {
+
+router.uploadAttachment = function (req, res) {
   var input = req.query;
   var query = {
-    'api-version': API1_0 
+    'fileName': input.title + '.eml',
+    'api-version': API1_0,
+  }
+  var host = input.account + '.visualstudio.com';
+  var path = '/DefaultCollection/_apis/wit/attachments'
+  var headers = {
+    'Content-Type': 'application/json'
+  };
+  function getBody() {
+    var foo = input.MIMEstring; //base64 string
+    console.log('MIMEcontent'+ foo);
+    var myBuffer = new Buffer(foo, 'base64'); //base64 string in a buffer object
+    console.log('myBuffer' + JSON.stringify(myBuffer));
+    return myBuffer.toString('utf8');
+           // wont' work (unless there's a JQuery port)
+           /* $.ajax({
+                url: "http://" +  input.account + "visualstudio.com/DefaultCollection/_apis/wit/attachments?filename=" + input.title + ".eml" + "&api-version=1.0",
+                data: new Buffer(s),
+                processData: false,
+                contentType: "application/json",
+                type: "POST"
+            });*/
+  }
+  var body = getBody();
+  console.log('ATTACHMENT body: ' + body + 'blah');
+  getToken(input.user, (token) => {
+    if (token) {
+      headers.Authorization = wrapToken(token);
+      postRequest(query, body, path, headers, host, (output) => { res.send(output) });
+    } else {
+      console.log("could not find token for user " + input.user);
+    }
+  })
+}
+router.use('/uploadAttachment', router.uploadAttachment);
+
+router.attachAttachment = function (req, res) {
+  var input = req.query;
+  var query = {
+    'api-version': API1_0,
   }
   var host = input.account + '.visualstudio.com';
   var path = '/DefaultCollection/_apis/wit/workitems/' + input.id
   var headers = {
     'Content-Type': 'application/json-patch+json'
   };
-  if (input.type === "Bug"){
-   var body = JSON.stringify([
-    jsonPatchItem('/fields/System.Title', input.title),
-    jsonPatchItem('/fields/Microsoft.VSTS.TCM.ReproSteps', input.body),
-    jsonPatchItem('/fields/System.AreaPath', input.areaPath)
-  ]);
+   var body = 
+   JSON.stringify([
+ {
+    "op": "add",
+    "path": "/relations/-",
+    "value": {
+      "rel": "AttachedFile",
+      "url": input.attachmenturl,
+      "attributes": {
+      }
+    }
   }
-
+]);
   getToken(input.user, (token) => {
     if (token) {
       headers.Authorization = wrapToken(token);
@@ -302,5 +361,5 @@ router.newAttachment = function (req, res) {
     }
   })
 }
-router.use('/newAttachment', router.newAttachment);
-*/
+router.use('/attachAttachment', router.attachAttachment);
+
