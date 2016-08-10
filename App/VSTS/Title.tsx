@@ -29,7 +29,7 @@ export interface ITitleProps {
  * @class { Title }
  */
 function mapStateToProps (state: any): ITitleProps  {
-  // console.log('mapStateToProps' + JSON.stringify(state));
+   console.log('mapStateToProps' + JSON.stringify(state));
   return {stage: state.workItem.stage, title: state.workItem.title} ;
    }
 

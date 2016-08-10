@@ -64,16 +64,12 @@ export class Save extends React.Component<ISaveProps, {}> {
     let user: string = this.props.userProfile.email;
     this.props.dispatch(updateStage(Stage.Saved));
     if (this.props.workItem.addAsAttachment) {
-      let request: any = '<?xml version="1.0" encoding="utf-8"?>' +
-        '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"' +
-        'xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"' +
-        'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"> <soap:Header>' +
-        '<RequestServerVersion Version="Exchange2013" xmlns="http://schemas.microsoft.com/exchange/services/2006/types"' +
-        'soap:mustUnderstand="0" />' +
+      let request = '<?xml version="1.0" encoding="utf-8"?>' +
+        '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"> <soap:Header>' +
+        '<RequestServerVersion Version="Exchange2013" xmlns="http://schemas.microsoft.com/exchange/services/2006/types" soap:mustUnderstand="0" />' +
         '</soap:Header>' +
         '<soap:Body>' +
-        '<GetItem xmlns="http://schemas.microsoft.com/exchange/services/2006/messages"' +
-        'xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"> <ItemShape>' +
+        '<GetItem xmlns="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"> <ItemShape>' +
         '<t:BaseShape>IdOnly</t:BaseShape> <t:IncludeMimeContent>true</t:IncludeMimeContent>' +
         '</ItemShape>' +
         '<ItemIds>' +
@@ -93,11 +89,19 @@ export class Save extends React.Component<ISaveProps, {}> {
           mimeString = value;
           Rest.getCurrentIteration(user, options, addAsAttachment, mimeString, workItemType, title,
                                    description, (workItemInfo: WorkItemInfo) => {
-                                   console.log('in callback for get curr iteration');
-                                   dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
-                                   dispatch(updateStage(Stage.Saved));
-                                   dispatch(updatePageAction(PageVisibility.QuickActions));
+              console.log('in callback for get curr iteration');
+              dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
+              dispatch(updateStage(Stage.Saved));
+              dispatch(updatePageAction(PageVisibility.QuickActions));
             });
+        });
+    } else {
+      Rest.getCurrentIteration(user, options, addAsAttachment, mimeString, workItemType, title,
+                               description, (workItemInfo: WorkItemInfo) => {
+          console.log('in callback for get curr iteration');
+          dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
+          dispatch(updateStage(Stage.Saved));
+          dispatch(updatePageAction(PageVisibility.QuickActions));
         });
     }
   }
