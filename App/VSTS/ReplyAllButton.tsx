@@ -35,8 +35,12 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
     );
   }
   
+  /**
+   * Adds signature line to the HTML body
+   * @returns { string } Full HTML body with signature line
+   */
   public addSignature(workItemHyperlink: string): string {
-    return workItemHyperlink + '<br/><br/><br/>Sent from VSTS Add-in for Outlook';
+    return workItemHyperlink + '<br/><br/><br/>Created using VSTS Outlook add-in';
   }
   /**
    * Handles the click and displays a reply-all form
