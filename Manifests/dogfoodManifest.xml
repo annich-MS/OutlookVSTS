@@ -85,7 +85,7 @@
         <bt:Url id="readTaskPaneUrl" DefaultValue="https://outlookvsts.azurewebsites.net/dogfood"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="groupLabel" DefaultValue="Visual Stuido Team Services"/>
+        <bt:String id="groupLabel" DefaultValue="VSTS"/>
         <!-- Read mode -->
         <bt:String id="paneReadButtonLabel" DefaultValue="Create Bug"/>
         <bt:String id="paneReadSuperTipTitle" DefaultValue="Creates a bug using the contents of this email"/>
