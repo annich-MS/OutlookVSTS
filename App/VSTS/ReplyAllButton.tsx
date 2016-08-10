@@ -26,7 +26,7 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
   public render(): React.ReactElement<Provider> {
     return (
       <div>
-        <button onClick={this.handleClick} className='ms-Button'>
+        <button onClick={this.handleClick.bind(this)} className='ms-Button'>
           <a className='ms-Icon ms-Icon--replyAll' />
           {'   '}Reply All with Work Item
         </button>
@@ -34,12 +34,16 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
       </div>
     );
   }
-
+  
+  public addSignature(workItemHyperlink: string): string {
+    return workItemHyperlink + '<br/><br/><br/>Sent from VSTS Add-in for Outlook';
+  }
   /**
    * Handles the click and displays a reply-all form
    * @private
    */
   private handleClick: () => void = () => {
-    Office.context.mailbox.item.displayReplyAllForm(this.props.workItemHyperlink);
+    console.log(this.addSignature(this.props.workItemHyperlink));
+    Office.context.mailbox.item.displayReplyAllForm(this.addSignature(this.props.workItemHyperlink));
   }
 }
