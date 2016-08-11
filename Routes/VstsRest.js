@@ -59,9 +59,10 @@ function postRequest(query, body, path, headers, host, callback) {
     method: 'POST',
     headers: headers
   };
-  console.log('POST: ' + options.path);
+  console.log('POST: ' + host + ' ' + options.path);
   var request = https.request(options, function (response) { parseResponse(response, callback) });
   request.write(body);
+  console.log('Body length:' + body.length);
   request.end();
 }
 
@@ -292,6 +293,8 @@ router.use('/getCurrentIteration', router.getCurrentIteration);
 
 router.uploadAttachment = function (req, res) {
   var input = req.query;
+  console.log(req);
+  var body = req.body;
   var query = {
     'fileName': input.title + '.eml',
     'api-version': API1_0,
@@ -301,31 +304,31 @@ router.uploadAttachment = function (req, res) {
   var headers = {
     'Content-Type': 'application/json'
   };
-  function getBody() {
-    var foo = input.MIMEstring; //base64 string
-    console.log('MIMEcontent'+ foo);
-    var myBuffer = new Buffer(foo, 'base64'); //base64 string in a buffer object
-    console.log('myBuffer' + JSON.stringify(myBuffer));
+  function decodeBase64Data(base64Data) {
+    var myBuffer = new Buffer(base64Data, 'base64');
     return myBuffer.toString('utf8');
-           // wont' work (unless there's a JQuery port)
-           /* $.ajax({
-                url: "http://" +  input.account + "visualstudio.com/DefaultCollection/_apis/wit/attachments?filename=" + input.title + ".eml" + "&api-version=1.0",
-                data: new Buffer(s),
-                processData: false,
-                contentType: "application/json",
-                type: "POST"
-            });*/
   }
-  var body = getBody();
-  console.log('ATTACHMENT body: ' + body + 'blah');
-  getToken(input.user, (token) => {
-    if (token) {
-      headers.Authorization = wrapToken(token);
-      postRequest(query, body, path, headers, host, (output) => { res.send(output) });
-    } else {
-      console.log("could not find token for user " + input.user);
-    }
-  })
+  
+  req.on('data', function(chunk) {
+    body += chunk;
+  }).on('end', function() {
+    var decodedBody = decodeBase64Data(body);
+    console.log('ATTACHMENT body length: ' + decodedBody.length);
+    console.log('calling getToken for user: ' + input.user)
+    getToken(input.user, (token) => {
+      if (token) { 
+        console.log('got token');
+        headers.Authorization = wrapToken(token);
+        postRequest(query, decodedBody, path, headers, host, (output) => {
+          console.log('Attachment request accepted');
+          console.log(JSON.stringify(output));
+          res.send(output);
+        });
+      } else {
+        console.log("could not find token for user " + input.user);
+      }
+    });
+  });
 }
 router.use('/uploadAttachment', router.uploadAttachment);
 

@@ -1,5 +1,3 @@
-import { updateSave } from '../Redux/WorkItemActions';
-
 export class UserProfile {
     public displayName: string;
     public publicAlias: string;
@@ -153,12 +151,12 @@ export class Rest {
     }
 
     public static createWorkItem(user: string, options: any, addAsAttachment: boolean, MIMEstring: string, currentIteration: string,
-        type: string, title: string, body: string, callback: IRestCallback): void {
+                                 type: string, title: string, body: string, callback: IRestCallback): void {
         this.createWorkItemCall(user, options, addAsAttachment, MIMEstring, currentIteration, type, title, body, callback);
     }
 
     public static createWorkItemCall(user: string, options: any, addAsAttachment: boolean, MIMEstring: string, currentIteration: string,
-        type: string, title: string, body: string, callback: IRestCallback): void {
+                                     type: string, title: string, body: string, callback: IRestCallback): void {
         this.getTeamAreaPath(user, options.account, options.project, options.teamName, (areaPath) => {
             // console.log(areaPath);
             this.makeRestCallWithArgs(
@@ -180,20 +178,22 @@ export class Rest {
     }
 
     public static uploadAttachment(user: string, options: any, MIMEstring: string,
-        id: string, type: string, title: string, body: string, callback: IRestCallback): void {
-        Rest.makeRestCallWithArgs(
+                                   id: string, type: string, title: string, body: string, callback: IRestCallback): void {
+        Rest.makeRestPostCallWithArgs(
             'uploadAttachment',
             user,
-            { MIMEstring: MIMEstring, account: options.account, title: title },
+            MIMEstring,
+            { account: options.account, title: title},
             (output) => {
                 console.log(output);
                 Rest.attachAttachment(user, options, JSON.parse(output).url, id,
                     type, title, body, (final) => console.log(final));
-            });
+            },
+            'text/plain');
     }
 
     public static attachAttachment(user: string, options: any, attachmenturl: string,
-        id: string, type: string, title: string, body: string, callback: IRestCallback): void {
+                                   id: string, type: string, title: string, body: string, callback: IRestCallback): void {
         Rest.makeRestCallWithArgs(
             'attachAttachment',
             user,
@@ -205,7 +205,7 @@ export class Rest {
 
 
     public static getCurrentIteration(user: string, options: any, addAsAttachment: boolean, MIMEstring: string,
-        type: string, title: string, body: string, callback: IWorkItemCallback): void {
+                                      type: string, title: string, body: string, callback: IWorkItemCallback): void {
         console.log('in iteration' + MIMEstring);
         this.getCurrentIterationCall(user, options, addAsAttachment, MIMEstring, type, title, body, callback);
     }
@@ -244,7 +244,7 @@ export class Rest {
                 this.accounts.push(new Account(account));
 
             });
-            callback(this.accounts); //return special array for error
+            callback(this.accounts); // return special array for error
         });
     }
 
@@ -275,4 +275,16 @@ export class Rest {
         $.get(path, callback);
     }
 
+    private static makeRestPostCallWithArgs(
+        name: string, user: string, body: Object, args: any, callback: IRestCallback, contentType: string = 'application/json'): void {
+        const path: string = './rest/' + name + '?user=' + user + '&' + $.param(args);
+
+        $.ajax({
+            contentType: contentType,
+            data: body,
+            processData: false,
+            type: 'POST',
+            url: path,
+        }).done(callback);
+    }
 }

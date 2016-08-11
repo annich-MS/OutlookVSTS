@@ -80,27 +80,32 @@ export class Save extends React.Component<ISaveProps, {}> {
         '</soap:Envelope>';
       Office.context.mailbox.makeEwsRequestAsync(
         request,
-        function (asyncResult, result) {
+        function (asyncResult: any, result: any): any {
+
           if (asyncResult.status === 'failed') {
+            console.log('EWS request failed with error: ' + asyncResult.error.code + ' - ' + asyncResult.error.message);
+            if (asyncResult.error.code === 9020) {
+              alert('Your file exceeds 1 MB size limit. Please modify your EWS request.');
+            }
             return;
           }
+
           let response: any = $.parseXML(asyncResult.value);
-          let value: string = $(response).find('MimeContent').text();
-          mimeString = value;
+          mimeString = $(response).find('MimeContent').text();
           Rest.getCurrentIteration(user, options, addAsAttachment, mimeString, workItemType, title,
                                    description, (workItemInfo: WorkItemInfo) => {
               console.log('in callback for get curr iteration');
               dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
-              dispatch(updateStage(Stage.Saved));
+              //dispatch(updateStage(Stage.Saved));
               dispatch(updatePageAction(PageVisibility.QuickActions));
             });
         });
-    } else {
+    } else { // don't add as attachment
       Rest.getCurrentIteration(user, options, addAsAttachment, mimeString, workItemType, title,
                                description, (workItemInfo: WorkItemInfo) => {
           console.log('in callback for get curr iteration');
           dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
-          dispatch(updateStage(Stage.Saved));
+          //dispatch(updateStage(Stage.Saved));
           dispatch(updatePageAction(PageVisibility.QuickActions));
         });
     }
@@ -135,11 +140,12 @@ export class Save extends React.Component<ISaveProps, {}> {
      * Decides which style to use for the stage button based on the Stage
      */
     let currentStyle: any = this.props.workItem.stage === Stage.Saved ? disabled : save;
+    let text: any = this.props.workItem.stage === Stage.Saved ? 'Creating...' : 'Create Work Item';
     return (
       <div>
         <br/>
         <button className = 'ms-Button' style= {currentStyle} disabled = {this.props.workItem.stage === Stage.Saved}
-          onClick = {this.handleSave.bind(this) } > Create Work Item
+          onClick = {this.handleSave.bind(this) } > {text}
         </button>
       </div>
     );

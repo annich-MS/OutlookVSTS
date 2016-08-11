@@ -50,15 +50,17 @@ public handlechangeDescription (event: any): void {
  * Dispatches the action to update the addAsAttachment and description values in the store
  * @ returns {void}
  */
-public handlechangeAddAsAttachment (): void {
-  this.props.dispatch(updateAddAsAttachment(this.props.addAsAttachment));
-  if (this.props.addAsAttachment || this.props.stage !== Stage.New) {
+public handlechangeAddAsAttachment (event: any): void {
+  console.log(JSON.stringify(event.target.checked));
+  if (event.target.checked === true) {
     console.log(this.props.addAsAttachment);
     this.props.dispatch(updateDescription('For more details, please refer to the attached email thread. ' + this.props.description));
+    this.props.dispatch(updateAddAsAttachment(true));
   }else {
     console.log('false');
     this.props.dispatch(updateDescription(
     this.props.description.replace('For more details, please refer to the attached email thread. ', '')));
+    this.props.dispatch(updateAddAsAttachment(false));
   }
 }
 /**
