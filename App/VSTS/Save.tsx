@@ -80,13 +80,18 @@ export class Save extends React.Component<ISaveProps, {}> {
         '</soap:Envelope>';
       Office.context.mailbox.makeEwsRequestAsync(
         request,
-        function (asyncResult, result) {
+        function (asyncResult: any, result: any): any {
+
           if (asyncResult.status === 'failed') {
+            console.log('EWS request failed with error: ' + asyncResult.error.code + ' - ' + asyncResult.error.message);
+            if (asyncResult.error.code === 9020) {
+              alert('Your file exceeds 1 MB size limie. Please modift your EWS request.');
+            }
             return;
           }
+
           let response: any = $.parseXML(asyncResult.value);
-          let value: string = $(response).find('MimeContent').text();
-          mimeString = value;
+          mimeString = $(response).find('MimeContent').text();
           Rest.getCurrentIteration(user, options, addAsAttachment, mimeString, workItemType, title,
                                    description, (workItemInfo: WorkItemInfo) => {
               console.log('in callback for get curr iteration');
@@ -95,7 +100,7 @@ export class Save extends React.Component<ISaveProps, {}> {
               dispatch(updatePageAction(PageVisibility.QuickActions));
             });
         });
-    } else {
+    } else { // don't add as attachment
       Rest.getCurrentIteration(user, options, addAsAttachment, mimeString, workItemType, title,
                                description, (workItemInfo: WorkItemInfo) => {
           console.log('in callback for get curr iteration');
