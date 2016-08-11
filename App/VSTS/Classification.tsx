@@ -16,7 +16,7 @@ export class Classification extends React.Component<{}, {}> {
     let titleColumnStyle: any = {
       display: 'inline-block',
       font: '16px arial, ms-segoe-ui',
-      width: '20%',
+      width: '21%',
       'margin-bottom': '8px',
       'margin-top': '8px',
     };

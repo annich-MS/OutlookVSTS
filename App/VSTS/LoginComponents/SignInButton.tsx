@@ -88,12 +88,14 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
    * Renders the sign in button
    */
   public render(): React.ReactElement<Provider> {
+
     let style_button: any = {
-      align: 'center',
       background: 'rgb(0,122,204)',
+      border: 'rgb(255,255,255)',
       color: 'rgb(255,255,255)',
-      font: '15px arial, ms-segoe-ui',
-      textalign: 'center',
+      float: 'left',
+      font: '17px arial, ms-segoe-ui',
+      'margin-left': '20%',
     };
 
     return(

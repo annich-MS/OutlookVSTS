@@ -15,8 +15,11 @@ export class LogInPage extends React.Component<{}, {}> {
    */
   public render(): React.ReactElement<Provider> {
     let style_image: any = {
-      height: '150px',
-      width: '320px',
+      float: 'right',
+      height: '50px',
+      width: '317px',
+      'margin-bottom': '30px',
+      'margin-top': '15px',
     };
 
     return(<div>
