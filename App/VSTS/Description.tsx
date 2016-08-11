@@ -74,7 +74,7 @@ public handleChangeAddAsAttachment (event: any): void {
       overflow: 'auto',
       padding: '10px',
       resize: 'none',
-      width: '100%',
+      width: '98%',
       'padding-top': '5px',
     };
     let checkboxStyle: any = {
