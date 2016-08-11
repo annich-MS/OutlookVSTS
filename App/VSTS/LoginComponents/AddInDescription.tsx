@@ -15,15 +15,19 @@ export class AddInDescription extends React.Component<{}, {}> {
     let style_section: any = {
       color: 'rgb(0,122,204)',
       font: '20px arial, ms-segoe-ui-semibold',
+      'margin-bottom': '15px',
+      'margin-left': '10px',
     };
 
     let style_text: any = {
        color: 'rgb(63,63,63)',
-       font: '15px arial, ms-segoe-ui',
+       font: '17px arial, ms-segoe-ui',
+       'margin-bottom': '30px',
+       'margin-left': '10px',
+       'margin-right': '10px',
     };
 
     return(<div>
-      <div></div>
       <div>
         <h1 style = {style_section}> Create work items</h1>
         <p  style = {style_text}>Turn an email thread into a work item directly from Outlook!</p>

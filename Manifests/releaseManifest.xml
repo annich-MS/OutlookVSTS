@@ -87,7 +87,7 @@
       <bt:ShortStrings>
         <bt:String id="groupLabel" DefaultValue="VSTS"/>
         <!-- Read mode -->
-        <bt:String id="paneReadButtonLabel" DefaultValue="Create Bug"/>
+        <bt:String id="paneReadButtonLabel" DefaultValue="VSTS"/>
         <bt:String id="paneReadSuperTipTitle" DefaultValue="Creates a bug using the contents of this email"/>
       </bt:ShortStrings>
       <bt:LongStrings>
