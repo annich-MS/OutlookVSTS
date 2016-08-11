@@ -52,7 +52,7 @@ export class Title extends React.Component<ITitleProps, {}> {
   public render(): React.ReactElement<Provider> {
     let title: any = {
       padding: '5px',
-      width: '100%',
+      width: '98%',
     };
     /**
      * Gets the normalizedSubject from Office and depending on the Stage, dispatches an action to update the value of title in store
