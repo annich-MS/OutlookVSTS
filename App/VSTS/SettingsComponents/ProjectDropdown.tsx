@@ -154,7 +154,8 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
       if (defaultProject !== undefined && defaultProject !== '') {
         selectedProject = defaultProject;
         console.log('setting default project:' + defaultProject);
-      } else if (selectedProject === '' || (projectNamesOnly.indexOf(selectedProject) === -1)) { // very first time user
+      } 
+      if (selectedProject === '' || (projectNamesOnly.indexOf(selectedProject) === -1)) { // very first time user
         selectedProject = projectNamesOnly[0];
         console.log('setting first project:' + selectedProject);
       }

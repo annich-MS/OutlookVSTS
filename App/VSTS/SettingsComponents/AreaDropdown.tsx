@@ -155,12 +155,10 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
       if (defaultTeam !== undefined && defaultTeam !== '') {
         selectedTeam = defaultTeam;
         console.log('setting default project:' + defaultTeam);
-      } else if (selectedTeam === '' || (teamNamesOnly.indexOf(selectedTeam) === -1)) { // very first time user
+      } 
+      if (selectedTeam === '' || (teamNamesOnly.indexOf(selectedTeam) === -1)) { // very first time user
         selectedTeam = teamNamesOnly[0];
         console.log('setting first project:' + selectedTeam);
-      }
-      if (selectedTeam === '' || (teamNamesOnly.indexOf(selectedTeam) === -1)) {
-        selectedTeam = teamNamesOnly[0];
       }
       this.props.dispatch(updateTeamSettingsAction(selectedTeam, teamOptions));
     });

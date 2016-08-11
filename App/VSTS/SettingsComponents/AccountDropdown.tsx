@@ -128,7 +128,8 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
       if (defaultAccount !== undefined && defaultAccount !== '') {
         selectedAccount = defaultAccount;
         console.log('setting default account:' + defaultAccount);
-      } else if (selectedAccount === '' || (accountNamesOnly.indexOf(selectedAccount) === -1)) { // very first time user
+      } 
+      if (selectedAccount === '' || (accountNamesOnly.indexOf(selectedAccount) === -1)) { // very first time user
         selectedAccount = accountNamesOnly[0];
         console.log('setting first account:' + selectedAccount);
       }
