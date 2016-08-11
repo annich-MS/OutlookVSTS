@@ -124,7 +124,7 @@ export class Save extends React.Component<ISaveProps, {}> {
       color: 'rgb(255,255,255)',
       font: '15px arial, ms-segoe-ui',
       margin: '10px',
-      'margin-left': '40%',
+      'margin-left': '25%',
     };
     let styleDisabled: any = {
       background: 'rgb(192,192,192)',
@@ -132,7 +132,7 @@ export class Save extends React.Component<ISaveProps, {}> {
       color: 'rgb(255,255,255)',
       font: '15px arial, ms-segoe-ui',
       margin: '10px',
-      'margin-left': '40%',
+      'margin-left': '25%',
     };
 
     let currentStyle: any = this.props.workItem.stage === Stage.Saved ? styleDisabled : styleEnabled;
