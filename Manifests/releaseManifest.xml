@@ -10,7 +10,7 @@
   <DefaultLocale>en-us</DefaultLocale>
   <DisplayName DefaultValue="VSTS" />
   <Description DefaultValue="Creates bugs using content of message"/>
-  <IconUrl DefaultValue="https://outlookvsts.azurewebsites.net/public/Images/logo.png" />
+  <IconUrl DefaultValue="https://outlookvsts.azurewebsites.net/public/Images/VSTSLogo_small.png" />
   <Hosts>
     <Host Name="Mailbox" />
   </Hosts>
@@ -79,7 +79,7 @@
 	</Hosts>
 	<Resources>
       <bt:Images>
-        <bt:Image id="taskpanecommand-icon" DefaultValue="https://outlookvsts.azurewebsites.net/public/Images/logo.png"/>
+        <bt:Image id="taskpanecommand-icon" DefaultValue="https://outlookvsts.azurewebsites.net/public/Images/VSTSLogo_small.png"/>
       </bt:Images>
       <bt:Urls>
         <bt:Url id="readTaskPaneUrl" DefaultValue="https://outlookvsts.azurewebsites.net/vsts"/>
