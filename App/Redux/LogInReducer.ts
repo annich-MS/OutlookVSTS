@@ -1,5 +1,5 @@
 /// <reference path="../../typings/tsd.d.ts" />
-import { IUserProfileAction, ISettingsInfo} from './LoginActions';
+import { IUserProfileAction, ISettingsInfo} from './LogInActions';
 
 /**
  * Represents the currently selected area path and lists in the store

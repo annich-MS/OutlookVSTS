@@ -1,7 +1,7 @@
 /// <reference path="../../../office.d.ts" />
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import { updateAccountSettingsAction, ISettingsInfo} from '../../Redux/LoginActions';
+import { updateAccountSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
 import {Rest, Account} from '../../RestHelpers/rest';
 require('react-select/dist/react-select.css');
 let Select: any = require('react-select');
@@ -117,7 +117,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
     let accountOptions: ISettingsInfo[] = [];
     let accountNamesOnly: string[] = [];
     let selectedAccount: string = this.props.account;
-    console.log('populating accounts');
+    console.log('populating accounts' + this.props.email + this.props.memberId);
     Rest.getAccountsNew(this.props.email, this.props.memberId, (accountList: Account[]) => {
       accountList.forEach(acc => {
         accountOptions.push({ label: acc.name, value: acc.name });
@@ -128,7 +128,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
       if (defaultAccount !== undefined && defaultAccount !== '') {
         selectedAccount = defaultAccount;
         console.log('setting default account:' + defaultAccount);
-      } 
+      }
       if (selectedAccount === '' || (accountNamesOnly.indexOf(selectedAccount) === -1)) { // very first time user
         selectedAccount = accountNamesOnly[0];
         console.log('setting first account:' + selectedAccount);

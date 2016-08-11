@@ -24,17 +24,23 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
    * @returns { React.ReactElement } ReactHTML div
    */
   public render(): React.ReactElement<Provider> {
+    let buttonStyle: any = {
+      background: 'rgb(255,255,255)',
+      border: 'rgb(255,255,255)',
+      color: 'rgb(0,0,0)',
+      float: 'left',
+      font: '15px arial, ms-segoe-ui',
+    };
     return (
       <div>
-        <button onClick={this.handleClick.bind(this)} className='ms-Button'>
+        <button style={buttonStyle} onClick={this.handleClick.bind(this)}>
           <a className='ms-Icon ms-Icon--replyAll' />
           {'   '}Reply All with Work Item
         </button>
-        <br/><br/>
       </div>
     );
   }
-  
+
   /**
    * Adds signature line to the HTML body
    * @returns { string } Full HTML body with signature line
@@ -47,7 +53,6 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
    * @private
    */
   private handleClick: () => void = () => {
-    console.log(this.addSignature(this.props.workItemHyperlink));
     Office.context.mailbox.item.displayReplyAllForm(this.addSignature(this.props.workItemHyperlink));
   }
 }

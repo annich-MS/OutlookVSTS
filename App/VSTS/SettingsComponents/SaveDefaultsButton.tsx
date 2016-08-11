@@ -66,19 +66,17 @@ export class SaveDefaultsButton extends React.Component<ISettingsProps, any> {
    */
   public render(): React.ReactElement<Provider> {
     let style_button: any = {
-      align: 'right',
       background: 'rgb(255,255,255)',
       border: 'rgb(255,255,255)',
       color: 'rgb(0,122,204)',
+      float: 'left',
       font: '15px arial, ms-segoe-ui',
-      textalign: 'right',
     };
-
     return (
       <div>
-          <button className = 'ms-Button' style = {style_button} onClick = {this.saveDefaults.bind(this)}>
-            <span className= 'ms-Icon ms-Icon--save'> </span>
-            <span font-family= 'Arial Black, Gadget, sans-serif'> Save and continue </span>
+          <button style={style_button} onClick={this.saveDefaults.bind(this)}>
+            <span className='ms-Icon ms-Icon--save'> </span>
+            <span font-family='Arial Black, Gadget, sans-serif'> Save and continue </span>
           </button>
       </div>
     );

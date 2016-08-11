@@ -23,14 +23,20 @@ export class CopyButton extends React.Component<ICopyButtonProps, {}> {
    * @returns { React.ReactElement } ReactHTML div 
    */
   public render(): React.ReactElement<{}> {
+    let buttonStyle: any = {
+      background: 'rgb(255,255,255)',
+      border: 'rgb(255,255,255)',
+      color: 'rgb(0,0,0)',
+      float: 'left',
+      font: '15px arial, ms-segoe-ui',
+    };
     document.addEventListener('copy', this.setClipboardData);
     return (
       <div>
-        <button className='ms-Button' onClick={this.handleClick}>
+        <button style={buttonStyle} onClick={this.handleClick}>
           <a className='ms-Icon ms-Icon--copy'/>
           {'   '}Copy to Clipboard
         </button>
-        <br/><br/>
       </div>
     );
   }

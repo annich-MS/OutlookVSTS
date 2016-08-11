@@ -46,7 +46,7 @@ export interface IAccountSettingsAction {
  * @returns {IAccountSettingsAction}
  */
 export function updateAccountSettingsAction(accountNew: string, accounts: ISettingsInfo[]): IAccountSettingsAction {
-  console.log('updated accounts'+accountNew);
+  console.log('updated accounts' + accountNew);
   return {
         account: accountNew,
         accountList: accounts,
