@@ -47,10 +47,10 @@ export class QuickActions extends React.Component<IQuickActionProps, {}> {
       <label>
         <a target='_blank'
           href={this.props.workItem.VSTShtmlLink}
-          className='ms-font-2x ms-fontWeight-light ms-fontColor-black'>
+          className='15px arial, ms-segoe-ui'>
           {this.props.workItem.workItemType} {this.props.workItem.id}
         </a>
-        <a className='ms-font-2x ms-fontWeight-light ms-fontColor-black'>: {this.props.workItem.title}</a>
+        <a className='15px arial, ms-segoe-ui'>: {this.props.workItem.title}</a>
       </label>);
   }
 
@@ -59,13 +59,18 @@ export class QuickActions extends React.Component<IQuickActionProps, {}> {
    * @returns { React.ReactElement } ReactHTML div
    */
   public render(): React.ReactElement<Provider> {
+    let headerStyle: any = {
+      font: '16px arial, ms-segoe-ui',
+      'padding-bottom': '20px',
+    };
     let htmlString: string = this.buildItemHyperlink();
     return(
       <div>
-        <h1 className='ms-font-1x ms-fontWeight-light ms-fontColor-black'>Work item successfully created!</h1>
+        <div style={headerStyle}>Work item successfully created!</div>
         <ItemHyperlink workItemHyperlink={htmlString}/>
-        <h1 className='ms-font-1x ms-fontWeight-light ms-fontColor-black'>Quick Actions:</h1>
+        <div style={headerStyle}>Quick Actions:</div>
         <ReplyAllButton workItemHyperlink={htmlString}/>
+        <br/>
         <CopyButton workItemHyperlink={htmlString}/>
       </div>
     );

@@ -1,7 +1,7 @@
 /// <reference path="../../../office.d.ts" />
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import {updateTeamSettingsAction, ISettingsInfo} from '../../Redux/LoginActions';
+import {updateTeamSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
 import {Rest, Team } from '../../RestHelpers/rest';
 require('react-select/dist/react-select.css');
 let Select: any = require('react-select');
@@ -155,7 +155,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
       if (defaultTeam !== undefined && defaultTeam !== '') {
         selectedTeam = defaultTeam;
         console.log('setting default project:' + defaultTeam);
-      } 
+      }
       if (selectedTeam === '' || (teamNamesOnly.indexOf(selectedTeam) === -1)) { // very first time user
         selectedTeam = teamNamesOnly[0];
         console.log('setting first project:' + selectedTeam);

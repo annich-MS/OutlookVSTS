@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-// import { changeSave, StageEnum } from '../Reducers/ActionsET';
 import { Rest, WorkItemInfo } from '../RestHelpers/rest';
 import { updateStage, Stage, updateSave } from '../Redux/WorkItemActions';
 import { IWorkItem } from '../Redux/WorkItemReducer';
@@ -39,7 +38,11 @@ export interface ISaveProps {
  * @class { Save }
  */
 function mapStateToProps(state: any): ISaveProps {
-  return { workItem: state.workItem, userProfile: state.userProfile, currentSettings: state.currentSettings };
+  return {
+    currentSettings: state.currentSettings,
+    userProfile: state.userProfile,
+    workItem: state.workItem,
+  };
 }
 
 @connect(mapStateToProps)
@@ -49,7 +52,6 @@ export class Save extends React.Component<ISaveProps, {}> {
    * @returns {void}
    */
   public handleSave(): void {
-
     let options: any = {
       account: this.props.currentSettings.settings.account,
       project: this.props.currentSettings.settings.project,
@@ -64,7 +66,7 @@ export class Save extends React.Component<ISaveProps, {}> {
     let user: string = this.props.userProfile.email;
     this.props.dispatch(updateStage(Stage.Saved));
     if (this.props.workItem.addAsAttachment) {
-      let request = '<?xml version="1.0" encoding="utf-8"?>' +
+      let request: any = '<?xml version="1.0" encoding="utf-8"?>' +
         '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"> <soap:Header>' +
         '<RequestServerVersion Version="Exchange2013" xmlns="http://schemas.microsoft.com/exchange/services/2006/types" soap:mustUnderstand="0" />' +
         '</soap:Header>' +
@@ -81,7 +83,6 @@ export class Save extends React.Component<ISaveProps, {}> {
       Office.context.mailbox.makeEwsRequestAsync(
         request,
         function (asyncResult: any, result: any): any {
-
           if (asyncResult.status === 'failed') {
             console.log('EWS request failed with error: ' + asyncResult.error.code + ' - ' + asyncResult.error.message);
             if (asyncResult.error.code === 9020) {
@@ -93,59 +94,54 @@ export class Save extends React.Component<ISaveProps, {}> {
           let response: any = $.parseXML(asyncResult.value);
           mimeString = $(response).find('MimeContent').text();
           Rest.getCurrentIteration(user, options, addAsAttachment, mimeString, workItemType, title,
-                                   description, (workItemInfo: WorkItemInfo) => {
+            description, (workItemInfo: WorkItemInfo) => {
               console.log('in callback for get curr iteration');
               dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
-              //dispatch(updateStage(Stage.Saved));
+              // ispatch(updateStage(Stage.Saved));
               dispatch(updatePageAction(PageVisibility.QuickActions));
             });
         });
     } else { // don't add as attachment
       Rest.getCurrentIteration(user, options, addAsAttachment, mimeString, workItemType, title,
-                               description, (workItemInfo: WorkItemInfo) => {
-          console.log('in callback for get curr iteration');
+        description, (workItemInfo: WorkItemInfo) => {
           dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
-          //dispatch(updateStage(Stage.Saved));
+          // dispatch(updateStage(Stage.Saved));
           dispatch(updatePageAction(PageVisibility.QuickActions));
         });
     }
   }
-
 
   /**
    * Renders the Save button and disables it on click
    */
   public render(): React.ReactElement<Provider> {
     /**
-     * Style for the live save button 
+     * Style for the save button 
      */
-    let save: any = {
-      align: 'center',
-      background: '#80ccff',
-      height: '35px',
-      width: '250px',
+    let styleEnabled: any = {
+      background: 'rgb(16,130,207)',
+      border: 'rgb(255,255,255)',
+      color: 'rgb(255,255,255)',
+      font: '15px arial, ms-segoe-ui',
+      margin: '10px',
+      'margin-left': '40%',
+    };
+    let styleDisabled: any = {
+      background: 'rgb(192,192,192)',
+      border: 'rgb(255,255,255)',
+      color: 'rgb(255,255,255)',
+      font: '15px arial, ms-segoe-ui',
+      margin: '10px',
+      'margin-left': '40%',
     };
 
-    /**
-     * Style for the disabled save button
-     */
-    let disabled: any = {
-      align: 'center',
-      background: '#d9d9d9',
-      height: '35px',
-      width: '250px',
-    };
-
-    /**
-     * Decides which style to use for the stage button based on the Stage
-     */
-    let currentStyle: any = this.props.workItem.stage === Stage.Saved ? disabled : save;
-    let text: any = this.props.workItem.stage === Stage.Saved ? 'Creating...' : 'Create Work Item';
+    let currentStyle: any = this.props.workItem.stage === Stage.Saved ? styleDisabled : styleEnabled;
+    let text: any = this.props.workItem.stage === Stage.Saved ? 'Creating...' : 'Create work item';
     return (
       <div>
         <br/>
         <button className = 'ms-Button' style= {currentStyle} disabled = {this.props.workItem.stage === Stage.Saved}
-          onClick = {this.handleSave.bind(this) } > {text}
+          onClick = {this.handleSave.bind(this)} > {text}
         </button>
       </div>
     );

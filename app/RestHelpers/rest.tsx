@@ -164,7 +164,7 @@ export class Rest {
                 user,
                 {
                     account: options.account, areaPath: areaPath, body: body, currentIteration: currentIteration,
-                    project: options.project, title: title, type: type
+                    project: options.project, title: title, type: type,
                 },
                 (output) => {
                     // console.log(output);

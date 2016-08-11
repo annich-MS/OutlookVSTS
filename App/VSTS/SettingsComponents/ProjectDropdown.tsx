@@ -1,7 +1,7 @@
 /// <reference path="../../../office.d.ts" />
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import {ISettingsInfo, updateProjectSettingsAction } from '../../Redux/LoginActions';
+import {ISettingsInfo, updateProjectSettingsAction } from '../../Redux/LogInActions';
 import {Rest, Project } from '../../RestHelpers/rest';
 
 // other import statements don't work properly
@@ -154,7 +154,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
       if (defaultProject !== undefined && defaultProject !== '') {
         selectedProject = defaultProject;
         console.log('setting default project:' + defaultProject);
-      } 
+      }
       if (selectedProject === '' || (projectNamesOnly.indexOf(selectedProject) === -1)) { // very first time user
         selectedProject = projectNamesOnly[0];
         console.log('setting first project:' + selectedProject);

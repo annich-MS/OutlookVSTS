@@ -6,7 +6,7 @@ import { Settings} from './SettingsComponents/Settings';
 import { Loading } from './SimpleComponents/Loading';
 import { Connecting } from './SimpleComponents/Connecting';
 import { Auth } from './authMM';
-import { updateUserProfileAction} from '../Redux/LoginActions';
+import { updateUserProfileAction} from '../Redux/LogInActions';
 import { PageVisibility, AuthState, updateAuthAction, IErrorStateAction, updatePageAction } from '../Redux/FlowActions';
 import { UserProfile } from '../RestHelpers/rest';
 import { CreateWorkItem } from './CreateWorkItem';
@@ -34,9 +34,9 @@ interface IVSTSProps {
 function mapStateToProps(state: any): IVSTSProps {
   // console.log('state:' + JSON.stringify(state));
   return ({
-      authState: state.controlState.authState,
-      error: state.controlState.error,
-      pageState: state.controlState.pageState,
+    authState: state.controlState.authState,
+    error: state.controlState.error,
+    pageState: state.controlState.pageState,
   });
 }
 
@@ -72,8 +72,8 @@ export class VSTS extends React.Component<IVSTSProps, any> {
     const name: string = Office.context.mailbox.userProfile.displayName;
     Auth.getAuthState(email, function (state: string): void {
       if (state === 'success') {
-        let id: string =  Office.context.roamingSettings.get('memberID');
-        if ( id ) {
+        let id: string = Office.context.roamingSettings.get('memberID');
+        if (id) {
           dispatch(updateUserProfileAction(name, email, Office.context.roamingSettings.get('member_ID')));
           if (Office.context.roamingSettings.get('default_team') !== undefined) {
             dispatch(updatePageAction(PageVisibility.CreateItem)); // todo - may cause issues here
@@ -98,32 +98,44 @@ export class VSTS extends React.Component<IVSTSProps, any> {
     });
   }
 
-   /**
-    * Renders the add-in. Contains logic to determine which component/page to display
-    */
+  /**
+   * Renders the add-in. Contains logic to determine which component/page to display
+   */
   public render(): React.ReactElement<Provider> {
+    let bodyStyle: any = {
+      padding: '2.25%',
+    };
+    let body: any;
     switch (this.props.authState) {
       case AuthState.None:
-        return (<Loading />);
+        body = (<Loading />);
+        break;
       case AuthState.NotAuthorized:
-        return (<LogInPage />);
+        body = (<LogInPage />);
+        break;
       case AuthState.Request:
-        return (<Connecting/>);
+        body = (<Connecting/>);
+        break;
       case AuthState.Authorized:
         {
-            switch (this.props.pageState) {
-              case PageVisibility.CreateItem:
-                return (<CreateWorkItem />);
-              case PageVisibility.QuickActions:
-                return (<QuickActions />);
-              case PageVisibility.Settings:
-              default:
-                return (<Settings />);
-            }
+          switch (this.props.pageState) {
+            case PageVisibility.CreateItem:
+              body = (<CreateWorkItem />);
+              // body = (<QuickActions />);
+              break;
+            case PageVisibility.QuickActions:
+              body = (<QuickActions />);
+              break;
+            case PageVisibility.Settings:
+            default:
+              body = (<Settings />);
+              break;
+          }
         }
+        break;
       default:
-        return (<LogInPage />);
+       body = (<LogInPage />);
     }
+    return(<div style={bodyStyle}> {body} </div>);
   }
 }
-

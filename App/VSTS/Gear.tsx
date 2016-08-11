@@ -24,15 +24,17 @@ export class Gear extends React.Component<IGearProps, {}> {
    * Renders the Gear Icon and the button underneath
    */
   public render(): React.ReactElement<Provider> {
-    let gear: any = {
-      align: 'right',
+    let style_button: any = {
+      background: 'rgb(255,255,255)',
+      border: 'rgb(255,255,255)',
+      color: 'rgb(0,0,0)',
+      float: 'right',
     };
-
     return (
       <div>
-        <div className='ms-font-1x ms-fontWeight-light ms-fontColor-black'> Create Work Item
-          <button className='ms-Button' style = {gear} id='gear' onClick = {this.handleGearClick}>
-          <span className='ms-Icon ms-Icon--gear'> </span>
+        <div className='16px arial, ms-segoe-ui'> Create a work item
+          <button className='ms-Button' style = {style_button} id='gear' onClick = {this.handleGearClick}>
+            <span className='ms-Icon ms-Icon--gear'> </span>
           </button>
         </div>
       </div>
