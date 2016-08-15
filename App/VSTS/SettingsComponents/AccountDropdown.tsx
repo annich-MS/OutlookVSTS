@@ -105,6 +105,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
         options={this.props.accountList}
         value={this.props.account}
         onChange={this.onAccountSelect.bind(this) }
+        autoBlur={true}
         searchable={false}
         />
     );
