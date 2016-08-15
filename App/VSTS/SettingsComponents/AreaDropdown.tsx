@@ -130,6 +130,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
         options={this.props.teams}
         value={this.props.team}
         onChange={this.onTeamSelect.bind(this) }
+        searchable={false}
         />
     );
   }

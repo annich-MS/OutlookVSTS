@@ -104,7 +104,9 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
         name='form-field-name'
         options={this.props.accountList}
         value={this.props.account}
-        onChange={this.onAccountSelect.bind(this) }/>
+        onChange={this.onAccountSelect.bind(this) }
+        searchable={false}
+        />
     );
   }
 

@@ -128,6 +128,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
         options={this.props.projects}
         value={this.props.project}
         onChange={this.onProjectSelect.bind(this) }
+        searchable={false}
         />
     );
   }
