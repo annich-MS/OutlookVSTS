@@ -8,7 +8,7 @@
   <Version>1.0</Version>
   <ProviderName>Apps Platform</ProviderName>
   <DefaultLocale>en-us</DefaultLocale>
-  <DisplayName DefaultValue="VSTS" />
+  <DisplayName DefaultValue="VS Team Services" />
   <Description DefaultValue="Creates bugs using content of message"/>
   <IconUrl DefaultValue="https://outlookvsts.azurewebsites.net/public/Images/VSTSLogo_small.png" />
   <Hosts>
@@ -87,7 +87,7 @@
       <bt:ShortStrings>
         <bt:String id="groupLabel" DefaultValue="VSTS"/>
         <!-- Read mode -->
-        <bt:String id="paneReadButtonLabel" DefaultValue="VSTS"/>
+        <bt:String id="paneReadButtonLabel" DefaultValue="VS Team Services"/>
         <bt:String id="paneReadSuperTipTitle" DefaultValue="Creates a bug using the contents of this email"/>
       </bt:ShortStrings>
       <bt:LongStrings>

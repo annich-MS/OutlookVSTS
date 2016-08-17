@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import {updateTeamSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
 import {Rest, Team } from '../../RestHelpers/rest';
+import { updateErrorAction, updatePopulatingAction} from '../../Redux/FlowActions';
 require('react-select/dist/react-select.css');
 let Select: any = require('react-select');
 
@@ -77,17 +78,6 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
     this.populateTeams = this.populateTeams.bind(this);
   }
 
-  /** 
-   * executed first time component renders, reads the default project
-   * @return {void}
-   */
-  public componentWillMount(): void {
-    /*let defaultTeam: string = Office.context.roamingSettings.get('default_team');
-    if (defaultTeam !== undefined) {
-      this.props.dispatch(updateTeamSettingsAction(defaultTeam, this.props.teams));
-    }*/
-  }
-
   /**
    * determines whether or not the component should re-render based on changes in state
    * @param {any} nextProps
@@ -101,9 +91,11 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
 
   public componentWillUpdate(nextProps: any, nextState: any): void {
     console.log('willcomponentupdate: team');
+    this.props.dispatch(updatePopulatingAction(true));
     if (this.props.project !== nextProps.project && nextProps.project !== '') {
       this.populateTeams(nextProps.account, nextProps.project);
     }
+    this.props.dispatch(updatePopulatingAction(false));
   }
   /**
    * Reaction to selection of team option from dropdown list
@@ -130,7 +122,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
         options={this.props.teams}
         value={this.props.team}
         onChange={this.onTeamSelect.bind(this) }
-        />
+        searchable={true}/>
     );
   }
 
@@ -161,6 +153,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
         console.log('setting first project:' + selectedTeam);
       }
       this.props.dispatch(updateTeamSettingsAction(selectedTeam, teamOptions));
+      this.props.dispatch(updatePopulatingAction(false));
     });
   }
 }

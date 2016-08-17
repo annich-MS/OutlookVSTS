@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import {ISettingsInfo, updateProjectSettingsAction } from '../../Redux/LogInActions';
 import {Rest, Project } from '../../RestHelpers/rest';
+import { updateErrorAction, updatePopulatingAction} from '../../Redux/FlowActions';
 
 // other import statements don't work properly
 require('react-select/dist/react-select.css');
@@ -79,10 +80,6 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    */
   public componentWillMount(): void {
     console.log('willcomponentmount');
-    /*let defaultProject: string = Office.context.roamingSettings.get('default_project');
-    if (defaultProject !== undefined) {
-      this.props.dispatch(updateProjectSettingsAction(defaultProject, this.props.projects));
-    }*/
   }
 
   /**
@@ -97,6 +94,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
   }
 
   public componentWillUpdate(nextProps: any, nextState: any): void {
+    this.props.dispatch(updatePopulatingAction(true));
     console.log('willcomponentupdate project');
     if (this.props.account !== nextProps.account && nextProps.account !== '') {
       this.populateProjects(nextProps.account);
@@ -116,6 +114,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
       project = option;
     }
     this.props.dispatch(updateProjectSettingsAction(project, this.props.projects));
+    this.props.dispatch(updatePopulatingAction(true));
   }
 
   /**
@@ -128,7 +127,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
         options={this.props.projects}
         value={this.props.project}
         onChange={this.onProjectSelect.bind(this) }
-        />
+        searchable={true}/>
     );
   }
 

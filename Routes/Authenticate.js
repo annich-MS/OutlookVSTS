@@ -149,7 +149,8 @@ router.authorize = function (req, res) {
     state: req.query.user
   };
   var authBaseUrl = router.credentials.auth_uri;
-  var url = authBaseUrl + '?' + querystring.stringify(authParams).toString();
+  var url = authBaseUrl + '?' + querystring.stringify(authParams).toString() + '&forceAAD=true';
+  console.log('authurl: '+url);
   res.redirect(url);
 
 };

@@ -76,7 +76,7 @@ export class VSTS extends React.Component<IVSTSProps, any> {
         if (id) {
           dispatch(updateUserProfileAction(name, email, Office.context.roamingSettings.get('member_ID')));
           if (Office.context.roamingSettings.get('default_team') !== undefined) {
-            dispatch(updatePageAction(PageVisibility.CreateItem)); // todo - may cause issues here
+            dispatch(updatePageAction(PageVisibility.CreateItem));
           }
           dispatch(updateAuthAction(AuthState.Authorized));
         } else {
@@ -89,13 +89,22 @@ export class VSTS extends React.Component<IVSTSProps, any> {
           });
 
           if (Office.context.roamingSettings.get('default_team') !== undefined) {
-            dispatch(updatePageAction(PageVisibility.CreateItem)); // todo - may cause issues here
+            dispatch(updatePageAction(PageVisibility.CreateItem));
           }
         }
       } else {
         dispatch(updateAuthAction(AuthState.NotAuthorized));
+        //this.cleanRoamingSettings();
       }
     });
+  }
+
+  public cleanRoamingSettings(): void {
+      Office.context.roamingSettings.set('member_ID', undefined);
+      Office.context.roamingSettings.set('default_team', undefined);
+      Office.context.roamingSettings.set('default_project', undefined);
+      Office.context.roamingSettings.set('default_account', undefined);
+      Office.context.roamingSettings.saveAsync();
   }
 
   /**

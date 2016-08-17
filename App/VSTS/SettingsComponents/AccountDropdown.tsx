@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { updateAccountSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
+import { updateErrorAction, updatePopulatingAction} from '../../Redux/FlowActions';
 import {Rest, Account} from '../../RestHelpers/rest';
 require('react-select/dist/react-select.css');
 let Select: any = require('react-select');
@@ -69,12 +70,11 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * @returns {void}
    */
   public componentWillMount(): void {
-    // let defaultAccount: string = Office.context.roamingSettings.get('default_account');
-    // console.log('comp will mount'+defaultAccount);
-    // if (defaultAccount !== undefined) {
-    //   this.props.dispatch(updateAccountSettingsAction(defaultAccount, this.props.accountList));
-    // }
     this.populateAccounts();
+  }
+
+  public componentWillUpdate(): void {
+    this.props.dispatch(updatePopulatingAction(true));
   }
 
   /**
@@ -99,12 +99,14 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * Renders the react-select dropdown component
    */
   public render(): React.ReactElement<Provider> {
+    this.props.dispatch(updatePopulatingAction(false));
     return (
       <Select
         name='form-field-name'
         options={this.props.accountList}
         value={this.props.account}
-        onChange={this.onAccountSelect.bind(this) }/>
+        onChange={this.onAccountSelect.bind(this) }
+        searchable={true}/>
     );
   }
 
@@ -118,12 +120,15 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
     let accountNamesOnly: string[] = [];
     let selectedAccount: string = this.props.account;
     console.log('populating accounts' + this.props.email + this.props.memberId);
-    Rest.getAccountsNew(this.props.email, this.props.memberId, (accountList: Account[]) => {
+    Rest.getAccountsMemberID( /*'notanemail'*/this.props.email , /*'notanid'*/this.props.memberId, (accountList: Account[]) => {
+      if (accountList[0].id === 'Error') {
+        this.props.dispatch(updateErrorAction(true, accountList[0].name + accountList[0].uri));
+      }
+      else {
       accountList.forEach(acc => {
         accountOptions.push({ label: acc.name, value: acc.name });
         accountNamesOnly.push(acc.name);
       });
-      // console.log('AccountList: ' + JSON.stringify(accountList));
       let defaultAccount: string = Office.context.roamingSettings.get('default_account');
       if (defaultAccount !== undefined && defaultAccount !== '') {
         selectedAccount = defaultAccount;
@@ -135,6 +140,6 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
       }
       console.log('popaccounts' + defaultAccount);
       this.props.dispatch(updateAccountSettingsAction(selectedAccount, accountOptions));
-    });
+    }});
   }
 }

@@ -6,6 +6,7 @@ import {AccountDropdown } from './AccountDropdown';
 import {ProjectDropdown } from './ProjectDropdown';
 import {AreaDropdown } from './AreaDropdown';
 import {SaveDefaultsButton } from './SaveDefaultsButton';
+import { updatePopulatingAction} from '../../Redux/FlowActions';
 
 interface ISettingsProps {
   /**
@@ -44,6 +45,7 @@ export class Settings extends React.Component<ISettingsProps, any> {
   public render(): React.ReactElement<Provider> {
     let style_text: any = {
       color: 'rgb(0,0,0)',
+      'margin-top': '25px',
       font: '15px arial, ms-segoe-ui',
     };
 
