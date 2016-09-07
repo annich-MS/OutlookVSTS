@@ -91,6 +91,17 @@ export class Rest {
         });
     }
 
+    public static getAccounts(user: string, memberId: string, callback: IAccountsCallback): void {
+        this.makeRestCallWithArgs('accounts', user, { memberId: memberId }, (output) => {
+            let parsed: any = JSON.parse(output);
+            this.accounts = [];
+            parsed.value.forEach(account => {
+                this.accounts.push(new Account(account));
+            });
+            callback(this.accounts);
+        });
+    }
+
     public static getProjects(user: string, accountName: string, callback: IProjectsCallback): void {
         this.makeRestCallWithArgs('projects', user, { account: accountName }, (output) => {
             let parsed: any = JSON.parse(output);
@@ -133,136 +144,50 @@ export class Rest {
         });
     }
 
-    public static createBug(user: string, options: any, title: string, body: string, callback: IRestCallback): void {
-        this.createBugCall(user, options, title, body, callback); // can you go to the working folder? we need to npn or w.e.e the buffedul
-    }
-
-    public static createBugCall(user: string, options: any, title: string, body: string, callback: IRestCallback): void {
-        this.getTeamAreaPath(user, options.account, options.project, options.team, (areaPath) => {
-            this.makeRestCallWithArgs(
-                'newBug',
-                user,
-                { account: options.account, areaPath: areaPath, body: body, project: options.project, title: title },
-                (output) => {
-                    console.log(output);
-                    callback(output);
-                });
-        });
-    }
-
-    public static createWorkItem(user: string, options: any, addAsAttachment: boolean, MIMEstring: string, currentIteration: string,
-                                 type: string, title: string, body: string, callback: IRestCallback): void {
-        this.createWorkItemCall(user, options, addAsAttachment, MIMEstring, currentIteration, type, title, body, callback);
-    }
-
-    public static createWorkItemCall(user: string, options: any, addAsAttachment: boolean, MIMEstring: string, currentIteration: string,
-                                     type: string, title: string, body: string, callback: IRestCallback): void {
-        this.getTeamAreaPath(user, options.account, options.project, options.teamName, (areaPath) => {
-            // console.log(areaPath);
-            this.makeRestCallWithArgs(
-                'newWorkItem',
-                user,
-                {
-                    account: options.account, areaPath: areaPath, body: body, currentIteration: currentIteration,
-                    project: options.project, title: title, type: type,
-                },
-                (output) => {
-                    // console.log(output);
-                    if (addAsAttachment) {
-                        Rest.uploadAttachment(user, options, MIMEstring, JSON.parse(output).id,
-                            type, title, body, (final) => console.log(final));
-                    }
-                    callback(output);
-                });
-        });
-    }
-
-    public static uploadAttachment(user: string, options: any, MIMEstring: string,
-                                   id: string, type: string, title: string, body: string, callback: IRestCallback): void {
-        Rest.makeRestPostCallWithArgs(
-            'uploadAttachment',
-            user,
-            MIMEstring,
-            { account: options.account, title: title},
-            (output) => {
-                console.log(output);
-                Rest.attachAttachment(user, options, JSON.parse(output).url, id,
-                    type, title, body, (final) => console.log(final));
-            },
-            'text/plain');
-    }
-
-    public static attachAttachment(user: string, options: any, attachmenturl: string,
-                                   id: string, type: string, title: string, body: string, callback: IRestCallback): void {
-        Rest.makeRestCallWithArgs(
-            'attachAttachment',
-            user,
-            { account: options.account, attachmenturl: attachmenturl, id: id, title: title },
-            (output) => {
-                console.log(output);
-            });
-    }
-
-
-    public static getCurrentIteration(user: string, options: any, addAsAttachment: boolean, MIMEstring: string,
-                                      type: string, title: string, body: string, callback: IWorkItemCallback): void {
-        console.log('in iteration' + MIMEstring);
-        this.getCurrentIterationCall(user, options, addAsAttachment, MIMEstring, type, title, body, callback);
-    }
-
-    public static getCurrentIterationCall(user: string, options: any, addAsAttachment: boolean, MIMEstring: string,
-                                          type: string, title: string, body: string, callback: IWorkItemCallback): void {
-        this.getTeams(user, options.project, options.account, (teams: Team[]) => {
+    public static getCurrentIteration(user: string, teamName: string, project: string, account: string, callback: IRestCallback): void {
+        
+        this.getTeams(user, project, account, (teams: Team[]) => {
             let guid: string;
             teams.forEach(team => {
-                if (team.name === options.teamName) {
+                if (team.name === teamName) {
                     guid = team.id;
                 }
             });
-            this.makeRestCallWithArgs(
-                'getCurrentIteration',
-                user,
-                { account: options.account, project: options.project, team: guid },
-                (output) => {
-                    console.log(options);
-                    Rest.createWorkItem(user, options, addAsAttachment, MIMEstring, JSON.parse(output).value[0].path,
-                                        type, title, body,
-                                        (newOutput) => {
-                                            this.workItemInfo = new WorkItemInfo(JSON.parse(newOutput));
-                                            callback(this.workItemInfo);
-                                        });
-                });
+            this.makeRestCallWithArgs( 'getCurrentIteration', user, { account: account, project: project, team: guid }, (output) => {
+                    callback(JSON.parse(output).value[0].path);
+            });
         });
     }
 
-    public static getAccountsNew(email: string, memberId: string, callback: IAccountsCallback): void {
-        this.makeRestCallWithArgs('accounts', email, { memberId: memberId }, (output) => {
-            console.log('getaccountsnew' + output);
-            let parsed: any = JSON.parse(output);
-            this.accounts = [];
-            parsed.value.forEach(account => {
-                this.accounts.push(new Account(account));
+    public static getMessage(user: string, ewsId: string, url: string, token: string, callback: IRestCallback ): void {
+        Rest.makeRestCallWithArgs('getMessage', user, { ewsId:ewsId, url:url, token:token }, callback);
+    }
 
-            });
-            callback(this.accounts); // return special array for error
+    public static uploadAttachment(user: string, data: string, account: string, filename: string, callback: IRestCallback): void {
+        Rest.makePostRestCallWithArgs('uploadAttachment', user, { account: account, filename: filename}, data, (output) =>
+        { 
+            var result = JSON.parse(output);
+            callback(result.url);
         });
     }
 
-    public static getAccounts(user: string, callback: IAccountsCallback): void {
-        if (this.userProfile) { // if user profile already exists
-            this.makeRestCallWithArgs('accounts', user, { memberId: this.userProfile.id }, (output) => {
-                let parsed: any = JSON.parse(output);
-                this.accounts = [];
-                parsed.value.forEach(account => {
-                    this.accounts.push(new Account(account));
+    public static attachAttachment(user: string, account: any, attachmenturl: string, id: string, callback: IRestCallback): void {
+        Rest.makeRestCallWithArgs('attachAttachment', user, { account: account, attachmenturl: attachmenturl, id: id }, callback);
+    }
+
+    public static createTask(user:string, options: any, account:string, project:string, team:string, callback: IWorkItemCallback): void {
+        this.getTeamAreaPath(user, account, project, team, (areapath) => {
+            options.areapath = areapath;
+            options.account = account;
+            options.project = project;
+            options.team = team;
+            this.getCurrentIteration(user, team, project, account, (iteration) => {
+                options.iteration = iteration;
+                this.makeRestCallWithArgs('createTask', user, options, (output) => {
+                    callback(new WorkItemInfo(JSON.parse(output)));
                 });
-                callback(this.accounts);
             });
-        } else { // get user profile and come back
-            this.getUserProfile(user, (profile: UserProfile) => {
-                this.getAccounts(user, callback);
-            });
-        }
+        });
     }
 
     private static makeRestCall(name: string, user: string, callback: IRestCallback): void {
@@ -271,20 +196,19 @@ export class Rest {
 
     private static makeRestCallWithArgs(name: string, user: string, args: any, callback: IRestCallback): void {
         const path: string = './rest/' + name + '?user=' + user + '&' + $.param(args);
-        console.log('got to restcallwithargs' + path);
         $.get(path, callback);
     }
 
-    private static makeRestPostCallWithArgs(
-        name: string, user: string, body: Object, args: any, callback: IRestCallback, contentType: string = 'application/json'): void {
-        const path: string = './rest/' + name + '?user=' + user + '&' + $.param(args);
-
-        $.ajax({
-            contentType: contentType,
-            data: body,
-            processData: false,
-            type: 'POST',
-            url: path,
-        }).done(callback);
+    private static makePostRestCallWithArgs(name: string, user: string, args: any, body: string, callback: IRestCallback): void {
+        let options = {
+             url: "/rest/" + name + '?user=' + user + '&' + $.param(args),
+             method: "POST",
+             headers: {
+                 "Content-Type": "text/plain"
+             },
+             data: body
+        };
+        $.ajax(options).done(callback);
     }
+
 }
