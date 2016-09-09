@@ -57,12 +57,11 @@ public handleChangeAddAsAttachment (event: any): void {
   if (event.target.checked === true) {
     // console.log(this.props.addAsAttachment);
     this.props.dispatch(updateDescription('For more details, please refer to the attached mail thread. ' + this.props.description));
-    this.props.dispatch(updateAddAsAttachment(true));
+    this.props.dispatch(updateAddAsAttachment(false));
   } else {
-    // console.log('false');
     this.props.dispatch(updateDescription(
     this.props.description.replace('For more details, please refer to the attached mail thread. ', '')));
-    this.props.dispatch(updateAddAsAttachment(false));
+    this.props.dispatch(updateAddAsAttachment(true));
   }
 }
   /**
