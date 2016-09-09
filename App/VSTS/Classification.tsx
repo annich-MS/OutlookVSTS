@@ -32,19 +32,6 @@ export class Classification extends React.Component<{}, {}> {
       <div>
         <div className='ms-font-1x  ms-fontWeight-semibold ms-fontColor-black'> CLASSIFICATION </div>
         <div>
-          {/*<table>
-            <tr>
-              <td style={titleColumnStyle}>Account: </td> <td style={dataColumnStyle}> <AccountDropdown /> </td>
-            </tr>
-            <tr>
-              <td style={titleColumnStyle}>Project: </td> <td style={dataColumnStyle}> <ProjectDropdown /> </td>
-            </tr>
-            <tr>
-              <td style={titleColumnStyle}>Area: </td> <td style={dataColumnStyle}> <AreaDropdown /> </td>
-            </tr>
-          </table>*/}
-        </div>
-        <div>
           <div style={rowColumnStyle}>
             <div style={titleColumnStyle}>Account </div> <div style={dataColumnStyle}>  <AccountDropdown /> </div>
           </div>

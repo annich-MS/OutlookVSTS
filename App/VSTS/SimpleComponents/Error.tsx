@@ -37,7 +37,11 @@ export class Error extends React.Component<IErrorProps, {}> {
   public render(): React.ReactElement<Provider> {
     if (this.props.isVisible === true) {
       console.log('error');
-      return (<div> {this.props.message} </div>);
+
+      return (<div color='rgb(255,0,0)'>
+                <span className='ms-Icon ms-Icon--infoCircle'> </span>
+                <span font-family='Arial Black, Gadget, sans-serif'> {this.props.message} </span>
+              </div>);
     }else {
       return (<div/>);
     }

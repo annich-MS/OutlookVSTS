@@ -24,6 +24,11 @@ interface ISettingsProps {
    * @type {string}
    */
   team?: string;
+  /**
+   * states whether or not any of the dropdowns are currently repopulating
+   * @type {string}
+   */
+  isPopulating?: boolean;
 }
 
 /**
@@ -33,6 +38,7 @@ interface ISettingsProps {
 function mapStateToProps(state: any): ISettingsProps {
   return({
       account: state.currentSettings.settings.account,
+      isPopulating: state.controlState.arePopulating,
       project: state.currentSettings.settings.project,
       team: state.currentSettings.settings.team,
     });
@@ -65,16 +71,27 @@ export class SaveDefaultsButton extends React.Component<ISettingsProps, any> {
    * Renders the area path dropdowns and save button
    */
   public render(): React.ReactElement<Provider> {
-    let style_button: any = {
+    let styleDisabled: any = {
+      background: 'rgb(255,255,255)',
+      border: 'rgb(255,255,255)',
+      color: 'rgb(130,130,130)',
+      float: 'left',
+      font: '15px arial, ms-segoe-ui',
+    };
+
+    let styleEnabled: any = {
       background: 'rgb(255,255,255)',
       border: 'rgb(255,255,255)',
       color: 'rgb(0,122,204)',
       float: 'left',
       font: '15px arial, ms-segoe-ui',
     };
+
+    let currentStyle: any = this.props.isPopulating ? styleDisabled : styleEnabled;
+
     return (
       <div>
-          <button style={style_button} onClick={this.saveDefaults.bind(this)}>
+          <button style={currentStyle} onClick={this.saveDefaults.bind(this)} disabled = {this.props.isPopulating}>
             <span className='ms-Icon ms-Icon--save'> </span>
             <span font-family='Arial Black, Gadget, sans-serif'> Save and continue </span>
           </button>

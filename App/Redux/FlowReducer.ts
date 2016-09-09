@@ -6,6 +6,7 @@ import {AuthState, PageVisibility} from './FlowActions';
  * @interface IControlStateReducer
  */
 export interface IControlStateReducer {
+  arePopulating: boolean;
   authState: AuthState;
   pageState: PageVisibility;
   error: IErrorStateReducer;
@@ -25,6 +26,7 @@ export interface IErrorStateReducer {
  * @type {IControlStateReducer}
  */
 const initialControlState: IControlStateReducer = {
+  arePopulating: true,
   authState : AuthState.None,
   error: {
     isVisible: false,
@@ -39,6 +41,7 @@ const initialControlState: IControlStateReducer = {
  * @returns {IControlStateReducer}
  */
 export function updateControlStateReducer(state: IControlStateReducer = initialControlState, action: any): IControlStateReducer {
+  console.log("populating?: "+state.arePopulating);
   switch (action.type) {
     case 'ErrorState':
       return Object.assign({}, state, { isVisible: action.isVisible, message: action.message});
@@ -46,6 +49,8 @@ export function updateControlStateReducer(state: IControlStateReducer = initialC
       return Object.assign({}, state, { authState: action.authState});
     case 'PAGE_STATE':
        return Object.assign({}, state, { pageState: action.pageState});
+    case 'DropdownState':
+       return Object.assign({}, state, { arePopulating: action.arePopulating});
     default:
       return state;
   }

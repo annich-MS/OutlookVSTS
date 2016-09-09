@@ -3,7 +3,7 @@ import { Provider, connect } from 'react-redux';
 import { Rest, WorkItemInfo } from '../RestHelpers/rest';
 import { updateStage, Stage, updateSave } from '../Redux/WorkItemActions';
 import { IWorkItem } from '../Redux/WorkItemReducer';
-import { updatePageAction, PageVisibility } from '../Redux/FlowActions';
+import { updatePageAction, PageVisibility, updateErrorAction } from '../Redux/FlowActions';
 import { IUserProfileReducer, ISettingsAndListsReducer } from '../Redux/LogInReducer';
 
 /**
@@ -31,6 +31,11 @@ export interface ISaveProps {
    * @type {ISettingsAndListsReducer}
    */
   currentSettings?: ISettingsAndListsReducer;
+  /**
+   * states whether or not any of the dropdowns are currently repopulating
+   * @type {string}
+   */
+  isPopulating?: boolean;
 }
 
 /**
@@ -40,6 +45,7 @@ export interface ISaveProps {
 function mapStateToProps(state: any): ISaveProps {
   return {
     currentSettings: state.currentSettings,
+    isPopulating: state.controlState.arePopulating,
     userProfile: state.userProfile,
     workItem: state.workItem,
   };
@@ -84,17 +90,18 @@ export class Save extends React.Component<ISaveProps, {}> {
         request,
         function (asyncResult: any, result: any): any {
           if (asyncResult.status === 'failed') {
-            console.log('EWS request failed with error: ' + asyncResult.error.code + ' - ' + asyncResult.error.message);
+            let message: string = 'EWS request failed with error: ' + asyncResult.error.code + ' - ' + asyncResult.error.message;
             if (asyncResult.error.code === 9020) {
-              alert('Your file exceeds 1 MB size limit. Please modify your EWS request.');
+              message = 'This email exceeds 1 MB size limit, please remove as attachment.';
             }
+            this.props.dispatch(updateErrorAction(true, message));
             return;
           }
 
           let response: any = $.parseXML(asyncResult.value);
           mimeString = $(response).find('MimeContent').text();
           Rest.getCurrentIteration(user, options, addAsAttachment, mimeString, workItemType, title,
-            description, (workItemInfo: WorkItemInfo) => {
+                                   description, (workItemInfo: WorkItemInfo) => {
               console.log('in callback for get curr iteration');
               dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
               // ispatch(updateStage(Stage.Saved));
@@ -103,7 +110,7 @@ export class Save extends React.Component<ISaveProps, {}> {
         });
     } else { // don't add as attachment
       Rest.getCurrentIteration(user, options, addAsAttachment, mimeString, workItemType, title,
-        description, (workItemInfo: WorkItemInfo) => {
+                               description, (workItemInfo: WorkItemInfo) => {
           dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
           // dispatch(updateStage(Stage.Saved));
           dispatch(updatePageAction(PageVisibility.QuickActions));
@@ -135,12 +142,13 @@ export class Save extends React.Component<ISaveProps, {}> {
       'margin-left': '25%',
     };
 
-    let currentStyle: any = this.props.workItem.stage === Stage.Saved ? styleDisabled : styleEnabled;
+    let currentStyle: any = (this.props.workItem.stage === Stage.Saved || this.props.isPopulating) ? styleDisabled : styleEnabled;
+    let isDisabled: boolean = (this.props.workItem.stage === Stage.Saved || this.props.isPopulating);
     let text: any = this.props.workItem.stage === Stage.Saved ? 'Creating...' : 'Create work item';
     return (
       <div>
         <br/>
-        <button className = 'ms-Button' style= {currentStyle} disabled = {this.props.workItem.stage === Stage.Saved}
+        <button className = 'ms-Button' style= {currentStyle} disabled = {isDisabled}
           onClick = {this.handleSave.bind(this)} > {text}
         </button>
       </div>
