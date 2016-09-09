@@ -38,7 +38,6 @@ const store: Store = configureStore();
 class Main extends React.Component<{}, {}> {
 
   public getRoute(): string {
-    this.addIncludes();
     let url: string = document.URL;
     let strings: string[] = url.split('/');
     let output: string = strings[3];
@@ -49,6 +48,7 @@ class Main extends React.Component<{}, {}> {
   }
 
   public render(): React.ReactElement<Provider> {
+    this.addPolyfill();
     console.log('starting');
     console.log(store.getState());
     const route: string = this.getRoute();
@@ -63,7 +63,7 @@ class Main extends React.Component<{}, {}> {
         return(<div>Route: '{route}' is not a valid route!</div>);
     }
   }
-  private addIncludes(): void {
+  private addPolyfill(): void {
     if (!String.prototype.includes) {
       String.prototype.includes = function(): boolean {
         'use strict';

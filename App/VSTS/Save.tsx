@@ -52,64 +52,49 @@ export class Save extends React.Component<ISaveProps, {}> {
    * @returns {void}
    */
   public handleSave(): void {
-    let options: any = {
-      account: this.props.currentSettings.settings.account,
-      project: this.props.currentSettings.settings.project,
-      teamName: this.props.currentSettings.settings.team,
-    };
-    let mimeString: string = '';
-    let addAsAttachment: boolean = this.props.workItem.addAsAttachment;
-    let workItemType: string = this.props.workItem.workItemType;
-    let title: string = this.props.workItem.title;
-    let description: string = this.props.workItem.description;
-    let dispatch: any = this.props.dispatch;
-    let user: string = this.props.userProfile.email;
     this.props.dispatch(updateStage(Stage.Saved));
+    console.log(this.props.workItem.addAsAttachment);
     if (this.props.workItem.addAsAttachment) {
-      let request: any = '<?xml version="1.0" encoding="utf-8"?>' +
-        '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"> <soap:Header>' +
-        '<RequestServerVersion Version="Exchange2013" xmlns="http://schemas.microsoft.com/exchange/services/2006/types" soap:mustUnderstand="0" />' +
-        '</soap:Header>' +
-        '<soap:Body>' +
-        '<GetItem xmlns="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"> <ItemShape>' +
-        '<t:BaseShape>IdOnly</t:BaseShape> <t:IncludeMimeContent>true</t:IncludeMimeContent>' +
-        '</ItemShape>' +
-        '<ItemIds>' +
-        '<t:ItemId Id="' + Office.context.mailbox.item.itemId + '"/>' +
-        '</ItemIds>' +
-        '</GetItem>' +
-        '</soap:Body>' +
-        '</soap:Envelope>';
-      Office.context.mailbox.makeEwsRequestAsync(
-        request,
-        function (asyncResult: any, result: any): any {
-          if (asyncResult.status === 'failed') {
-            console.log('EWS request failed with error: ' + asyncResult.error.code + ' - ' + asyncResult.error.message);
-            if (asyncResult.error.code === 9020) {
-              alert('Your file exceeds 1 MB size limit. Please modify your EWS request.');
-            }
-            return;
-          }
-
-          let response: any = $.parseXML(asyncResult.value);
-          mimeString = $(response).find('MimeContent').text();
-          Rest.getCurrentIteration(user, options, addAsAttachment, mimeString, workItemType, title,
-            description, (workItemInfo: WorkItemInfo) => {
-              console.log('in callback for get curr iteration');
-              dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
-              // ispatch(updateStage(Stage.Saved));
-              dispatch(updatePageAction(PageVisibility.QuickActions));
-            });
-        });
-    } else { // don't add as attachment
-      Rest.getCurrentIteration(user, options, addAsAttachment, mimeString, workItemType, title,
-        description, (workItemInfo: WorkItemInfo) => {
-          dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
-          // dispatch(updateStage(Stage.Saved));
-          dispatch(updatePageAction(PageVisibility.QuickActions));
-        });
+      Office.context.mailbox.getCallbackTokenAsync((result) => { this.uploadAttachment(result.value, (result) => {this.createWorkItem(result)})});
+    } else {
+      this.createWorkItem(null);
     }
   }
+
+  public uploadAttachment(token, callback): void {
+    let email: string = this.props.userProfile.email;
+    let id: string = Office.context.mailbox.item.itemId;
+    let url: string = Office.context.mailbox.ewsUrl;
+    let account: string = this.props.currentSettings.settings.account;
+
+    Rest.getMessage(email, id, url, token, (data) => {
+      Rest.uploadAttachment(email, data, account, Office.context.mailbox.item.normalizedSubject, callback);
+    });
+ 
+  }
+  
+  public createWorkItem(attachmentUrl: string): void {
+    let options: any = {
+      attachment: attachmentUrl,
+      type: this.props.workItem.workItemType,
+      title: this.props.workItem.title,
+      body: this.props.workItem.description,
+
+    };
+    let dispatch: any = this.props.dispatch;
+
+    let user: string = this.props.userProfile.email;
+    let account: string = this.props.currentSettings.settings.account;
+    let project: string = this.props.currentSettings.settings.project;
+    let teamName: string = this.props.currentSettings.settings.team;
+
+    Rest.createTask(user, options, account, project, teamName, (workItemInfo: WorkItemInfo) => {
+      dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
+      // dispatch(updateStage(Stage.Saved));
+      dispatch(updatePageAction(PageVisibility.QuickActions));
+    });
+  }
+
 
   /**
    * Renders the Save button and disables it on click

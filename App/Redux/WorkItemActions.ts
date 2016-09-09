@@ -198,7 +198,7 @@ export function updateDescription(description: string): IDescriptionAction {
  */
 export function updateAddAsAttachment(addAsAttachment: boolean): IAddAsAttachmentAction {
   return {
-    addAsAttachment: !addAsAttachment,
+    addAsAttachment: addAsAttachment,
     type: ACTION.ADDASATTACHMENT,
   };
 }
