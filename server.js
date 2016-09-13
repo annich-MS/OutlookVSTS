@@ -13,9 +13,10 @@ var port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());         // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-  extended: true
+  extended: true,
+  limit: '50mb'
 }));
-app.use(bodyParser.text()); // support text bodies
+app.use(bodyParser.text({limit: '50mb'})); // support text bodies
 
 app.use(require('webpack-dev-middleware')(compiler, {
   noInfo: true,

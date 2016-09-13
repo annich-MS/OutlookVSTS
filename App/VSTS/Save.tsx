@@ -68,7 +68,7 @@ export class Save extends React.Component<ISaveProps, {}> {
     let account: string = this.props.currentSettings.settings.account;
 
     Rest.getMessage(email, id, url, token, (data) => {
-      Rest.uploadAttachment(email, data, account, Office.context.mailbox.item.normalizedSubject, callback);
+      Rest.uploadAttachment(email, data, account, Office.context.mailbox.item.normalizedSubject + ".eml", callback);
     });
  
   }

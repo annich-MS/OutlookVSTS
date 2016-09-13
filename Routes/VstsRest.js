@@ -7,8 +7,8 @@ var DEBUG = require('../debug');
 var Authenticate = require('./Authenticate');
 var Buffer = require('buffer').Buffer;
 var request = require('request-promise');
-var xmlStream = require('xml-stream');
 var stream = require('string-to-stream');
+var flow = require('xml-flow');
 
 var router = express.Router({ mergeParams: true });
 module.exports = router;
@@ -278,8 +278,8 @@ function downloadMessageFromEWS(messageId, ewsUrl, token, callback) {
 }
 
 function extractMessageId(response, callback) {
-  var parser = new xmlStream(stream(response));
-  parser.on('endElement: t:MimeContent', (element) => {
+  var parser = new flow(stream(response));
+  parser.on('tag:t:mimecontent', (element) => {
     callback(element["$text"]);
   });
 }
