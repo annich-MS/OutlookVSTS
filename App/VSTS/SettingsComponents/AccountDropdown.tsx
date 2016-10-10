@@ -122,6 +122,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
     let selectedAccount: string = this.props.account;
     console.log('populating accounts' + this.props.email + this.props.memberId);
     Rest.getAccounts(this.props.email, this.props.memberId, (accountList: Account[]) => {
+      accountList = accountList.sort(Account.compare);
       accountList.forEach(acc => {
         accountOptions.push({ label: acc.name, value: acc.name });
         accountNamesOnly.push(acc.name);

@@ -21,6 +21,10 @@ export class Project {
     public url: string;
     public state: string;
 
+    public static compare(a: Project, b: Project): number {
+        return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
+    }
+
     public constructor(blob: any) {
         this.id = blob.id;
         this.name = blob.name;
@@ -36,6 +40,10 @@ export class Account {
     public name: string;
     public uri: string;
 
+    public static compare(a: Account, b: Account): number {
+        return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
+    }
+
     public constructor(blob: any) {
         this.id = blob.accountId;
         this.name = blob.accountName;
@@ -46,6 +54,10 @@ export class Account {
 export class Team {
     public id: string;
     public name: string;
+
+    public static compare(a: Team, b: Team): number {
+        return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
+    }
 
     public constructor(blob: any) {
         this.id = blob.id;
@@ -145,7 +157,7 @@ export class Rest {
     }
 
     public static getCurrentIteration(user: string, teamName: string, project: string, account: string, callback: IRestCallback): void {
-        
+
         this.getTeams(user, project, account, (teams: Team[]) => {
             let guid: string;
             teams.forEach(team => {

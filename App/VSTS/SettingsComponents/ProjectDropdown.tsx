@@ -146,6 +146,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
     console.log('populating projects');
 
     Rest.getProjects(this.props.email, account, (projects: Project[]) => {
+      projects = projects.sort(Project.compare);
       projects.forEach(project => {
         projectOptions.push({ label: project.name, value: project.name });
         projectNamesOnly.push(project.name);
