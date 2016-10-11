@@ -23,14 +23,13 @@ export class Classification extends React.Component<{}, {}> {
     let dataColumnStyle: any = {
       display: 'inline-block',
       position: 'absolute',
-      width: '76%',
+      width: '74.25%',
     };
     let rowColumnStyle: any = {
       margin: '7px',
     };
     return (
       <div>
-        <div className='ms-font-1x  ms-fontWeight-semibold ms-fontColor-black'> CLASSIFICATION </div>
         <div>
           {/*<table>
             <tr>

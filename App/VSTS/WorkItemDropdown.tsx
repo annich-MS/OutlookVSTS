@@ -53,7 +53,7 @@ export class WorkItemDropdown extends React.Component<IWorkItemTypeDropdownProps
         // console.log('Selected: ' + this.props.workItemType);
         let drop: any = {
             align: 'left',
-            width: '250px',
+            width: '100%',
         };
 
         let types: any = [

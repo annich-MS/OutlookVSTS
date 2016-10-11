@@ -51,8 +51,10 @@ export class Title extends React.Component<ITitleProps, {}> {
    */
   public render(): React.ReactElement<Provider> {
     let title: any = {
+      'font-size': '15px',
+      height: '100%',
       padding: '5px',
-      width: '98%',
+      width: '100%',
     };
     /**
      * Gets the normalizedSubject from Office and depending on the Stage, dispatches an action to update the value of title in store
@@ -67,7 +69,7 @@ export class Title extends React.Component<ITitleProps, {}> {
       <div>
         <br/>
         <div className='ms-font-1x ms-fontWeight-semibold ms-fontColor-black'>TITLE</div>
-        <input type='text' style={title} className='15px arial, ms-segoe-ui'
+        <input type='text' style={title} className='ms-segoe-ui ms-TextField-field'
             id= 'titleval' value={this.props.title} onChange={this.handleChangeTitle.bind(this)}/>
         <br/><br/>
       </div>

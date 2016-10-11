@@ -70,11 +70,12 @@ public handleChangeAddAsAttachment (event: any): void {
    */
   public render(): React.ReactElement<Provider> {
     let descriptionStyle: any = {
+      'font-size': '15px',
       height: '150px',
       overflow: 'auto',
       padding: '10px',
       resize: 'none',
-      width: '98%',
+      width: '100%',
       'padding-top': '5px',
     };
     let checkboxStyle: any = {
@@ -90,7 +91,7 @@ public handleChangeAddAsAttachment (event: any): void {
           Add e-mail as attachment
         </label>
         <br/>
-        <textarea className='15px arial, ms-segoe-ui' style={descriptionStyle} id='description'
+        <textarea className='15px arial, ms-segoe-ui ms-TextField-field' style={descriptionStyle} id='description'
           value={this.props.description} onChange={this.handleChangeDescription.bind(this) }>
         </textarea>
         <br/><br/>
