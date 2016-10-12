@@ -18,6 +18,7 @@ interface ICopyButtonProps {
  * @class { CopyButton }
  */
 export class CopyButton extends React.Component<ICopyButtonProps, {}> {
+
   /**
    * Renders the CopyButton Component and reads ICopyButtonProps
    * @returns { React.ReactElement } ReactHTML div 
@@ -30,7 +31,6 @@ export class CopyButton extends React.Component<ICopyButtonProps, {}> {
       float: 'left',
       font: '15px arial, ms-segoe-ui',
     };
-    document.addEventListener('copy', this.setClipboardData);
     return (
       <div>
         <button style={buttonStyle} onClick={this.handleClick}>
@@ -46,17 +46,32 @@ export class CopyButton extends React.Component<ICopyButtonProps, {}> {
    * @private
    */
   private handleClick: () => void = () => {
+    let id: string = 'Clipboard-Item';
+    let existsTextarea: HTMLTextAreaElement = document.getElementById(id) as HTMLTextAreaElement;
+
+    if (!existsTextarea) {
+      let textarea: HTMLTextAreaElement = document.createElement('textarea');
+      textarea.id = id;
+      let style: any = {
+        background: 'transparent',
+        height: '1px',
+        left: 0,
+        padding: 0,
+        position: 'fixed',
+        top: 0,
+        width: '1px',
+      };
+      Object.keys(style).forEach( key => {
+          textarea.style.setProperty(key, style[key]);
+      });
+
+      document.querySelector('body').appendChild(textarea);
+      existsTextarea = document.getElementById(id) as HTMLTextAreaElement;
+    }
+
+    existsTextarea.value = this.props.workItemHyperlink;
+    existsTextarea.select();
+
     document.execCommand('copy');
   }
-
-  /**
-   * Writes the formatted HTML element to the clipboard
-   * @private
-   * @param { any } e 
-   */
-  private setClipboardData: (e: any) => void = (e) => {
-    console.log('got to handler');
-    e.clipboardData.setData('text/html', this.props.workItemHyperlink);
-    e.preventDefault(); // we want our data, not data from any selection, to be written to the clipboard
-  }
- }
+}

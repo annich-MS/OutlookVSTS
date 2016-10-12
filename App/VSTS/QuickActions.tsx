@@ -71,7 +71,7 @@ export class QuickActions extends React.Component<IQuickActionProps, {}> {
         <div style={headerStyle}>Quick Actions:</div>
         <ReplyAllButton workItemHyperlink={htmlString}/>
         <br/>
-        <CopyButton workItemHyperlink={htmlString}/>
+        <CopyButton workItemHyperlink={this.props.workItem.VSTShtmlLink}/>
       </div>
     );
   }
