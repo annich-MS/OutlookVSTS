@@ -20,7 +20,7 @@ module.exports = {
       { test: /\.css$/, loader: "style-loader!css-loader" }]
   },
   output: {
-    path: path.join(__dirname, '..', 'build'),
+    path: path.join(__dirname, '..', 'static'),
     filename: 'app.js',
     publicPath: '/static/'
   },

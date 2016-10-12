@@ -18,13 +18,6 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 }));
 app.use(bodyParser.text({limit: '50mb'})); // support text bodies
 
-app.use(require('webpack-dev-middleware')(compiler, {
-  noInfo: true,
-  publicPath: config.output.publicPath
-}));
-
-app.use(require('webpack-hot-middleware')(compiler));
-
 // Routers
 
 app.use('/authenticate', authenticate);

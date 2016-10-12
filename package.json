@@ -7,9 +7,10 @@
   "description": "Boilerplate project that uses Typescript, React, and Webpack",
   "main": "index.js",
   "scripts": {
-    "build:webpack": "NODE_ENV=production webpack --config config/webpack.prod.js",
-    "build": "npm run clean && npm run build:webpack",
-    "clean": "rimraf build",
+    "build": "npm run webpack",
+    "typings": "node_modules\\.bin\\tsd.cmd install",
+    "webpack": "node_modules\\.bin\\webpack.cmd --config config/webpack.prod.js",
+    "rimraf": "node_modules\\.bin\\rimraf.cmd node_modules",
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,8 +20,6 @@
     "type": "git",
     "url": "git+https://socialmemory.visualstudio.com/DefaultCollection/_git/Outlook%20Social%20Memory"
   },
-  "bugs": {},
-  "devDependencies": {},
   "dependencies": {
     "babel-core": "^6.4.5",
     "babel-loader": "^6.2.1",
@@ -40,7 +39,6 @@
     "less": "~2.6.1",
     "less-loader": "~2.2.3",
     "material-ui": "^0.14.4",
-    "moment": "^2.13.0",
     "react": "^0.14.7",
     "react-dom": "^0.14.7",
     "react-dropdown": "^1.0.4",
@@ -62,12 +60,11 @@
     "style-loader": "~0.13.1",
     "tedious": "^1.14.0",
     "ts-loader": "^0.8.1",
+    "tsd": "^0.6.5",
     "tslint": "^3.3.0",
     "tslint-loader": "^2.1.0",
     "typescript": "^1.7.5",
-    "webpack": "^1.12.15",
-    "webpack-dev-middleware": "^1.5.1",
-    "webpack-hot-middleware": "^2.6.4",
+    "webpack": "^1.13.2",
     "xml-flow": "^1.0.1"
   }
 }
