@@ -75,7 +75,7 @@ export class WorkItemInfo {
     }
 }
 
-interface IRestCallback { (output: string): void; }
+export interface IRestCallback { (output: string): void; }
 interface IItemCallback { (item: string): void; }
 interface IUserProfileCallback { (profile: UserProfile): void; }
 interface IProjectsCallback { (projects: Project[]): void; }
