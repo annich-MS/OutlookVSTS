@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import { Rest, WorkItemInfo } from '../RestHelpers/rest';
+import { Rest, WorkItemInfo, IRestCallback } from '../RestHelpers/rest';
 import { updateStage, Stage, updateSave } from '../Redux/WorkItemActions';
 import { IWorkItem } from '../Redux/WorkItemReducer';
 import { updatePageAction, PageVisibility } from '../Redux/FlowActions';
@@ -55,31 +55,32 @@ export class Save extends React.Component<ISaveProps, {}> {
     this.props.dispatch(updateStage(Stage.Saved));
     console.log(this.props.workItem.addAsAttachment);
     if (this.props.workItem.addAsAttachment) {
-      Office.context.mailbox.getCallbackTokenAsync((result) => { this.uploadAttachment(result.value, (result) => {this.createWorkItem(result)})});
+      Office.context.mailbox.getCallbackTokenAsync((tokenResult) => {
+        this.uploadAttachment(tokenResult.value, (attachmentUrl) => { this.createWorkItem(attachmentUrl); });
+      });
     } else {
       this.createWorkItem(null);
     }
   }
 
-  public uploadAttachment(token, callback): void {
+  public uploadAttachment(token: string, callback: IRestCallback): void {
     let email: string = this.props.userProfile.email;
     let id: string = Office.context.mailbox.item.itemId;
-    let url: string = Office.context.mailbox.ewsUrl;
+    let url: string = Office.context.mailbox.ewsUrl || 'https://outlook.office365.com/EWS/Exchange.asmx';
     let account: string = this.props.currentSettings.settings.account;
 
     Rest.getMessage(email, id, url, token, (data) => {
-      Rest.uploadAttachment(email, data, account, Office.context.mailbox.item.normalizedSubject + ".eml", callback);
+      Rest.uploadAttachment(email, data, account, Office.context.mailbox.item.normalizedSubject + '.eml', callback);
     });
- 
+
   }
-  
+
   public createWorkItem(attachmentUrl: string): void {
     let options: any = {
       attachment: attachmentUrl,
-      type: this.props.workItem.workItemType,
-      title: this.props.workItem.title,
       body: this.props.workItem.description,
-
+      title: this.props.workItem.title,
+      type: this.props.workItem.workItemType,
     };
     let dispatch: any = this.props.dispatch;
 
