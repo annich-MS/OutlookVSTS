@@ -5,7 +5,7 @@ var bodyParser = require('body-parser');
 var config = require('./config/webpack.prod');
 var authenticate = require('./routes/authenticate');
 var rest = require('./routes/VstsRest');
-var DEBUG = require('./debug');
+var PROD = process.env.prod;
 
 var app = express();
 var compiler = webpack(config);
@@ -29,7 +29,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-if(DEBUG == true){
+if(PROD != true){
   var https = require('https');
   var fs = require('fs');
 

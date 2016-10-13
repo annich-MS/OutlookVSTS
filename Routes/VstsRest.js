@@ -3,7 +3,6 @@ var fs = require('fs');
 var url = require('url');
 var https = require('https');
 var querystring = require('querystring');
-var DEBUG = require('../debug');
 var Authenticate = require('./Authenticate');
 var Buffer = require('buffer').Buffer;
 var request = require('request-promise');
