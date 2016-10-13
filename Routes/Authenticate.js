@@ -1,9 +1,9 @@
 var express = require('express');
 var fs = require('fs');
+var tedious = require('tedious');
 var https = require('https');
 var querystring = require('querystring');
-var tedious = require('tedious');
-var DEBUG = require('../debug');
+var PROD = process.env.prod;
 var TYPES = tedious.TYPES;
 
 var REFRESH_MINIMUM = 60;
@@ -11,45 +11,81 @@ var REFRESH_MINIMUM = 60;
 var router = express.Router({ mergeParams: true });
 module.exports = router;
 
-var clientSecret = "";
-getClientSecret = function () {
-  if (clientSecret === "") {
-    if (DEBUG == true) {
-      var secretFile = require('../secrets/clientSecret');
-      clientSecret = JSON.stringify(secretFile);
+
+var _clientInfo = null;
+getClientInfo = function () {
+  if (_clientInfo == null) {
+    if (PROD) {
+      _clientInfo = JSON.parse(process.env.ClientSecretJson);
     }
     else {
-      clientSecret = process.env.ClientSecretJson;
+      _clientInfo = require('../secrets/clientSecret');
     }
   }
-  return clientSecret;
+  return _clientInfo;
+}
+
+var _oauth = null;
+getOAuth = function () {
+  if (_oauth === null) {
+    var clientInfo = getClientInfo();
+    _oauth = {
+      clientId: clientInfo.client_id.toString(),
+      clientSecret: clientInfo.client_secret.toString(),
+      baseUrl: 'app.vssps.visualstudio.com',
+      authEndpoint: '/oauth2/authorize',
+      tokenEndpoint: '/oauth2/token',
+      redirectUri: clientInfo.redirect_uris[0]
+    };
+  }
+  return _oauth;
 };
 
 var dbConfig = "";
 getDbConfig = function () {
   if (dbConfig === "") {
-    if (DEBUG == true) {
-      var dbFile = require('../secrets/dbConfig.js')
-      dbConfig = JSON.stringify(dbFile);
+   if (PROD) {
+      dbConfig = process.env.dbConfigJson;
     }
     else {
-      dbConfig = process.env.dbConfigJson;
+      var dbFile = require('../secrets/dbConfig.js')
+      dbConfig = JSON.stringify(dbFile);
     }
   }
   return dbConfig;
 }
 
-var table = DEBUG ? 'dbo.TestUsers' : 'dbo.Users'
+var table = PROD ? 'dbo.Users' : 'dbo.TestUsers'
 
-router.getToken = function (user, callback) {
+var GET_TOKEN_QUERY = "SELECT TOP 1 x.Token, x.Expiry, x.Refresh FROM " + table + " AS x WHERE Id=@Id"
+var SAVE_TOKEN_QUERY = 
+`IF EXISTS(` + GET_TOKEN_QUERY + `)
+  UPDATE ` + table + ` SET Token=@Token, Expiry=DATEADD(ss, @Expiry, GETDATE()), Refresh=@Refresh WHERE Id=@Id;
+ELSE
+  INSERT INTO ` + table + `(Id, Token, Expiry, Refresh) VALUES (@Id, @Token, DATEADD(ss, @Expiry, GETDATE()), @Refresh);`;
+
+createConnection = function (reason, callback) {
   var config = JSON.parse(getDbConfig());
   var connection = new tedious.Connection(config);
+  connection.on('end', () => {
+    console.log("Close Connection for " + reason);
+  });
+  connection.on('error', (err) => {
+    console.log(err);
+  });
   connection.on('connect', function (err) {
+    console.log("Open Connection for " + reason);
     if (err) {
       console.log(err);
-      return;
     }
-    var request = new tedious.Request("SELECT TOP 1 x.Token, x.Expiry, x.Refresh FROM " + table + " AS x WHERE Id=@User", function (err, rowcount, rows) {
+    callback(connection);
+  });
+}
+
+
+router.getToken = function (user, callback) {
+  createConnection("getToken", (connection) => {
+    var request = new tedious.Request(GET_TOKEN_QUERY, function (err, rowcount, rows) {
       if (err) {
         callback({ success: false, error: err });
       }
@@ -66,10 +102,53 @@ router.getToken = function (user, callback) {
         };
         callback({ success: true, data: data })
       }
+      connection.close();
     });
-    request.addParameter('User', TYPES.VarChar, user);
+    request.addParameter('Id', TYPES.VarChar, user);
     connection.execSql(request);
   });
+}
+
+router.newToken = function (user, assertion, refresh, callback) {
+
+  var oauth = getOAuth();
+  var data = {
+    assertion: assertion, 
+    client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+    grant_type: refresh ? "refresh_token" : "urn:ietf:params:oauth:grant-type:jwt-bearer",
+    client_assertion: oauth.clientSecret,
+    redirect_uri: oauth.redirectUri
+  };
+  var options = {
+    host: oauth.baseUrl,
+    path: oauth.tokenEndpoint,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    }
+  };
+  var request = https.request(options, function(response) {
+    var str = '';
+    var errored = false;
+    
+    response.on('data', function(chunk) {
+      str += chunk
+    });
+    
+    response.on('end', function() {
+      if(!errored) {
+        var result = JSON.parse(str);
+        callback(null, result.access_token, result.refresh_token, result);
+      }
+    });
+    
+    response.on('error', function(err) {
+      errored = true;
+      callback(err);
+    });
+  });
+  request.write(querystring.stringify(data));
+  request.end();
 }
 
 router.db = function (req, res) {
@@ -83,8 +162,7 @@ router.db = function (req, res) {
       }
       else {
         console.log("middle state")
-        data.user = req.query.user;
-        router.refreshToken(data, res);
+        router.refreshToken(req.query.user, data.refresh, res);
       }
     }
     else {
@@ -95,156 +173,60 @@ router.db = function (req, res) {
 router.use('/db', router.db);
 
 router.callback = function (req, res) {
-
-  var secrets = JSON.parse(getClientSecret());
-  var data = querystring.stringify({
-    assertion: req.query.code,
-    client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-    grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-    client_id: secrets.client_id.toString(),
-    client_assertion: secrets.client_secret.toString(),
-    redirect_uri: secrets.redirect_uris[0]
-  });
-  var options = {
-    host: 'app.vssps.visualstudio.com',
-    path: '/oauth2/token',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': data.length
-    }
-  };
-  router.res = res;
-  var httpPost = https.request(options, function (response) {
-    var str = '';
-
-    //another chunk of data has been recieved, so append it to `str`
-    response.on('data', function (chunk) {
-      str += chunk;
+  user = req.query.state;
+  router.newToken(user, req.query.code, false, (err, access_token, refresh_token, results) => {
+      if(err) {
+        console.log(err);
+      } else {
+        res.redirect("../done");
+        console.log(user + ":" + access_token.substring(0,10) + ":" + results['expires_in'] + ":" + refresh_token.substring(0,10));
+        saveToken(user, access_token, results['expires_in'], refresh_token);
+      }
     });
-
-    //the whole response has been recieved, so we just print it out here
-    response.on('end', function () {
-      exchanges = JSON.parse(str);
-      saveToken(req.query.state, exchanges);
-    });
-  });
-  httpPost.write(data);
-  httpPost.end();
-  res.redirect("../done");
 
 };
 router.use('/callback', router.callback);
 
-
 router.authorize = function (req, res) {
-
-  router.credentials = JSON.parse(getClientSecret());
+  
+  var oauth = getOAuth();
   var authParams = {
-    redirect_uri: router.credentials.redirect_uris[0],
+    client_id: oauth.clientId,
     response_type: 'Assertion',
-    client_id: router.credentials.client_id,
-    scope: 'vso.agentpools_manage vso.build_execute vso.chat_manage vso.code_manage vso.code_status vso.dashboards vso.dashboards_manage vso.entitlements vso.extension.data_write vso.extension_manage vso.gallery_acquire vso.gallery_manage vso.identity vso.loadtest_write vso.packaging_manage vso.profile_write vso.project_manage vso.release_manage vso.test_write vso.work_write',
-    approval_prompt: 'force',
-    state: req.query.user
+    state: req.query.user,
+    scope: 'vso.chat_manage vso.dashboards vso.dashboards_manage vso.project_manage vso.work_write',
+    redirect_uri: oauth.redirectUri,
   };
-  var authBaseUrl = router.credentials.auth_uri;
-  var url = authBaseUrl + '?' + querystring.stringify(authParams).toString();
-  res.redirect(url);
+  res.redirect("https://" + oauth.baseUrl + oauth.authEndpoint + '?' + querystring.stringify(authParams));
 
 };
 router.use('/', router.authorize);
 
-router.refreshToken = function (state, res) {
-  console.log("refresh token")
-  router.credentials = JSON.parse(getClientSecret());
-  // console.log("token:"+state.refresh);
-  var data = querystring.stringify({
-    assertion: state.refresh,
-    client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-    grant_type: "refresh_token",
-    client_assertion: router.credentials.client_secret.toString(), //ERROR HERE CLIENT_SECRET UNDEFINED
-    redirect_uri: router.credentials.redirect_uris[0]
-  });
-  var options = {
-    host: 'app.vssps.visualstudio.com',
-    path: '/oauth2/token',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': data.length
+router.refreshToken = function (user, refresh, res) {
+  
+  router.newToken(user, refresh, true, (err, access_token, refresh_token, results) => {
+    if(err) {
+      console.log(err);
+    } else {
+      res.send("success");
+      saveToken(user, access_token, results['expires_in'], refresh_token);
     }
-  };
-  router.res = res;
-  var httpPost = https.request(options, function (response) {
-    var str = '';
-
-    //another chunk of data has been recieved, so append it to `str`
-    response.on('data', function (chunk) {
-      str += chunk;
-    });
-
-    //the whole response has been recieved, so we just print it out here
-    response.on('end', function () {
-      exchanges = JSON.parse(str);
-      updateToken(state, exchanges, res);
-    });
   });
-  httpPost.write(data);
-  httpPost.end();
 };
 
 
-function saveToken(id, data) {
-  var config = JSON.parse(getDbConfig());
-  var connection = new tedious.Connection(config);
-  connection.on('connect', function (err) {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    saveToDB(id, data);
-  });
-
-  function saveToDB(id, data) {
-    var request = new tedious.Request("INSERT INTO " + table + "(Id, Token, Expiry, Refresh) VALUES (@Id, @Token, DATEADD(ss, @Expiry, GETDATE()),  @Refresh);", function (err) {
+function saveToken(user, access_token, expires_in, refresh_token) {
+  createConnection("save Token", (connection) => {
+    var request = new tedious.Request(SAVE_TOKEN_QUERY, function (err) {
       if (err) {
         console.log(err);
       }
+      connection.close();
     });
-    request.addParameter('Id', TYPES.VarChar, id);
-    request.addParameter('Token', TYPES.VarChar, data.access_token);
-    request.addParameter('Expiry', TYPES.Int, data.expires_in);
-    request.addParameter('Refresh', TYPES.VarChar, data.refresh_token);
+    request.addParameter('Id', TYPES.VarChar, user);
+    request.addParameter('Token', TYPES.VarChar, access_token);
+    request.addParameter('Expiry', TYPES.Int, expires_in);
+    request.addParameter('Refresh', TYPES.VarChar, refresh_token);
     connection.execSql(request);
-  }
-}
-
-function updateToken(state, data, res) { //FAILS HERE - TOKEN NULL
-  //console.log('update')
-  var config = JSON.parse(getDbConfig());
-  var connection = new tedious.Connection(config);
-  connection.on('connect', function (err) {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    saveToDB(state.user, data);
   });
-
-  var TYPES = tedious.TYPES;
-
-  function saveToDB(id, data) {
-    var request = new tedious.Request("UPDATE " + table + " SET Token=@Token, Expiry=DATEADD(ss, @Expiry, GETDATE()), Refresh=@Refresh WHERE Id=@Id;", function (err) {
-      if (err) {
-        console.log(err);
-      }
-    });
-    request.addParameter('Id', TYPES.VarChar, id);
-    request.addParameter('Token', TYPES.VarChar, data.access_token);
-    request.addParameter('Expiry', TYPES.Int, data.expires_in);
-    request.addParameter('Refresh', TYPES.VarChar, data.refresh_token);
-    res.send("success");
-    connection.execSql(request);
-  }
 }

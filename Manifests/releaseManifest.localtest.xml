@@ -10,7 +10,7 @@
   <DefaultLocale>en-us</DefaultLocale>
   <DisplayName DefaultValue="[DEBUG] Visual Studio Team Services" />
   <Description DefaultValue="Creates bugs using content of message"/>
-  <IconUrl DefaultValue="https://azure.localtest.me:3000/public/Images/logo.png" />
+  <IconUrl DefaultValue="https://azure.localtest.me:3001/public/Images/logo.png" />
   <Hosts>
     <Host Name="Mailbox" />
   </Hosts>
@@ -23,17 +23,17 @@
     <Form xsi:type="ItemRead">
       <DesktopSettings>
         <SourceLocation DefaultValue=
-          "https://azure.localtest.me:3000/vsts" />
+          "https://azure.localtest.me:3001/vsts" />
         <RequestedHeight>350</RequestedHeight>
       </DesktopSettings>
       <TabletSettings>
         <SourceLocation DefaultValue=
-          "https://azure.localtest.me:3000/vsts" />
+          "https://azure.localtest.me:3001/vsts" />
         <RequestedHeight>250</RequestedHeight>
       </TabletSettings>
       <PhoneSettings>
         <SourceLocation DefaultValue=
-          "https://azure.localtest.me:3000/vsts" />
+          "https://azure.localtest.me:3001/vsts" />
       </PhoneSettings>
     </Form>
   </FormSettings>
@@ -79,10 +79,10 @@
 	</Hosts>
 	<Resources>
       <bt:Images>
-        <bt:Image id="taskpanecommand-icon" DefaultValue="https://azure.localtest.me:3000/public/Images/logo.png"/>
+        <bt:Image id="taskpanecommand-icon" DefaultValue="https://azure.localtest.me:3001/public/Images/logo.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="readTaskPaneUrl" DefaultValue="https://azure.localtest.me:3000/vsts"/>
+        <bt:Url id="readTaskPaneUrl" DefaultValue="https://azure.localtest.me:3001/vsts"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="groupLabel" DefaultValue="Visual Stuido Team Services"/>
