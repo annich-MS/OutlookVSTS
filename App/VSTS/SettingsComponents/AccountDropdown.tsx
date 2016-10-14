@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { updateAccountSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
+import {updatePopulatingAction } from '../../Redux/FlowActions';
 import {Rest, Account} from '../../RestHelpers/rest';
 require('react-select/dist/react-select.css');
 let Select: any = require('react-select');
@@ -117,6 +118,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * @returns {void}
    */
   public populateAccounts(): void {
+    this.props.dispatch(updatePopulatingAction(true));
     let accountOptions: ISettingsInfo[] = [];
     let accountNamesOnly: string[] = [];
     let selectedAccount: string = this.props.account;
@@ -139,6 +141,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
       }
       console.log('popaccounts' + defaultAccount);
       this.props.dispatch(updateAccountSettingsAction(selectedAccount, accountOptions));
+      this.props.dispatch(updatePopulatingAction(false));
     });
   }
 }

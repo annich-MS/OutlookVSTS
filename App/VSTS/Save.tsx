@@ -31,6 +31,12 @@ export interface ISaveProps {
    * @type {ISettingsAndListsReducer}
    */
   currentSettings?: ISettingsAndListsReducer;
+
+  /**
+   * states whether or not any of the dropdowns are currently repopulating
+   * @type {boolean}
+   */
+  isPopulating?: boolean;
 }
 
 /**
@@ -40,6 +46,7 @@ export interface ISaveProps {
 function mapStateToProps(state: any): ISaveProps {
   return {
     currentSettings: state.currentSettings,
+    isPopulating: state.controlState.arePopulating,
     userProfile: state.userProfile,
     workItem: state.workItem,
   };
@@ -121,15 +128,24 @@ export class Save extends React.Component<ISaveProps, {}> {
       'margin-left': '25%',
     };
 
-    let currentStyle: any = this.props.workItem.stage === Stage.Saved ? styleDisabled : styleEnabled;
-    let text: any = this.props.workItem.stage === Stage.Saved ? 'Creating...' : 'Create work item';
+    let currentStyle: any = this.shouldBeEnabled() ? styleEnabled : styleDisabled;
+    let text: any = this.isSaving ? 'Creating...' : 'Create work item';
     return (
       <div>
         <br/>
-        <button className = 'ms-Button' style= {currentStyle} disabled = {this.props.workItem.stage === Stage.Saved}
+        <button
+          className = 'ms-Button'
+          style= {currentStyle}
+          disabled = {this.shouldBeEnabled}
           onClick = {this.handleSave.bind(this)} > {text}
         </button>
       </div>
     );
+  }
+
+  private get isSaving(): boolean { return this.props.workItem.stage === Stage.Saved; }
+
+  private shouldBeEnabled(): boolean {
+    return !(this.isSaving || this.props.isPopulating);
   }
 }

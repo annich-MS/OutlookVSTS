@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import {updateTeamSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
+import {updatePopulatingAction } from '../../Redux/FlowActions';
 import {Rest, Team } from '../../RestHelpers/rest';
 require('react-select/dist/react-select.css');
 let Select: any = require('react-select');
@@ -72,9 +73,12 @@ function mapStateToProps(state: any): IAreaProps {
  */
 export class AreaDropdown extends React.Component<IAreaProps, any> {
 
+  private updating: boolean;
+
   public constructor() {
     super();
     this.populateTeams = this.populateTeams.bind(this);
+    this.updating = false;
   }
 
   /** 
@@ -131,6 +135,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
         value={this.props.team}
         onChange={this.onTeamSelect.bind(this) }
         searchable={false}
+        disabled={this.updating}
         />
     );
   }
@@ -142,6 +147,8 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    * @returns {void}
    */
   public populateTeams(account: string, project: string): void {
+    this.updating = true;
+    this.props.dispatch(updatePopulatingAction(true));
     let teamOptions: ISettingsInfo[] = [];
     let teamNamesOnly: string[] = [];
     let selectedTeam: string = this.props.team;
@@ -162,7 +169,9 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
         selectedTeam = teamNamesOnly[0];
         console.log('setting first project:' + selectedTeam);
       }
+      this.updating = false;
       this.props.dispatch(updateTeamSettingsAction(selectedTeam, teamOptions));
+      this.props.dispatch(updatePopulatingAction(false));
     });
   }
 }

@@ -136,15 +136,28 @@ export function updateErrorAction(visibility: boolean, msg: string): IErrorState
     };
 }
 
+export interface IDropdownStateAction {
+    /**
+     * the type of the action
+     * @type {string}
+     */
+    type: 'DropdownState';
+    /**
+     * whether any of the current dropdowns are repopulating
+     * @type {boolean}
+     */
+    arePopulating: boolean;
+}
 
-
-
-
-
-
-
-
-
-
-
-
+/**
+ * action to update the message and visibility of an error
+ * @param {boolean} visibility
+ * @param {string} msg
+ * @returns {IErrorStateAction}
+ */
+export function updatePopulatingAction(populating: boolean): IDropdownStateAction {
+    return {
+        arePopulating: populating,
+        type: 'DropdownState',
+    };
+}

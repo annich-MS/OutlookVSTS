@@ -24,12 +24,6 @@ interface ISettingsProps {
    * @type {string}
    */
   team?: string;
-
-   /**
-    * states whether or not any of the dropdowns are currently repopulating
-    * @type {boolean}
-    */
-   isPopulating?: boolean;
 }
 
 /**
@@ -39,7 +33,6 @@ interface ISettingsProps {
 function mapStateToProps(state: any): ISettingsProps {
   return({
       account: state.currentSettings.settings.account,
-      isPopulating: state.controlState.arePopulating,
       project: state.currentSettings.settings.project,
       team: state.currentSettings.settings.team,
     });
@@ -52,19 +45,14 @@ function mapStateToProps(state: any): ISettingsProps {
  * Renders area path dropdowns and save button
  * @class {Settings} 
  */
-export class SaveDefaultsButton extends React.Component<ISettingsProps, any> {
+export class CancelButton extends React.Component<ISettingsProps, any> {
 
   /**
    * saves current selected settings to Office Roaming Settings
    * updates page state to Create Work Item page
    * @returns {void}
    */
-  public saveDefaults(): void {
-    Office.context.roamingSettings.set('default_account', this.props.account);
-    Office.context.roamingSettings.set('default_project', this.props.project);
-    Office.context.roamingSettings.set('default_team', this.props.team);
-    Office.context.roamingSettings.saveAsync();
-
+  public Cancel(): void {
     this.props.dispatch(updatePageAction(PageVisibility.CreateItem));
   }
 
@@ -72,31 +60,19 @@ export class SaveDefaultsButton extends React.Component<ISettingsProps, any> {
    * Renders the area path dropdowns and save button
    */
   public render(): React.ReactElement<Provider> {
-    let styleDisabled: any = {
+    let style_button: any = {
       background: 'rgb(255,255,255)',
       border: 'rgb(255,255,255)',
-      color: 'rgb(130,130,130)',
-      float: 'left',
+      color: 'rgb(0,122,204)',
+      float: 'right',
       font: '15px arial, ms-segoe-ui',
     };
-
-    let styleEnabled: any = {
-       background: 'rgb(255,255,255)',
-       border: 'rgb(255,255,255)',
-       color: 'rgb(0,122,204)',
-       float: 'left',
-       font: '15px arial, ms-segoe-ui',
-     };
-
-    let currentStyle: any = this.props.isPopulating ? styleDisabled : styleEnabled;
-
     return (
-       <div>
-          <button style={currentStyle} onClick={this.saveDefaults.bind(this)} disabled = {this.props.isPopulating}>
-            <span className='ms-Icon ms-Icon--save'> </span>
-            <span font-family='Arial Black, Gadget, sans-serif'> Save and continue </span>
+      <div>
+          <button style={style_button} onClick={this.Cancel.bind(this)}>
+            <span font-family='Arial Black, Gadget, sans-serif'> Cancel </span>
           </button>
-       </div>
+      </div>
     );
   }
 }

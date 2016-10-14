@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import {ISettingsInfo, updateProjectSettingsAction } from '../../Redux/LogInActions';
+import {updatePopulatingAction } from '../../Redux/FlowActions';
 import {Rest, Project } from '../../RestHelpers/rest';
 
 // other import statements don't work properly
@@ -68,8 +69,11 @@ function mapStateToProps(state: any): IProjectProps {
  */
 export class ProjectDropdown extends React.Component<IProjectProps, any> {
 
+  private updating: boolean;
+
   public constructor() {
     super();
+    this.updating = false;
     this.populateProjects = this.populateProjects.bind(this);
   }
 
@@ -129,6 +133,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
         value={this.props.project}
         onChange={this.onProjectSelect.bind(this) }
         searchable={false}
+        disabled={this.updating}
         />
     );
   }
@@ -140,6 +145,8 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * @returns {void}
    */
   public populateProjects(account: string): void {
+    this.updating = true;
+    this.props.dispatch(updatePopulatingAction(true));
     let projectOptions: ISettingsInfo[] = [];
     let projectNamesOnly: string[] = [];
     let selectedProject: string = this.props.project;
@@ -161,7 +168,9 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
         selectedProject = projectNamesOnly[0];
         console.log('setting first project:' + selectedProject);
       }
+      this.updating = false;
       this.props.dispatch(updateProjectSettingsAction(selectedProject, projectOptions));
+      this.props.dispatch(updatePopulatingAction(false));
     });
   }
 

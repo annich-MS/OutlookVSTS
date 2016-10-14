@@ -39,7 +39,7 @@ export class Classification extends React.Component<{}, {}> {
               <td style={titleColumnStyle}>Project: </td> <td style={dataColumnStyle}> <ProjectDropdown /> </td>
             </tr>
             <tr>
-              <td style={titleColumnStyle}>Area: </td> <td style={dataColumnStyle}> <AreaDropdown /> </td>
+              <td style={titleColumnStyle}>Team: </td> <td style={dataColumnStyle}> <AreaDropdown /> </td>
             </tr>
           </table>*/}
         </div>
