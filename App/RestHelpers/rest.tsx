@@ -75,19 +75,30 @@ export class WorkItemInfo {
     }
 }
 
+export class RestError {
+    public type: string;
+    public more: string;
+
+    public constructor(blob: any) {
+        this.type = blob.type;
+        this.more = blob.more;
+    }
+}
+
 export interface IRestCallback { (output: string): void; }
 interface IItemCallback { (item: string): void; }
+interface IErrorCallback { (error: RestError): void; }
 interface IUserProfileCallback { (profile: UserProfile): void; }
 interface IProjectsCallback { (projects: Project[]): void; }
 interface IAccountsCallback { (accounts: Account[]): void; }
 interface ITeamsCallback { (teams: Team[]): void; }
 interface IWorkItemCallback { (workItemInfo: WorkItemInfo): void; }
 
-export class Rest {
+export abstract class Rest {
 
     private static userProfile: UserProfile;
     private static accounts: Account[];
-    private static workItemInfo: WorkItemInfo;
+
 
     public static getItem(user: string, item: number, callback: IItemCallback): void {
         this.makeRestCallWithArgs('getItem', user, { fields: 'System.TeamProject', ids: item, instance: 'o365exchange' }, (output) => {
@@ -172,13 +183,12 @@ export class Rest {
     }
 
     public static getMessage(user: string, ewsId: string, url: string, token: string, callback: IRestCallback ): void {
-        Rest.makeRestCallWithArgs('getMessage', user, { ewsId:ewsId, url:url, token:token }, callback);
+        Rest.makeRestCallWithArgs('getMessage', user, { ewsId: ewsId, token: token, url: url }, callback);
     }
 
     public static uploadAttachment(user: string, data: string, account: string, filename: string, callback: IRestCallback): void {
-        Rest.makePostRestCallWithArgs('uploadAttachment', user, { account: account, filename: filename}, data, (output) =>
-        { 
-            var result = JSON.parse(output);
+        Rest.makePostRestCallWithArgs('uploadAttachment', user, { account: account, filename: filename}, data, (output) => {
+            let result: any = JSON.parse(output);
             callback(result.url);
         });
     }
@@ -187,7 +197,8 @@ export class Rest {
         Rest.makeRestCallWithArgs('attachAttachment', user, { account: account, attachmenturl: attachmenturl, id: id }, callback);
     }
 
-    public static createTask(user:string, options: any, account:string, project:string, team:string, callback: IWorkItemCallback): void {
+    public static createTask(user: string, options: any, account: string,
+                             project: string, team: string, callback: IWorkItemCallback): void {
         this.getTeamAreaPath(user, account, project, team, (areapath) => {
             options.areapath = areapath;
             options.account = account;
@@ -202,6 +213,17 @@ export class Rest {
         });
     }
 
+    public static removeUser(user: string, callback: IErrorCallback): void {
+        Rest.makeRestCall('disconnect', user, (output) => {
+            let parsed: any = JSON.parse(output);
+            if (parsed.error) {
+                callback(new RestError(parsed.error));
+            } else {
+                callback(null);
+            }
+        });
+    }
+
     private static makeRestCall(name: string, user: string, callback: IRestCallback): void {
         $.get('./rest/' + name + '?user=' + user, callback);
     }
@@ -212,13 +234,13 @@ export class Rest {
     }
 
     private static makePostRestCallWithArgs(name: string, user: string, args: any, body: string, callback: IRestCallback): void {
-        let options = {
-             url: "/rest/" + name + '?user=' + user + '&' + $.param(args),
-             method: "POST",
+        let options: any = {
+             data: body,
              headers: {
-                 "Content-Type": "text/plain"
+                 'Content-Type': 'text/plain',
              },
-             data: body
+             method: 'POST',
+             url: '/rest/' + name + '?user=' + user + '&' + $.param(args),
         };
         $.ajax(options).done(callback);
     }

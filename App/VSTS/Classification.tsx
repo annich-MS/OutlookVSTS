@@ -31,19 +31,6 @@ export class Classification extends React.Component<{}, {}> {
     return (
       <div>
         <div>
-          {/*<table>
-            <tr>
-              <td style={titleColumnStyle}>Account: </td> <td style={dataColumnStyle}> <AccountDropdown /> </td>
-            </tr>
-            <tr>
-              <td style={titleColumnStyle}>Project: </td> <td style={dataColumnStyle}> <ProjectDropdown /> </td>
-            </tr>
-            <tr>
-              <td style={titleColumnStyle}>Team: </td> <td style={dataColumnStyle}> <AreaDropdown /> </td>
-            </tr>
-          </table>*/}
-        </div>
-        <div>
           <div style={rowColumnStyle}>
             <div style={titleColumnStyle}>Account </div> <div style={dataColumnStyle}>  <AccountDropdown /> </div>
           </div>
@@ -51,10 +38,8 @@ export class Classification extends React.Component<{}, {}> {
             <div style={titleColumnStyle}>Project </div> <div style={dataColumnStyle}> <ProjectDropdown /> </div>
           </div>
           <div style={rowColumnStyle}>
-            <div style={titleColumnStyle}>Area </div> <div style={dataColumnStyle}>  <AreaDropdown /> </div>
+            <div style={titleColumnStyle}>Team </div> <div style={dataColumnStyle}>  <AreaDropdown /> </div>
           </div>
-        </div>
-        <div>
         </div>
       </div>
     );

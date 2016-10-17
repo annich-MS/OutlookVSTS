@@ -7,6 +7,7 @@ import {ProjectDropdown } from './ProjectDropdown';
 import {AreaDropdown } from './AreaDropdown';
 import {SaveDefaultsButton } from './SaveDefaultsButton';
 import {CancelButton } from './CancelButton';
+import { LogoutButton } from './LogoutButton';
 
 interface ISettingsProps {
   /**
@@ -81,6 +82,10 @@ export class Settings extends React.Component<ISettingsProps, any> {
         <div>
           <SaveDefaultsButton/>
           <CancelButton/>
+        </div>
+        <br />
+        <div>
+          <LogoutButton/>
         </div>
       </div>
     );

@@ -63,6 +63,7 @@ var SAVE_TOKEN_QUERY =
   UPDATE ` + table + ` SET Token=@Token, Expiry=DATEADD(ss, @Expiry, GETDATE()), Refresh=@Refresh WHERE Id=@Id;
 ELSE
   INSERT INTO ` + table + `(Id, Token, Expiry, Refresh) VALUES (@Id, @Token, DATEADD(ss, @Expiry, GETDATE()), @Refresh);`;
+var DELETE_USER_QUERY = "DELETE FROM " + table + " WHERE Id = @Id";
 
 createConnection = function (reason, callback) {
   var config = getDbConfig();
@@ -81,7 +82,6 @@ createConnection = function (reason, callback) {
     callback(connection);
   });
 }
-
 
 router.getToken = function (user, callback) {
   createConnection("getToken", (connection) => {
@@ -179,7 +179,6 @@ router.callback = function (req, res) {
         console.log(err);
       } else {
         res.redirect("../done");
-        console.log(user + ":" + access_token.substring(0,10) + ":" + results['expires_in'] + ":" + refresh_token.substring(0,10));
         saveToken(user, access_token, results['expires_in'], refresh_token);
       }
     });
@@ -202,6 +201,20 @@ router.authorize = function (req, res) {
 };
 router.use('/', router.authorize);
 
+router.disconnect = function (user, callback) {
+  createConnection("disconnect", (connection) => {
+    var request = new tedious.Request(DELETE_USER_QUERY, function (err, rowcount, rows) {
+      if (err) {
+        callback(err);
+      }
+      callback();
+      connection.close();
+    });
+    request.addParameter('Id', TYPES.VarChar, user);
+    connection.execSql(request);
+  });
+}
+
 router.refreshToken = function (user, refresh, res) {
   
   router.newToken(user, refresh, true, (err, access_token, refresh_token, results) => {
@@ -213,7 +226,6 @@ router.refreshToken = function (user, refresh, res) {
     }
   });
 };
-
 
 function saveToken(user, access_token, expires_in, refresh_token) {
   createConnection("save Token", (connection) => {

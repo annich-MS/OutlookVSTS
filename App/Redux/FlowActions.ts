@@ -29,6 +29,10 @@ export enum AuthState {
  */
 export enum PageVisibility {
     /**
+     * show the login page
+     */
+    Login,
+    /**
      * show the settings page
      */
     Settings,

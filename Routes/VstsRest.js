@@ -24,12 +24,9 @@ var FIELDS = {
   RELATIONS: '/relations/-'
 };
 
-/**
- * Callback for https request
- * 
- * @callback requestCallback 
- * @param {string} request - the response recieved from the request as a string
- */
+function createError(type, more) {
+  return JSON.stringify({error: { type: type, more: more}});
+}
 
 /**
  * Makes an authenticated https request
@@ -79,7 +76,17 @@ function makeHttpsRequest(options, callback) {
 
   console.log(options.method + ": " + options.uri);
 
-  request(options).then(callback, (error) => { console.log(JSON.stringify(error)); });
+  request(options).then( (output) => {
+      try {
+        JSON.parse(output);
+      } catch (e) {
+        output = createError("Unparseable output", output)
+      }
+      callback(output);
+    }, (error) => { 
+      console.log(JSON.stringify(error)); 
+      callback(createError("Request Error", error))
+    });
 
 }
 
@@ -300,15 +307,6 @@ function decodeBase64Data(data) {
   return (new Buffer(data, 'base64')).toString('utf8');
 }
 
-function parseRequest(req, callback) {
-  var body = "";
-  req.on('data', function(chunk){
-    body += chunk;
-  }).on('end', function() {
-    callback(body);
-  })
-}
-
 router.createTask = function (req, res) {
   var input = req.query;
   input.host = input.account + '.visualstudio.com';
@@ -336,3 +334,14 @@ router.createTask = function (req, res) {
   makeAuthenticatedRequest(input.user, createOptions(input, 'PATCH'), (output) => { res.send(output); });
 }
 router.use('/createTask', router.createTask);
+
+router.disconnect = function (req, res) {
+  Authenticate.disconnect(req.query.user, (err) => {
+    var output = "{}";
+    if(err) {
+      output = createError("Database Error", err);
+    }
+    res.send(output)
+  })
+}
+router.use('/disconnect', router.disconnect);

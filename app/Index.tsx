@@ -70,18 +70,17 @@ class Main extends React.Component<{}, {}> {
         return String.prototype.indexOf.apply(this, arguments) !== -1;
       };
     }
-    if (typeof Object.assign != 'function') {
-      Object.assign = function(target) {
-        'use strict';
+    if (typeof Object.assign !== 'function') {
+      Object.assign = function(target: Object): Object {
         if (target == null) {
           throw new TypeError('Cannot convert undefined or null to object');
         }
 
         target = Object(target);
-        for (var index = 1; index < arguments.length; index++) {
-          var source = arguments[index];
+        for (let index: number = 1; index < arguments.length; index++) {
+          let source: any = arguments[index];
           if (source != null) {
-            for (var key in source) {
+            for (let key in source) {
               if (Object.prototype.hasOwnProperty.call(source, key)) {
                 target[key] = source[key];
               }
