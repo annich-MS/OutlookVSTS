@@ -10,7 +10,7 @@
   <DefaultLocale>en-us</DefaultLocale>
   <DisplayName DefaultValue="VSTS" />
   <Description DefaultValue="Creates bugs using content of message"/>
-  <IconUrl DefaultValue="https://outlookvsts.azurewebsites.net/public/Images/VSTSLogo_small.png" />
+  <IconUrl DefaultValue="https://ovsts.azurewebsites.net/public/Images/VSTSLogo_small.png" />
   <Hosts>
     <Host Name="Mailbox" />
   </Hosts>
@@ -23,17 +23,17 @@
     <Form xsi:type="ItemRead">
       <DesktopSettings>
         <SourceLocation DefaultValue=
-          "https://outlookvsts.azurewebsites.net/vsts" />
+          "https://ovsts.azurewebsites.net/vsts" />
         <RequestedHeight>350</RequestedHeight>
       </DesktopSettings>
       <TabletSettings>
         <SourceLocation DefaultValue=
-          "https://outlookvsts.azurewebsites.net/vsts" />
+          "https://ovsts.azurewebsites.net/vsts" />
         <RequestedHeight>250</RequestedHeight>
       </TabletSettings>
       <PhoneSettings>
         <SourceLocation DefaultValue=
-          "https://outlookvsts.azurewebsites.net/vsts" />
+          "https://ovsts.azurewebsites.net/vsts" />
       </PhoneSettings>
     </Form>
   </FormSettings>
@@ -79,10 +79,10 @@
 	</Hosts>
 	<Resources>
       <bt:Images>
-        <bt:Image id="taskpanecommand-icon" DefaultValue="https://outlookvsts.azurewebsites.net/public/Images/VSTSLogo_small.png"/>
+        <bt:Image id="taskpanecommand-icon" DefaultValue="https://ovsts.azurewebsites.net/public/Images/VSTSLogo_small.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="readTaskPaneUrl" DefaultValue="https://outlookvsts.azurewebsites.net/vsts"/>
+        <bt:Url id="readTaskPaneUrl" DefaultValue="https://ovsts.azurewebsites.net/vsts"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="groupLabel" DefaultValue="VSTS"/>
