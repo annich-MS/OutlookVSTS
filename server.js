@@ -1,14 +1,11 @@
 var path = require('path');
 var express = require('express');
-var webpack = require('webpack');
 var bodyParser = require('body-parser');
-var config = require('./config/webpack.prod');
 var authenticate = require('./routes/authenticate');
 var rest = require('./routes/VstsRest');
 var PROD = process.env.prod;
 
 var app = express();
-var compiler = webpack(config);
 var port = process.env.PORT || 3001;
 
 app.use(bodyParser.json());         // to support JSON-encoded bodies
