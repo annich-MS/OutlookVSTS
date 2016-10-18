@@ -35,21 +35,21 @@ getOAuth = function () {
       baseUrl: 'app.vssps.visualstudio.com',
       authEndpoint: '/oauth2/authorize',
       tokenEndpoint: '/oauth2/token',
-      redirectUri: clientInfo.redirect_uris[0]
+      redirectUri: clientInfo.redirect_uris[0],
+      scopes: clientInfo.scopes
     };
   }
   return _oauth;
 };
 
-var dbConfig = "";
+var dbConfig = null;
 getDbConfig = function () {
-  if (dbConfig === "") {
+  if (dbConfig === null) {
    if (PROD) {
-      dbConfig = process.env.dbConfigJson;
+      dbConfig = json.parse(process.env.dbConfigJson);
     }
     else {
-      var dbFile = require('../secrets/dbConfig.js')
-      dbConfig = JSON.stringify(dbFile);
+      dbConfig = require('../secrets/dbConfig.js')
     }
   }
   return dbConfig;
@@ -65,7 +65,7 @@ ELSE
   INSERT INTO ` + table + `(Id, Token, Expiry, Refresh) VALUES (@Id, @Token, DATEADD(ss, @Expiry, GETDATE()), @Refresh);`;
 
 createConnection = function (reason, callback) {
-  var config = JSON.parse(getDbConfig());
+  var config = getDbConfig();
   var connection = new tedious.Connection(config);
   connection.on('end', () => {
     console.log("Close Connection for " + reason);
@@ -194,7 +194,7 @@ router.authorize = function (req, res) {
     client_id: oauth.clientId,
     response_type: 'Assertion',
     state: req.query.user,
-    scope: 'vso.chat_manage vso.dashboards vso.dashboards_manage vso.project_manage vso.work_write',
+    scope: oauth.scopes,
     redirect_uri: oauth.redirectUri,
   };
   res.redirect("https://" + oauth.baseUrl + oauth.authEndpoint + '?' + querystring.stringify(authParams));
