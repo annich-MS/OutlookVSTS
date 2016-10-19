@@ -25,11 +25,11 @@ interface ISettingsProps {
    */
   team?: string;
 
-   /**
-    * states whether or not any of the dropdowns are currently repopulating
-    * @type {boolean}
-    */
-   isPopulating?: boolean;
+  /**
+   * Represents what tier is currently being populated
+   * @type {number}
+   */
+  populationTier?: number;
 }
 
 /**
@@ -39,7 +39,7 @@ interface ISettingsProps {
 function mapStateToProps(state: any): ISettingsProps {
   return({
       account: state.currentSettings.settings.account,
-      isPopulating: state.controlState.arePopulating,
+      populationTier: state.controlState.populationTier,
       project: state.currentSettings.settings.project,
       team: state.currentSettings.settings.team,
     });
@@ -88,11 +88,11 @@ export class SaveDefaultsButton extends React.Component<ISettingsProps, any> {
        font: '15px arial, ms-segoe-ui',
      };
 
-    let currentStyle: any = this.props.isPopulating ? styleDisabled : styleEnabled;
+    let currentStyle: any = this.props.populationTier > 0 ? styleDisabled : styleEnabled;
 
     return (
        <div>
-          <button style={currentStyle} onClick={this.saveDefaults.bind(this)} disabled = {this.props.isPopulating}>
+          <button style={currentStyle} onClick={this.saveDefaults.bind(this)} disabled = {this.props.populationTier > 0}>
             <span className='ms-Icon ms-Icon--save'> </span>
             <span font-family='Arial Black, Gadget, sans-serif'> Save and continue </span>
           </button>

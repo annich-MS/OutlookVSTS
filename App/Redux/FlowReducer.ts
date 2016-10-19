@@ -49,7 +49,7 @@ export function updateControlStateReducer(state: IControlStateReducer = initialC
     case 'PAGE_STATE':
        return Object.assign({}, state, { pageState: action.pageState});
     case 'DropdownState':
-      return Object.assign({}, state, {arePopulating: action.arePopulating});
+      return Object.assign({}, state, { populationTier: action.populationTier});
     default:
       return state;
   }

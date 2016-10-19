@@ -47,6 +47,12 @@ interface IAreaProps {
    * @type {ISettingsInfo[]}
    */
   teams?: ISettingsInfo[];
+
+  /**
+   * Represents what tier is currently being populated
+   * @type {number}
+   */
+  populationTier?: number;
 }
 
 /**
@@ -58,6 +64,7 @@ function mapStateToProps(state: any): IAreaProps {
     account: state.currentSettings.settings.account,
     email: state.userProfile.email,
     id: state.userProfile.memberID,
+    populationTier: state.controlState.populationTier,
     project: state.currentSettings.settings.project,
     team: state.currentSettings.settings.team,
     teams: state.currentSettings.lists.teamList,
@@ -73,12 +80,11 @@ function mapStateToProps(state: any): IAreaProps {
  */
 export class AreaDropdown extends React.Component<IAreaProps, any> {
 
-  private updating: boolean;
+  private POPULATION_TIER: number = 1;
 
   public constructor() {
     super();
     this.populateTeams = this.populateTeams.bind(this);
-    this.updating = false;
   }
 
   /** 
@@ -99,8 +105,11 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    */
   public shouldComponentUpdate(nextProps: any, nextState: any): boolean {
     console.log('shouldcomponentupdate: team');
-    return this.props.project !== nextProps.project || this.props.team !== nextProps.team ||
-      JSON.stringify(this.props.teams) !== JSON.stringify(nextProps.teams); // this.props.projects !== nextProps.projects;
+    let projectChanged: boolean =  this.props.project !== nextProps.project;
+    let teamChanged: boolean =  this.props.team !== nextProps.team;
+    let teamListChanged: boolean = JSON.stringify(this.props.teams) !== JSON.stringify(nextProps.teams);
+    let populationChanged: boolean = this.props.populationTier !== nextProps.poulationTier;
+    return projectChanged || teamChanged || teamListChanged || populationChanged;
   }
 
   public componentWillUpdate(nextProps: any, nextState: any): void {
@@ -139,7 +148,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
         value={renderableName}
         onChange={this.onTeamSelect.bind(this) }
         searchable={false}
-        disabled={this.updating}
+        disabled={this.props.populationTier >= this.POPULATION_TIER}
         />
     );
   }
@@ -151,8 +160,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    * @returns {void}
    */
   public populateTeams(account: string, project: string): void {
-    this.updating = true;
-    this.props.dispatch(updatePopulatingAction(true));
+    this.props.dispatch(updatePopulatingAction(true, this.POPULATION_TIER));
     let teamOptions: ISettingsInfo[] = [];
     let teamNamesOnly: string[] = [];
     let selectedTeam: string = this.props.team;
@@ -173,9 +181,8 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
         selectedTeam = teamNamesOnly[0];
         console.log('setting first project:' + selectedTeam);
       }
-      this.updating = false;
       this.props.dispatch(updateTeamSettingsAction(selectedTeam, teamOptions));
-      this.props.dispatch(updatePopulatingAction(false));
+      this.props.dispatch(updatePopulatingAction(false, this.POPULATION_TIER));
     });
   }
 }

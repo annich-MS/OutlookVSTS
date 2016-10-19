@@ -147,10 +147,10 @@ export interface IDropdownStateAction {
      */
     type: 'DropdownState';
     /**
-     * whether any of the current dropdowns are repopulating
-     * @type {boolean}
+     * population tier
+     * @type {number}
      */
-    arePopulating: boolean;
+    populationTier: number;
 }
 
 /**
@@ -159,9 +159,10 @@ export interface IDropdownStateAction {
  * @param {string} msg
  * @returns {IErrorStateAction}
  */
-export function updatePopulatingAction(populating: boolean): IDropdownStateAction {
+export function updatePopulatingAction(populating: boolean, tier: number): IDropdownStateAction {
+    let currentTier: number = tier - (populating ? 0 : 1); // set tier to current if we are populating, or reduce by 1 if we're not
     return {
-        arePopulating: populating,
+        populationTier: currentTier,
         type: 'DropdownState',
     };
 }

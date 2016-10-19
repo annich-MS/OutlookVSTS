@@ -44,6 +44,12 @@ interface IProjectProps {
    * @type {ISettingsInfo[]}
    */
   projects?: ISettingsInfo[];
+
+  /**
+   * Represents what tier is currently being populated
+   * @type {number}
+   */
+  populationTier?: number;
 }
 
 /**
@@ -55,6 +61,7 @@ function mapStateToProps(state: any): IProjectProps {
     account: state.currentSettings.settings.account,
     email: state.userProfile.email,
     id: state.userProfile.memberID,
+    populationTier: state.controlState.populationTier,
     project: state.currentSettings.settings.project,
     projects: state.currentSettings.lists.projectList,
   });
@@ -69,11 +76,10 @@ function mapStateToProps(state: any): IProjectProps {
  */
 export class ProjectDropdown extends React.Component<IProjectProps, any> {
 
-  private updating: boolean;
+  private POPULATION_TIER: number = 2;
 
   public constructor() {
     super();
-    this.updating = false;
     this.populateProjects = this.populateProjects.bind(this);
   }
 
@@ -96,8 +102,11 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    */
   public shouldComponentUpdate(nextProps: any, nextState: any): boolean {
     console.log('shouldcomponentupdate project');
-    return this.props.account !== nextProps.account || this.props.project !== nextProps.project ||
-      JSON.stringify(this.props.projects) !== JSON.stringify(nextProps.projects); // this.props.projects !== nextProps.projects;
+    let accountChanged: boolean = this.props.account !== nextProps.account;
+    let projectChanged: boolean =  this.props.project !== nextProps.project;
+    let projectListChanged: boolean = JSON.stringify(this.props.projects) !== JSON.stringify(nextProps.projects);
+    let populationChanged: boolean = this.props.populationTier !== nextProps.poulationTier;
+    return accountChanged || projectChanged || projectListChanged || populationChanged;
   }
 
   public componentWillUpdate(nextProps: any, nextState: any): void {
@@ -137,7 +146,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
         value={renderableName}
         onChange={this.onProjectSelect.bind(this) }
         searchable={false}
-        disabled={this.updating}
+        disabled={this.props.populationTier >= this.POPULATION_TIER}
         />
     );
   }
@@ -149,8 +158,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * @returns {void}
    */
   public populateProjects(account: string): void {
-    this.updating = true;
-    this.props.dispatch(updatePopulatingAction(true));
+    this.props.dispatch(updatePopulatingAction(true, this.POPULATION_TIER));
     let projectOptions: ISettingsInfo[] = [];
     let projectNamesOnly: string[] = [];
     let selectedProject: string = this.props.project;
@@ -172,9 +180,8 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
         selectedProject = projectNamesOnly[0];
         console.log('setting first project:' + selectedProject);
       }
-      this.updating = false;
       this.props.dispatch(updateProjectSettingsAction(selectedProject, projectOptions));
-      this.props.dispatch(updatePopulatingAction(false));
+      this.props.dispatch(updatePopulatingAction(false, this.POPULATION_TIER));
     });
   }
 

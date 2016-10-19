@@ -33,10 +33,10 @@ export interface ISaveProps {
   currentSettings?: ISettingsAndListsReducer;
 
   /**
-   * states whether or not any of the dropdowns are currently repopulating
-   * @type {boolean}
+   * Represents what tier is currently being populated
+   * @type {number}
    */
-  isPopulating?: boolean;
+  populationTier?: number;
 }
 
 /**
@@ -46,7 +46,7 @@ export interface ISaveProps {
 function mapStateToProps(state: any): ISaveProps {
   return {
     currentSettings: state.currentSettings,
-    isPopulating: state.controlState.arePopulating,
+    populationTier: state.controlState.populationTier,
     userProfile: state.userProfile,
     workItem: state.workItem,
   };
@@ -144,6 +144,6 @@ export class Save extends React.Component<ISaveProps, {}> {
   private get isSaving(): boolean { return this.props.workItem.stage === Stage.Saved; }
 
   private shouldBeEnabled(): boolean {
-    return !(this.isSaving || this.props.isPopulating);
+    return !(this.isSaving || this.props.populationTier > 0);
   }
 }

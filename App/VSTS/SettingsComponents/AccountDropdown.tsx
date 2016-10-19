@@ -37,6 +37,12 @@ interface IAccountProps {
    * @type {ISettingsInfo[]}
    */
   accountList?: ISettingsInfo[];
+
+  /**
+   * Represents what tier is currently being populated
+   * @type {number}
+   */
+  populationTier?: number;
 }
 
 /**
@@ -49,6 +55,7 @@ function mapStateToProps(state: any): IAccountProps {
     accountList: state.currentSettings.lists.accountList,
     email: state.userProfile.email,
     memberId: state.userProfile.memberID,
+    populationTier: state.controlState.populationTier,
   });
 }
 
@@ -59,6 +66,8 @@ function mapStateToProps(state: any): IAccountProps {
  * @class {AccountDropdown} 
  */
 export class AccountDropdown extends React.Component<IAccountProps, any> {
+
+  private POPULATION_TIER: number = 3;
 
   public constructor() {
     super();
@@ -75,6 +84,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
     // if (defaultAccount !== undefined) {
     //   this.props.dispatch(updateAccountSettingsAction(defaultAccount, this.props.accountList));
     // }
+    console.log(this.props.populationTier);
     this.populateAccounts();
   }
 
@@ -122,7 +132,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * @returns {void}
    */
   public populateAccounts(): void {
-    this.props.dispatch(updatePopulatingAction(true));
+    this.props.dispatch(updatePopulatingAction(true, this.POPULATION_TIER));
     let accountOptions: ISettingsInfo[] = [];
     let accountNamesOnly: string[] = [];
     let selectedAccount: string = this.props.account;
@@ -145,7 +155,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
       }
       console.log('popaccounts' + defaultAccount);
       this.props.dispatch(updateAccountSettingsAction(selectedAccount, accountOptions));
-      this.props.dispatch(updatePopulatingAction(false));
+      this.props.dispatch(updatePopulatingAction(false, this.POPULATION_TIER));
     });
   }
 }
