@@ -46,7 +46,7 @@ var dbConfig = null;
 getDbConfig = function () {
   if (dbConfig === null) {
    if (PROD) {
-      dbConfig = json.parse(process.env.dbConfigJson);
+      dbConfig = JSON.parse(process.env.dbConfigJson);
     }
     else {
       dbConfig = require('../secrets/dbConfig.js')
