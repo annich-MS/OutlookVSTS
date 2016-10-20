@@ -24,12 +24,18 @@ declare module Office {
     notificationMessages: any;
     displayReplyAllForm(form: any);
   }
+  
+  interface DiagnosticsInterface {
+    hostName: string;
+  }
 
   interface MailboxInterface {
     ewsUrl: string;
+    displayNewMessageForm(messageData: Object): void;
     getCallbackTokenAsync(callback: OfficeCallback, userContext?: any): void;
     item: ItemInterface;
     userProfile: any; 
+    diagnostics: DiagnosticsInterface;
   }
 
   export function initialize():any;

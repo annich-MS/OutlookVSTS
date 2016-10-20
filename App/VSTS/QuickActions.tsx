@@ -6,6 +6,7 @@ import { ItemHyperlink } from  './ItemHyperlink';
 import { ReplyAllButton } from './ReplyAllButton';
 import { CopyButton } from './CopyButton';
 import { IWorkItem } from '../Redux/WorkItemReducer';
+import { Feedback } from './SimpleComponents/Feedback';
 import { connect } from 'react-redux';
 import * as ReactDOM from 'react-dom/server';
 
@@ -72,6 +73,7 @@ export class QuickActions extends React.Component<IQuickActionProps, {}> {
         <ReplyAllButton workItemHyperlink={htmlString}/>
         <br/>
         <CopyButton workItemHyperlink={this.props.workItem.VSTShtmlLink}/>
+        <Feedback />
       </div>
     );
   }

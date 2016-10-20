@@ -6,6 +6,7 @@ import { Save } from './Save';
 import { WorkItemDropdown } from './WorkItemDropdown';
 import { Classification } from './Classification';
 import { Gear } from './Gear';
+import { Feedback } from './SimpleComponents/Feedback';
 
 /**
  * Renders all components of the Create page
@@ -26,6 +27,7 @@ export class CreateWorkItem extends React.Component<{}, {}> {
         <Description/>
         <Classification/>
         <Save/>
+        <Feedback/>
       </div>
     );
   }
