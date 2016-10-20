@@ -136,7 +136,7 @@ export class Save extends React.Component<ISaveProps, {}> {
         <button
           className = 'ms-Button'
           style= {currentStyle}
-          disabled = {this.shouldBeEnabled}
+          disabled = {!this.shouldBeEnabled()}
           onClick = {this.handleSave.bind(this)} > {text}
         </button>
       </div>
