@@ -126,11 +126,15 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * Renders the react-select dropdown component
    */
   public render(): React.ReactElement<Provider> {
+    let renderableName: string = this.props.project;
+    if (renderableName.length > 25) {
+      renderableName = renderableName.slice(0, 20) + '...';
+    }
     return (
       <Select
         name='form-field-name'
         options={this.props.projects}
-        value={this.props.project}
+        value={renderableName}
         onChange={this.onProjectSelect.bind(this) }
         searchable={false}
         disabled={this.updating}

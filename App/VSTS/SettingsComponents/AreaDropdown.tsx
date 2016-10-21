@@ -128,11 +128,15 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    * Renders the react-select dropdown component
    */
   public render(): React.ReactElement<Provider> {
+    let renderableName: string = this.props.team;
+    if (renderableName.length > 25) {
+      renderableName = renderableName.slice(0, 20) + '...';
+    }
     return (
       <Select
         name='form-field-name'
         options={this.props.teams}
-        value={this.props.team}
+        value={renderableName}
         onChange={this.onTeamSelect.bind(this) }
         searchable={false}
         disabled={this.updating}

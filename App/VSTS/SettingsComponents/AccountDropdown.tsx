@@ -100,11 +100,15 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * Renders the react-select dropdown component
    */
   public render(): React.ReactElement<Provider> {
+    let renderableName: string = this.props.account;
+    if (renderableName.length > 25) {
+      renderableName = renderableName.slice(0, 20) + '...';
+    }
     return (
       <Select
         name='form-field-name'
         options={this.props.accountList}
-        value={this.props.account}
+        value={renderableName}
         onChange={this.onAccountSelect.bind(this) }
         autoBlur={true}
         searchable={false}
