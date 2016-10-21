@@ -7,6 +7,7 @@ import { WorkItemDropdown } from './WorkItemDropdown';
 import { Classification } from './Classification';
 import { Gear } from './Gear';
 import { Feedback } from './SimpleComponents/Feedback';
+import { Error } from './SimpleComponents/Error';
 
 /**
  * Renders all components of the Create page
@@ -21,6 +22,7 @@ export class CreateWorkItem extends React.Component<{}, {}> {
     console.log('got to create pg');
     return (
       <div>
+        <Error />
         <Gear />
         <WorkItemDropdown/>
         <Title/>

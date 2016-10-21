@@ -43,7 +43,7 @@ const initialControlState: IControlStateReducer = {
 export function updateControlStateReducer(state: IControlStateReducer = initialControlState, action: any): IControlStateReducer {
   switch (action.type) {
     case 'ErrorState':
-      return Object.assign({}, state, { isVisible: action.isVisible, message: action.message});
+      return Object.assign({}, state, { error: {isVisible: action.isVisible, message: action.message}});
     case 'AUTH_STATE':
       return Object.assign({}, state, { authState: action.authState});
     case 'PAGE_STATE':

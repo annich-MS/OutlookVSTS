@@ -7,11 +7,11 @@ import { Loading } from './SimpleComponents/Loading';
 import { Connecting } from './SimpleComponents/Connecting';
 import { Auth } from './authMM';
 import { updateUserProfileAction} from '../Redux/LogInActions';
-import { PageVisibility, AuthState, updateAuthAction, IErrorStateAction, updatePageAction } from '../Redux/FlowActions';
+import { PageVisibility, AuthState, updateAuthAction, IErrorStateAction, updatePageAction, updateErrorAction } from '../Redux/FlowActions';
 import { UserProfile } from '../RestHelpers/rest';
 import { CreateWorkItem } from './CreateWorkItem';
 import { QuickActions } from './QuickActions';
-import { Rest } from '../RestHelpers/rest';
+import { Rest, RestError } from '../RestHelpers/rest';
 
 interface IRefreshCallback { (): void; }
 interface IUserProfileCallback { (profile: UserProfile): void; }
@@ -80,7 +80,11 @@ export class VSTS extends React.Component<IVSTSProps, any> {
           }
           dispatch(updateAuthAction(AuthState.Authorized));
         } else {
-          Rest.getUserProfile((profile: UserProfile) => {
+          Rest.getUserProfile((error: RestError, profile: UserProfile) => {
+            if (error) {
+              this.props.dispatch(updateErrorAction(true, 'Failed to retrieve User Profile due to ' + error.type));
+              return;
+            }
             id = profile.id;
             Office.context.roamingSettings.set('member_ID', id);
             Office.context.roamingSettings.saveAsync();

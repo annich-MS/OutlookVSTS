@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import { Rest } from '../../RestHelpers/rest';
-import { AuthState, updateAuthAction } from '../../Redux/FlowActions';
+import { Rest, RestError } from '../../RestHelpers/rest';
+import { AuthState, updateAuthAction, updateErrorAction } from '../../Redux/FlowActions';
 
 /**
  * Properties needed for the LogoutButton component
@@ -54,10 +54,10 @@ export class LogoutButton extends React.Component<ILogoutProps, any> {
     private logout(): void {
         let dispatch: any = this.props.dispatch;
 
-        Rest.removeUser((error: Object) => {
+        Rest.removeUser((error: RestError) => {
             if (error) {
-                // handle error!
-                console.log(error);
+                this.props.dispatch(updateErrorAction(true, 'Failed to disconnect due to ' + error.type));
+                return;
             } else {
                 dispatch(updateAuthAction(AuthState.NotAuthorized));
             }

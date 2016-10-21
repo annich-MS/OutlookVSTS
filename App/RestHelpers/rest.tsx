@@ -86,13 +86,14 @@ export class RestError {
 }
 
 export interface IRestCallback { (output: string): void; }
-interface IItemCallback { (item: string): void; }
+interface IItemCallback { (error: RestError, item: string): void; }
+export interface IStringCallback { (error: RestError, data: string): void; }
 interface IErrorCallback { (error: RestError): void; }
-interface IUserProfileCallback { (profile: UserProfile): void; }
-interface IProjectsCallback { (projects: Project[]): void; }
-interface IAccountsCallback { (accounts: Account[]): void; }
-interface ITeamsCallback { (teams: Team[]): void; }
-interface IWorkItemCallback { (workItemInfo: WorkItemInfo): void; }
+interface IUserProfileCallback { (error: RestError, profile: UserProfile): void; }
+interface IProjectsCallback { (error: RestError, projects: Project[]): void; }
+interface IAccountsCallback { (error: RestError, accounts: Account[]): void; }
+interface ITeamsCallback { (error: RestError, teams: Team[]): void; }
+interface IWorkItemCallback { (error: RestError, workItemInfo: WorkItemInfo): void; }
 
 export abstract class Rest {
 
@@ -102,53 +103,79 @@ export abstract class Rest {
 
     public static getItem(item: number, callback: IItemCallback): void {
         this.makeRestCallWithArgs('getItem', { fields: 'System.TeamProject', ids: item, instance: 'o365exchange' }, (output) => {
-            callback(output);
+            try {
+                let parsed: any = JSON.parse(output); // will only succeed if error returned
+                callback(new RestError(parsed.error), null);
+            } catch (e) {
+                callback(null, output);
+            }
         });
     }
 
+
     public static getUserProfile(callback: IUserProfileCallback): void {
         this.makeRestCall('me', (output) => {
-            // console.log('get user prof' + output);
-            this.userProfile = new UserProfile(JSON.parse(output));
-            callback(this.userProfile);
+            let parsed: any = JSON.parse(output);
+            if (parsed.error) {
+                callback(new RestError(parsed.error), null);
+                return;
+            }
+            this.userProfile = new UserProfile(parsed);
+            callback(null, this.userProfile);
         });
     }
 
     public static getAccounts(memberId: string, callback: IAccountsCallback): void {
         this.makeRestCallWithArgs('accounts', { memberId: memberId }, (output) => {
             let parsed: any = JSON.parse(output);
+            if (parsed.error) {
+                callback(new RestError(parsed.error), null);
+                return;
+            }
             this.accounts = [];
             parsed.value.forEach(account => {
                 this.accounts.push(new Account(account));
             });
-            callback(this.accounts);
+            callback(null, this.accounts);
         });
     }
 
     public static getProjects(accountName: string, callback: IProjectsCallback): void {
         this.makeRestCallWithArgs('projects', { account: accountName }, (output) => {
             let parsed: any = JSON.parse(output);
+            if (parsed.error) {
+                callback(new RestError(parsed.error), null);
+                return;
+            }
             let projects: Project[] = [];
             parsed.value.forEach(project => {
                 projects.push(new Project(project));
             });
-            callback(projects);
+            callback(null, projects);
         });
     }
 
     public static getTeams(projectName: string, accountName: string, callback: ITeamsCallback): void {
         this.makeRestCallWithArgs('getTeams', { account: accountName, project: projectName }, (output) => {
             let parsed: any = JSON.parse(output);
+            if (parsed.error) {
+                callback(new RestError(parsed.error), null);
+            }
             let teams: Team[] = [];
             parsed.value.forEach(team => {
                 teams.push(new Team(team));
             });
-            callback(teams);
+            callback(null, teams);
         });
     }
 
-    public static getTeamAreaPath(account: string, project: string, teamName: string, callback: IRestCallback): void {
-        this.getTeams(project, account, (teams: Team[]) => {
+
+    public static getTeamAreaPath(account: string, project: string, teamName: string, callback: IStringCallback): void {
+        this.getTeams(project, account, (error: RestError, teams: Team[]) => {
+            if (error) {
+                callback(error, null);
+                return;
+            }
             let guid: string;
             teams.forEach(team => {
                 if (team.name === teamName) {
@@ -157,19 +184,26 @@ export abstract class Rest {
             });
             this.makeRestCallWithArgs('getTeamField', { account: account, project: project, team: guid }, (output) => {
                 let parsed: any = JSON.parse(output);
+                if (parsed.error) {
+                    callback(new RestError(parsed.error), null);
+                    return;
+                }
                 if (parsed.field.referenceName !== 'System.AreaPath') {
                     // we don't support teams that don't use area path as their team field
-                    callback('');
+                    callback(null, '');
                 } else {
-                    callback(parsed.defaultValue);
+                    callback(null, parsed.defaultValue);
                 }
             });
         });
     }
 
-    public static getCurrentIteration(teamName: string, project: string, account: string, callback: IRestCallback): void {
-
-        this.getTeams(project, account, (teams: Team[]) => {
+    public static getCurrentIteration(teamName: string, project: string, account: string, callback: IStringCallback): void {
+        this.getTeams(project, account, (error: RestError, teams: Team[]) => {
+            if (error) {
+                callback(error, null);
+                return;
+            }
             let guid: string;
             teams.forEach(team => {
                 if (team.name === teamName) {
@@ -177,36 +211,68 @@ export abstract class Rest {
                 }
             });
             this.makeRestCallWithArgs('getCurrentIteration', { account: account, project: project, team: guid }, (output) => {
-                callback(JSON.parse(output).value[0].path);
+                let parsed: any = JSON.parse(output);
+                if (parsed.error) {
+                    callback(new RestError(parsed.error), null);
+                    return;
+                }
+                callback(null, parsed.value[0].path);
             });
         });
     }
 
-    public static getMessage(ewsId: string, url: string, token: string, callback: IRestCallback): void {
-        Rest.makeRestCallWithArgs('getMessage', { ewsId: ewsId, token: token, url: url }, callback);
-    }
-
-    public static uploadAttachment(data: string, account: string, filename: string, callback: IRestCallback): void {
-        Rest.makePostRestCallWithArgs('uploadAttachment', { account: account, filename: filename }, data, (output) => {
-            let result: any = JSON.parse(output);
-            callback(result.url);
+    public static getMessage(ewsId: string, url: string, token: string, callback: IStringCallback ): void {
+        Rest.makeRestCallWithArgs('getMessage', { ewsId: ewsId, token: token, url: url }, (output) => {
+            try {
+                let parsed: any = JSON.parse(output); // will only succeed if error returned
+                callback(new RestError(parsed.error), null);
+            } catch (e) {
+                callback(null, output);
+            }
         });
     }
 
-    public static attachAttachment(account: any, attachmenturl: string, id: string, callback: IRestCallback): void {
-        Rest.makeRestCallWithArgs('attachAttachment', { account: account, attachmenturl: attachmenturl, id: id }, callback);
+    public static uploadAttachment(data: string, account: string, filename: string, callback: IStringCallback): void {
+        Rest.makePostRestCallWithArgs('uploadAttachment', { account: account, filename: filename}, data, (output) => {
+            let parsed: any = JSON.parse(output);
+            if (parsed.error) {
+                callback(new RestError(parsed.error), null);
+                return;
+            }
+            callback(null, parsed.url);
+        });
     }
 
-    public static createTask(options: any, account: string, project: string, team: string, callback: IWorkItemCallback): void {
-        this.getTeamAreaPath(account, project, team, (areapath) => {
-            options.areapath = areapath;
-            options.account = account;
-            options.project = project;
-            options.team = team;
-            this.getCurrentIteration(team, project, account, (iteration) => {
+    public static attachAttachment(account: any, attachmenturl: string, id: string, callback: IStringCallback): void {
+        Rest.makeRestCallWithArgs('attachAttachment', { account: account, attachmenturl: attachmenturl, id: id }, (output) => {
+            try {
+                let parsed: any = JSON.parse(output); // will only succeed if error returned
+                callback(new RestError(parsed.error), null);
+            } catch (e) {
+                callback(null, output);
+            }
+        });
+    }
+
+    public static createTask(options: any, account: string,
+                             project: string, team: string, callback: IWorkItemCallback): void {
+        this.getTeamAreaPath(account, project, team, (err, areapath) => {
+            if (err) {
+                callback(err, null);
+                return;
+            }
+            this.getCurrentIteration(team, project, account, (err2, iteration) => {
+                if (err2) {
+                    callback(err2, null);
+                }
                 options.iteration = iteration;
                 this.makeRestCallWithArgs('createTask', options, (output) => {
-                    callback(new WorkItemInfo(JSON.parse(output)));
+                    let parsed: any = JSON.parse(output);
+                    if (parsed.error) {
+                        callback(new RestError(parsed.error), null);
+                        return;
+                    }
+                    callback(null, new WorkItemInfo(parsed));
                 });
             });
         });

@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import { Rest, WorkItemInfo, IRestCallback } from '../RestHelpers/rest';
+import { Rest, RestError, WorkItemInfo, IStringCallback} from '../RestHelpers/rest';
 import { updateStage, Stage, updateSave } from '../Redux/WorkItemActions';
 import { IWorkItem } from '../Redux/WorkItemReducer';
-import { updatePageAction, PageVisibility } from '../Redux/FlowActions';
+import { updateErrorAction, updatePageAction, PageVisibility } from '../Redux/FlowActions';
 import { IUserProfileReducer, ISettingsAndListsReducer } from '../Redux/LogInReducer';
 
 /**
@@ -63,20 +63,30 @@ export class Save extends React.Component<ISaveProps, {}> {
     console.log(this.props.workItem.addAsAttachment);
     if (this.props.workItem.addAsAttachment) {
       Office.context.mailbox.getCallbackTokenAsync((tokenResult) => {
-        this.uploadAttachment(tokenResult.value, (attachmentUrl) => { this.createWorkItem(attachmentUrl); });
+        this.uploadAttachment(tokenResult.value, (error, attachmentUrl) => { this.createWorkItem(attachmentUrl); });
       });
     } else {
       this.createWorkItem(null);
     }
   }
 
-  public uploadAttachment(token: string, callback: IRestCallback): void {
+  public uploadAttachment(token: string, callback: IStringCallback): void {
     let id: string = Office.context.mailbox.item.itemId;
     let url: string = Office.context.mailbox.ewsUrl || 'https://outlook.office365.com/EWS/Exchange.asmx';
     let account: string = this.props.currentSettings.settings.account;
 
-    Rest.getMessage(id, url, token, (data) => {
-      Rest.uploadAttachment(data, account, Office.context.mailbox.item.normalizedSubject + '.eml', callback);
+    Rest.getMessage(id, url, token, (error, data) => {
+      if (error) {
+        this.props.dispatch(updateErrorAction(true, 'Failed to retrieve message file due to ' + error.type));
+        return;
+      }
+      Rest.uploadAttachment(data, account, Office.context.mailbox.item.normalizedSubject + '.eml', (err, link) => {
+        if (err) {
+          this.props.dispatch(updateErrorAction(true, 'Failed to upload email attachment due to ' + err.type));
+          return;
+        }
+        callback(null, link);
+      });
     });
 
   }
@@ -94,9 +104,12 @@ export class Save extends React.Component<ISaveProps, {}> {
     let project: string = this.props.currentSettings.settings.project;
     let teamName: string = this.props.currentSettings.settings.team;
 
-    Rest.createTask(options, account, project, teamName, (workItemInfo: WorkItemInfo) => {
+    Rest.createTask(options, account, project, teamName, (error: RestError, workItemInfo: WorkItemInfo) => {
+      if (error) {
+        this.props.dispatch(updateErrorAction(true, 'Failed to create work item due to ' + error.type));
+        return;
+      }
       dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
-      // dispatch(updateStage(Stage.Saved));
       dispatch(updatePageAction(PageVisibility.QuickActions));
     });
   }
@@ -137,8 +150,13 @@ export class Save extends React.Component<ISaveProps, {}> {
           disabled = {!this.shouldBeEnabled()}
           onClick = {this.handleSave.bind(this)} > {text}
         </button>
+        <button onClick={this.throwError.bind(this)} > Throw Error </button>
       </div>
     );
+  }
+
+  private throwError(): void {
+    this.props.dispatch(updateErrorAction(true, 'Static error'));
   }
 
   private get isSaving(): boolean { return this.props.workItem.stage === Stage.Saved; }

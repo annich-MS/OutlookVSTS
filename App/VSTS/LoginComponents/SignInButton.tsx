@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import { AuthState, updateAuthAction } from '../../Redux/FlowActions';
+import { AuthState, updateAuthAction, updateErrorAction } from '../../Redux/FlowActions';
 import { updateUserProfileAction} from '../../Redux/LogInActions';
-import {Rest, UserProfile} from '../../RestHelpers/rest';
+import {Rest, RestError, UserProfile} from '../../RestHelpers/rest';
 import { Auth} from '../authMM';
 
 /**
@@ -75,12 +75,16 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
       if (state === 'success') {
         clearInterval(authKey);
         let id: string = '';
-        Rest.getUserProfile((profile: UserProfile) => {
-            id = profile.id;
-            Office.context.roamingSettings.set('member_ID', '' + id);
-            Office.context.roamingSettings.saveAsync();
-            dispatch(updateUserProfileAction(name, email, id));
-            dispatch(updateAuthAction(AuthState.Authorized));
+        Rest.getUserProfile((error: RestError, profile: UserProfile) => {
+          if (error) {
+            this.props.dispatch(updateErrorAction(true, 'Failed to retrieve User Profile due to ' + error.type));
+            return;
+          }
+          id = profile.id;
+          Office.context.roamingSettings.set('member_ID', '' + id);
+          Office.context.roamingSettings.saveAsync();
+          dispatch(updateUserProfileAction(name, email, id));
+          dispatch(updateAuthAction(AuthState.Authorized));
       });
       }
     });
@@ -99,10 +103,11 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
       font: '17px arial, ms-segoe-ui',
       'margin-left': '20%',
     };
+    let buttonClasses: string = 'ms-Button';
 
     return(
       <div>
-      <button className = 'ms-Button' style = {style_button} onClick = {this.authOnClick.bind(this)}> Sign in to get started </button>
+      <button className={buttonClasses} onClick = {this.authOnClick.bind(this)}> Sign in to get started </button>
       </div>);
   }
   }

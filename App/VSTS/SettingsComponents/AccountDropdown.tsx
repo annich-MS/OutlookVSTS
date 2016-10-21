@@ -2,8 +2,8 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { updateAccountSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
-import {updatePopulatingAction } from '../../Redux/FlowActions';
-import {Rest, Account} from '../../RestHelpers/rest';
+import { updateErrorAction, updatePopulatingAction } from '../../Redux/FlowActions';
+import {Rest, RestError, Account} from '../../RestHelpers/rest';
 require('react-select/dist/react-select.css');
 let Select: any = require('react-select');
 
@@ -137,7 +137,11 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
     let accountNamesOnly: string[] = [];
     let selectedAccount: string = this.props.account;
     console.log('populating accounts' + this.props.email + this.props.memberId);
-    Rest.getAccounts(this.props.memberId, (accountList: Account[]) => {
+    Rest.getAccounts(this.props.memberId, (error: RestError, accountList: Account[]) => {
+      if (error) {
+        this.props.dispatch(updateErrorAction(true, 'Accounts failed to populate due to ' + error.type));
+        return;
+      }
       accountList = accountList.sort(Account.compare);
       accountList.forEach(acc => {
         accountOptions.push({ label: acc.name, value: acc.name });

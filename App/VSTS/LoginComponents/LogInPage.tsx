@@ -22,6 +22,7 @@ export class LogInPage extends React.Component<{}, {}> {
       'margin-top': '15px',
     };
 
+
     return(<div>
             <image style = {style_image} src = '../../../public/Images/VSTSLogo_Long.png'/>
             <AddInDescription />

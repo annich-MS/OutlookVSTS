@@ -12,29 +12,17 @@ export class AddInDescription extends React.Component<{}, {}> {
    * Renders the add-in description text
    */
   public render(): React.ReactElement<Provider> {
-    let style_section: any = {
-      color: 'rgb(0,122,204)',
-      font: '20px arial, ms-segoe-ui-semibold',
-      'margin-bottom': '15px',
-      'margin-left': '10px',
-    };
-
-    let style_text: any = {
-       color: 'rgb(63,63,63)',
-       font: '17px arial, ms-segoe-ui',
-       'margin-bottom': '30px',
-       'margin-left': '10px',
-       'margin-right': '10px',
-    };
+    let titleClasses: string = 'ms-font-l ms-fontWeight-semibold ms-fontColor-themePrimary';
+    let bodyClasses: string = 'ms-font-l';
 
     return(<div>
       <div>
-        <h1 style = {style_section}> Create work items</h1>
-        <p  style = {style_text}>Turn an email thread into a work item directly from Outlook!</p>
+        <h1 className={titleClasses} > Create work items</h1>
+        <p className={bodyClasses}>Turn an email thread into a work item directly from Outlook!</p>
       </div>
       <div>
-        <h1 style = {style_section}> Communicate with your team </h1>
-        <p style = {style_text}> Once the work item is created,
+        <h1 className={titleClasses}> Communicate with your team </h1>
+        <p className={bodyClasses}> Once the work item is created,
         use the reply-all feature to close the thread with a link and details to the work item. </p>
       </div>
       </div>

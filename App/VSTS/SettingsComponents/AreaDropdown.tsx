@@ -2,8 +2,8 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import {updateTeamSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
-import {updatePopulatingAction } from '../../Redux/FlowActions';
-import {Rest, Team } from '../../RestHelpers/rest';
+import {updatePopulatingAction, updateErrorAction } from '../../Redux/FlowActions';
+import {Rest, RestError, Team } from '../../RestHelpers/rest';
 require('react-select/dist/react-select.css');
 let Select: any = require('react-select');
 
@@ -165,7 +165,11 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
     let teamNamesOnly: string[] = [];
     let selectedTeam: string = this.props.team;
 
-    Rest.getTeams(project, account, (teams: Team[]) => {
+    Rest.getTeams(project, account, (error: RestError, teams: Team[]) => {
+      if (error) {
+        this.props.dispatch(updateErrorAction(true, 'Teams failed to populate due to ' + error.type));
+        return;
+      }
       teams = teams.sort(Team.compare);
       teams.forEach(team => {
         teamOptions.push({ label: team.name, value: team.name });

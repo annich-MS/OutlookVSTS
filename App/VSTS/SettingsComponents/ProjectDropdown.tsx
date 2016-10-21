@@ -2,8 +2,8 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import {ISettingsInfo, updateProjectSettingsAction } from '../../Redux/LogInActions';
-import {updatePopulatingAction } from '../../Redux/FlowActions';
-import {Rest, Project } from '../../RestHelpers/rest';
+import {updatePopulatingAction, updateErrorAction } from '../../Redux/FlowActions';
+import {Rest, RestError, Project } from '../../RestHelpers/rest';
 
 // other import statements don't work properly
 require('react-select/dist/react-select.css');
@@ -164,7 +164,11 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
     let selectedProject: string = this.props.project;
     console.log('populating projects');
 
-    Rest.getProjects(account, (projects: Project[]) => {
+    Rest.getProjects(account, (error: RestError, projects: Project[]) => {
+      if (error) {
+        this.props.dispatch(updateErrorAction(true, 'Projects failed to populate due to ' + error.type));
+        return;
+      }
       projects = projects.sort(Project.compare);
       projects.forEach(project => {
         projectOptions.push({ label: project.name, value: project.name });
