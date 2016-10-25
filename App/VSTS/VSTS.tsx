@@ -70,7 +70,7 @@ export class VSTS extends React.Component<IVSTSProps, any> {
     let dispatch: any = this.props.dispatch;
     const email: string = Office.context.mailbox.userProfile.emailAddress;
     const name: string = Office.context.mailbox.userProfile.displayName;
-    Auth.getAuthState(email, function (state: string): void {
+    Auth.getAuthState(function (state: string): void {
       if (state === 'success') {
         let id: string = Office.context.roamingSettings.get('memberID');
         if (id) {
@@ -80,7 +80,7 @@ export class VSTS extends React.Component<IVSTSProps, any> {
           }
           dispatch(updateAuthAction(AuthState.Authorized));
         } else {
-          Rest.getUserProfile(email, (profile: UserProfile) => {
+          Rest.getUserProfile((profile: UserProfile) => {
             id = profile.id;
             Office.context.roamingSettings.set('member_ID', id);
             Office.context.roamingSettings.saveAsync();

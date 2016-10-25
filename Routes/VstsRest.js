@@ -25,7 +25,7 @@ var FIELDS = {
 };
 
 function createError(type, more) {
-  return JSON.stringify({error: { type: type, more: more}});
+  return JSON.stringify({ error: { type: type, more: more } });
 }
 
 /**
@@ -36,7 +36,9 @@ function createError(type, more) {
  * @param {requestCallback} callback - the callback to make upon completion
  */
 function makeAuthenticatedRequest(user, options, callback) {
-  Authenticate.getToken(user, (output) => { handleAuthentication(output, options, callback) });
+  Authenticate.getUID(user, (uid) => {
+    Authenticate.getToken(uid, (output) => { handleAuthentication(output, options, callback) });
+  });
 }
 
 /**
@@ -48,17 +50,17 @@ function makeAuthenticatedRequest(user, options, callback) {
  */
 function handleAuthentication(output, options, callback) {
 
-    if (output.success) {
+  if (output.success) {
 
-      options.headers.Authorization = "Bearer " + output.data.token;
-      makeHttpsRequest(options, callback);
+    options.headers.Authorization = "Bearer " + output.data.token;
+    makeHttpsRequest(options, callback);
 
-    } else {
+  } else {
 
-      console.log("could not find token for user " + output.user);
-      callback(null);
+    console.log("could not find token for user " + output.user);
+    callback(null);
 
-    }
+  }
 }
 
 /**
@@ -76,17 +78,17 @@ function makeHttpsRequest(options, callback) {
 
   console.log(options.method + ": " + options.uri);
 
-  request(options).then( (output) => {
-      try {
-        JSON.parse(output);
-      } catch (e) {
-        output = createError("Unparseable output", output)
-      }
-      callback(output);
-    }, (error) => { 
-      console.log(JSON.stringify(error)); 
-      callback(createError("Request Error", error))
-    });
+  request(options).then((output) => {
+    try {
+      JSON.parse(output);
+    } catch (e) {
+      output = createError("Unparseable output", output)
+    }
+    callback(output);
+  }, (error) => {
+    console.log(JSON.stringify(error));
+    callback(createError("Request Error", error))
+  });
 
 }
 
@@ -101,7 +103,7 @@ function makeHttpsRequest(options, callback) {
  * @returns options object for use with https request
  */
 function createOptions(input, method) {
-  return { 
+  return {
     uri: "https://" + input.host + encodeURI(input.path) + "?" + querystring.stringify(input.query),
     method: method,
     headers: input.headers || {},
@@ -143,7 +145,7 @@ router.use('/getItem', router.getItem);
  */
 router.me = function (req, res) {
   var input = req.query;
-  if(!input.query) { input.query = {}; }
+  if (!input.query) { input.query = {}; }
   input.query['api-version'] = API1_0;
   input.host = 'app.vssps.visualstudio.com';
   input.path = '/_apis/profile/profiles/me';
@@ -159,7 +161,7 @@ router.use('/me', router.me);
  */
 router.accounts = function (req, res) {
   var input = req.query;
-  if(!input.query) { input.query = {}; }
+  if (!input.query) { input.query = {}; }
   input.query.memberId = input.memberId;
   input.query['api-version'] = API1_0;
   input.host = 'app.vssps.visualstudio.com';
@@ -176,7 +178,7 @@ router.use('/accounts', router.accounts);
  */
 router.projects = function (req, res) {
   var input = req.query;
-  if(!input.query) { input.query = {}; }
+  if (!input.query) { input.query = {}; }
 
   input.query['api-version'] = API1_0;
   input.host = input.account + ".visualstudio.com";
@@ -194,7 +196,7 @@ router.use('/projects', router.projects);
  */
 router.getTeams = function (req, res) {
   var input = req.query;
-  if(!input.query) { input.query = {}; }
+  if (!input.query) { input.query = {}; }
 
   input.query['api-version'] = API1_0;
   input.host = input.account + '.visualstudio.com';
@@ -211,7 +213,7 @@ router.use('/getTeams', router.getTeams);
  */
 router.getTeamField = function (req, res) {
   var input = req.query;
-  if(!input.query) { input.query = {}; }
+  if (!input.query) { input.query = {}; }
 
   input.query['api-version'] = API2_0_Preview;
   input.host = input.account + '.visualstudio.com';
@@ -227,9 +229,9 @@ router.use('/getTeamField', router.getTeamField);
  * @param {any} res
  */
 router.getCurrentIteration = function (req, res) {
-  console.log ('in vstsrest iteration');
+  console.log('in vstsrest iteration');
   var input = req.query;
-  if(!input.query) { input.query = {}; }
+  if (!input.query) { input.query = {}; }
   input.query['$timeframe'] = 'current';
   input.query['api-version'] = API2_0_Preview;
   input.host = input.account + '.visualstudio.com';
@@ -247,30 +249,30 @@ router.use('/getMessage', router.getMessage);
 
 function downloadMessageFromEWS(messageId, ewsUrl, token, callback) {
   var body = '<?xml version="1.0" encoding="utf-8"?>' +
-          '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' + 
-          '               xmlns:xsd="http://www.w3.org/2001/XMLSchema"' + 
-          '               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ' +
-          '               xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">' +
-          '    <soap:Header>' +
-          '        <RequestServerVersion Version="Exchange2013" ' +
-          '                              xmlns="http://schemas.microsoft.com/exchange/services/2006/types"' +
-          '                              soap:mustUnderstand="0" />' +
-          '    </soap:Header>' +
-          '    <soap:Body>' +
-          '        <GetItem xmlns="http://schemas.microsoft.com/exchange/services/2006/messages"' + 
-          '                 xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">' + 
-          '            <ItemShape>' +
-          '                <t:BaseShape>IdOnly</t:BaseShape>' +
-          '                <t:IncludeMimeContent>true</t:IncludeMimeContent>' +
-          '            </ItemShape>' +
-          '            <ItemIds>' +
-          '                <t:ItemId Id="' + messageId + '"/>' +
-          '            </ItemIds>' +
-          '       </GetItem>' +
-          '   </soap:Body>' +
-          '</soap:Envelope>';
+    '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
+    '               xmlns:xsd="http://www.w3.org/2001/XMLSchema"' +
+    '               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ' +
+    '               xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">' +
+    '    <soap:Header>' +
+    '        <RequestServerVersion Version="Exchange2013" ' +
+    '                              xmlns="http://schemas.microsoft.com/exchange/services/2006/types"' +
+    '                              soap:mustUnderstand="0" />' +
+    '    </soap:Header>' +
+    '    <soap:Body>' +
+    '        <GetItem xmlns="http://schemas.microsoft.com/exchange/services/2006/messages"' +
+    '                 xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">' +
+    '            <ItemShape>' +
+    '                <t:BaseShape>IdOnly</t:BaseShape>' +
+    '                <t:IncludeMimeContent>true</t:IncludeMimeContent>' +
+    '            </ItemShape>' +
+    '            <ItemIds>' +
+    '                <t:ItemId Id="' + messageId + '"/>' +
+    '            </ItemIds>' +
+    '       </GetItem>' +
+    '   </soap:Body>' +
+    '</soap:Envelope>';
   var options = {
-    body: body ,
+    body: body,
     uri: ewsUrl,
     headers: {
       Authorization: "Bearer " + token,
@@ -290,7 +292,7 @@ function extractMessageId(response, callback) {
   });
 }
 
-router.uploadAttachment = function(req, res) {
+router.uploadAttachment = function (req, res) {
   var input = req.query;
   input.body = decodeBase64Data(req.body);
   input.host = input.account + ".visualstudio.com";
@@ -325,9 +327,8 @@ router.createTask = function (req, res) {
     jsonPatchItem((input.type == "Bug" ? FIELDS.REPRO_STEPS : FIELDS.DESCRIPTION), input.body),
   ];
   console.log("Attachments:" + input.attachment)
-  if(input.attachment)
-  {
-    input.body.push(jsonPatchItem(FIELDS.RELATIONS, {"rel": "AttachedFile", "url": input.attachment}));
+  if (input.attachment) {
+    input.body.push(jsonPatchItem(FIELDS.RELATIONS, { "rel": "AttachedFile", "url": input.attachment }));
   }
 
   input.body = JSON.stringify(input.body);
@@ -336,12 +337,14 @@ router.createTask = function (req, res) {
 router.use('/createTask', router.createTask);
 
 router.disconnect = function (req, res) {
-  Authenticate.disconnect(req.query.user, (err) => {
-    var output = "{}";
-    if(err) {
-      output = createError("Database Error", err);
-    }
-    res.send(output)
-  })
+  Authenticate.getUID(req.query.user, (uid) => {
+    Authenticate.disconnect(uid, (err) => {
+      var output = "{}";
+      if (err) {
+        output = createError("Database Error", err);
+      }
+      res.send(output);
+    })
+  });
 }
 router.use('/disconnect', router.disconnect);

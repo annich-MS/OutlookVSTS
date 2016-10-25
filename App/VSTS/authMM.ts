@@ -1,3 +1,5 @@
+import { Rest } from '../RestHelpers/rest';
+
 /**
  * interface for callback
  * @interface IAuthStateCallback 
@@ -15,13 +17,15 @@ export class Auth {
      * @param {IAuthStateCallback} callback
      * @return {void}
      */
-    public static getAuthState(user: string, callback: IAuthStateCallback): void {
-        $.get('./authenticate/db?user=' + user, (output) => {
-            if (output === 'success') {
-                callback('success');
-            } else {
-                callback('failure');
-            }
+    public static getAuthState(callback: IAuthStateCallback): void {
+        Rest.getUser((user: string) => {
+            $.get('./authenticate/db?user=' + user, (output) => {
+                if (output === 'success') {
+                    callback('success');
+                } else {
+                    callback('failure');
+                }
+            });
         });
     }
 }

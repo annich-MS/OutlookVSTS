@@ -100,22 +100,22 @@ export abstract class Rest {
     private static accounts: Account[];
 
 
-    public static getItem(user: string, item: number, callback: IItemCallback): void {
-        this.makeRestCallWithArgs('getItem', user, { fields: 'System.TeamProject', ids: item, instance: 'o365exchange' }, (output) => {
+    public static getItem(item: number, callback: IItemCallback): void {
+        this.makeRestCallWithArgs('getItem', { fields: 'System.TeamProject', ids: item, instance: 'o365exchange' }, (output) => {
             callback(output);
         });
     }
 
-    public static getUserProfile(user: string, callback: IUserProfileCallback): void {
-        this.makeRestCall('me', user, (output) => {
+    public static getUserProfile(callback: IUserProfileCallback): void {
+        this.makeRestCall('me', (output) => {
             // console.log('get user prof' + output);
             this.userProfile = new UserProfile(JSON.parse(output));
             callback(this.userProfile);
         });
     }
 
-    public static getAccounts(user: string, memberId: string, callback: IAccountsCallback): void {
-        this.makeRestCallWithArgs('accounts', user, { memberId: memberId }, (output) => {
+    public static getAccounts(memberId: string, callback: IAccountsCallback): void {
+        this.makeRestCallWithArgs('accounts', { memberId: memberId }, (output) => {
             let parsed: any = JSON.parse(output);
             this.accounts = [];
             parsed.value.forEach(account => {
@@ -125,8 +125,8 @@ export abstract class Rest {
         });
     }
 
-    public static getProjects(user: string, accountName: string, callback: IProjectsCallback): void {
-        this.makeRestCallWithArgs('projects', user, { account: accountName }, (output) => {
+    public static getProjects(accountName: string, callback: IProjectsCallback): void {
+        this.makeRestCallWithArgs('projects', { account: accountName }, (output) => {
             let parsed: any = JSON.parse(output);
             let projects: Project[] = [];
             parsed.value.forEach(project => {
@@ -136,8 +136,8 @@ export abstract class Rest {
         });
     }
 
-    public static getTeams(user: string, projectName: string, accountName: string, callback: ITeamsCallback): void {
-        this.makeRestCallWithArgs('getTeams', user, { account: accountName, project: projectName }, (output) => {
+    public static getTeams(projectName: string, accountName: string, callback: ITeamsCallback): void {
+        this.makeRestCallWithArgs('getTeams', { account: accountName, project: projectName }, (output) => {
             let parsed: any = JSON.parse(output);
             let teams: Team[] = [];
             parsed.value.forEach(team => {
@@ -147,15 +147,15 @@ export abstract class Rest {
         });
     }
 
-    public static getTeamAreaPath(user: string, account: string, project: string, teamName: string, callback: IRestCallback): void {
-        this.getTeams(user, project, account, (teams: Team[]) => {
+    public static getTeamAreaPath(account: string, project: string, teamName: string, callback: IRestCallback): void {
+        this.getTeams(project, account, (teams: Team[]) => {
             let guid: string;
             teams.forEach(team => {
                 if (team.name === teamName) {
                     guid = team.id;
                 }
             });
-            this.makeRestCallWithArgs('getTeamField', user, { account: account, project: project, team: guid }, (output) => {
+            this.makeRestCallWithArgs('getTeamField', { account: account, project: project, team: guid }, (output) => {
                 let parsed: any = JSON.parse(output);
                 if (parsed.field.referenceName !== 'System.AreaPath') {
                     // we don't support teams that don't use area path as their team field
@@ -167,54 +167,53 @@ export abstract class Rest {
         });
     }
 
-    public static getCurrentIteration(user: string, teamName: string, project: string, account: string, callback: IRestCallback): void {
+    public static getCurrentIteration(teamName: string, project: string, account: string, callback: IRestCallback): void {
 
-        this.getTeams(user, project, account, (teams: Team[]) => {
+        this.getTeams(project, account, (teams: Team[]) => {
             let guid: string;
             teams.forEach(team => {
                 if (team.name === teamName) {
                     guid = team.id;
                 }
             });
-            this.makeRestCallWithArgs( 'getCurrentIteration', user, { account: account, project: project, team: guid }, (output) => {
-                    callback(JSON.parse(output).value[0].path);
+            this.makeRestCallWithArgs('getCurrentIteration', { account: account, project: project, team: guid }, (output) => {
+                callback(JSON.parse(output).value[0].path);
             });
         });
     }
 
-    public static getMessage(user: string, ewsId: string, url: string, token: string, callback: IRestCallback ): void {
-        Rest.makeRestCallWithArgs('getMessage', user, { ewsId: ewsId, token: token, url: url }, callback);
+    public static getMessage(ewsId: string, url: string, token: string, callback: IRestCallback): void {
+        Rest.makeRestCallWithArgs('getMessage', { ewsId: ewsId, token: token, url: url }, callback);
     }
 
-    public static uploadAttachment(user: string, data: string, account: string, filename: string, callback: IRestCallback): void {
-        Rest.makePostRestCallWithArgs('uploadAttachment', user, { account: account, filename: filename}, data, (output) => {
+    public static uploadAttachment(data: string, account: string, filename: string, callback: IRestCallback): void {
+        Rest.makePostRestCallWithArgs('uploadAttachment', { account: account, filename: filename }, data, (output) => {
             let result: any = JSON.parse(output);
             callback(result.url);
         });
     }
 
-    public static attachAttachment(user: string, account: any, attachmenturl: string, id: string, callback: IRestCallback): void {
-        Rest.makeRestCallWithArgs('attachAttachment', user, { account: account, attachmenturl: attachmenturl, id: id }, callback);
+    public static attachAttachment(account: any, attachmenturl: string, id: string, callback: IRestCallback): void {
+        Rest.makeRestCallWithArgs('attachAttachment', { account: account, attachmenturl: attachmenturl, id: id }, callback);
     }
 
-    public static createTask(user: string, options: any, account: string,
-                             project: string, team: string, callback: IWorkItemCallback): void {
-        this.getTeamAreaPath(user, account, project, team, (areapath) => {
+    public static createTask(options: any, account: string, project: string, team: string, callback: IWorkItemCallback): void {
+        this.getTeamAreaPath(account, project, team, (areapath) => {
             options.areapath = areapath;
             options.account = account;
             options.project = project;
             options.team = team;
-            this.getCurrentIteration(user, team, project, account, (iteration) => {
+            this.getCurrentIteration(team, project, account, (iteration) => {
                 options.iteration = iteration;
-                this.makeRestCallWithArgs('createTask', user, options, (output) => {
+                this.makeRestCallWithArgs('createTask', options, (output) => {
                     callback(new WorkItemInfo(JSON.parse(output)));
                 });
             });
         });
     }
 
-    public static removeUser(user: string, callback: IErrorCallback): void {
-        Rest.makeRestCall('disconnect', user, (output) => {
+    public static removeUser(callback: IErrorCallback): void {
+        Rest.makeRestCall('disconnect', (output) => {
             let parsed: any = JSON.parse(output);
             if (parsed.error) {
                 callback(new RestError(parsed.error));
@@ -223,26 +222,37 @@ export abstract class Rest {
             }
         });
     }
-
-    private static makeRestCall(name: string, user: string, callback: IRestCallback): void {
-        $.get('./rest/' + name + '?user=' + user, callback);
+    public static getUser(callback: IRestCallback): void {
+        Office.context.mailbox.getUserIdentityTokenAsync((asyncResult: Office.AsyncResult) => {
+            callback(asyncResult.value);
+        });
     }
 
-    private static makeRestCallWithArgs(name: string, user: string, args: any, callback: IRestCallback): void {
-        const path: string = './rest/' + name + '?user=' + user + '&' + $.param(args);
-        $.get(path, callback);
+    private static makeRestCall(name: string, callback: IRestCallback): void {
+        Rest.getUser((user: string) => {
+            $.get('./rest/' + name + '?user=' + user, callback);
+        });
     }
 
-    private static makePostRestCallWithArgs(name: string, user: string, args: any, body: string, callback: IRestCallback): void {
-        let options: any = {
-             data: body,
-             headers: {
-                 'Content-Type': 'text/plain',
-             },
-             method: 'POST',
-             url: '/rest/' + name + '?user=' + user + '&' + $.param(args),
-        };
-        $.ajax(options).done(callback);
+    private static makeRestCallWithArgs(name: string, args: any, callback: IRestCallback): void {
+        Rest.getUser((user: string) => {
+            const path: string = './rest/' + name + '?user=' + user + '&' + $.param(args);
+            $.get(path, callback);
+        });
+    }
+
+    private static makePostRestCallWithArgs(name: string, args: any, body: string, callback: IRestCallback): void {
+        Rest.getUser((user: string) => {
+            let options: any = {
+                data: body,
+                headers: {
+                    'Content-Type': 'text/plain',
+                },
+                method: 'POST',
+                url: '/rest/' + name + '?user=' + user + '&' + $.param(args),
+            };
+            $.ajax(options).done(callback);
+        });
     }
 
 }

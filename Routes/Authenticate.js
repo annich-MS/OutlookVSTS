@@ -3,6 +3,8 @@ var fs = require('fs');
 var tedious = require('tedious');
 var https = require('https');
 var querystring = require('querystring');
+var jwt = require('jsonwebtoken');
+var crypto = require('crypto');
 var PROD = process.env.prod;
 var TYPES = tedious.TYPES;
 
@@ -11,6 +13,18 @@ var REFRESH_MINIMUM = 60;
 var router = express.Router({ mergeParams: true });
 module.exports = router;
 
+var salt = null;
+function getSalt() {
+  if (salt === null) {
+    if (PROD) {
+      salt = JSON.parse(process.env.salt);
+    }
+    else {
+      salt = require('../secrets/salt.js')
+    }
+  }
+  return salt;
+}
 
 var _clientInfo = null;
 getClientInfo = function () {
@@ -45,7 +59,7 @@ getOAuth = function () {
 var dbConfig = null;
 getDbConfig = function () {
   if (dbConfig === null) {
-   if (PROD) {
+    if (PROD) {
       dbConfig = JSON.parse(process.env.dbConfigJson);
     }
     else {
@@ -58,8 +72,8 @@ getDbConfig = function () {
 var table = PROD ? 'dbo.Users' : 'dbo.TestUsers'
 
 var GET_TOKEN_QUERY = "SELECT TOP 1 x.Token, x.Expiry, x.Refresh FROM " + table + " AS x WHERE Id=@Id"
-var SAVE_TOKEN_QUERY = 
-`IF EXISTS(` + GET_TOKEN_QUERY + `)
+var SAVE_TOKEN_QUERY =
+  `IF EXISTS(` + GET_TOKEN_QUERY + `)
   UPDATE ` + table + ` SET Token=@Token, Expiry=DATEADD(ss, @Expiry, GETDATE()), Refresh=@Refresh WHERE Id=@Id;
 ELSE
   INSERT INTO ` + table + `(Id, Token, Expiry, Refresh) VALUES (@Id, @Token, DATEADD(ss, @Expiry, GETDATE()), @Refresh);`;
@@ -83,7 +97,67 @@ createConnection = function (reason, callback) {
   });
 }
 
-router.getToken = function (user, callback) {
+function beautify(body) {
+  var begin = "-----BEGIN CERTIFICATE-----";
+  var end = "-----END CERTIFICATE-----"
+
+  body = body.replace(/-/g, '+');
+  body = body.replace(/_/g, '/');
+
+  var arr = [];
+  arr.push(begin);
+  while (body.length > 0) {
+    var line = body.slice(0, 64);
+    arr.push(line);
+    body = body.slice(64);
+  }
+  arr.push(end);
+  return arr.join('\n');
+}
+
+function bytesToString(bytes) {
+  var str = "";
+  for (var i = 0; i < bytes.length; i++) {
+    str += String.fromCharCode(bytes[i]);
+  }
+  return str;
+}
+
+router.getUID = function(token, callback) {
+  var decoded = jwt.decode(token, { complete: true });
+  var appctx = JSON.parse(decoded.payload.appctx);
+  https.get(appctx.amurl, (response) => {
+    var output = "";
+    response.on('data', (d) => {
+      output += d;
+    });
+
+    response.on('end', () => {
+      var responseBlob = JSON.parse(output);
+      responseBlob.keys.forEach((key) => {
+        if (key.keyinfo.x5t === decoded.header.x5t) {
+          var public = beautify(key.keyvalue.value);
+          jwt.verify(token, public, { algorithms: ['RS256'] }, (err, verified) => {
+            if (!verified) {
+              callback("");
+            }
+            var id = appctx.msexchuid;
+            var url = appctx.amurl;
+            var input = bytesToString(getSalt()) + id + url;
+            var hash = crypto.createHash('sha256');
+            hash.update(input);
+            var body = hash.digest('base64');
+            body = body.replace(/\+/g, '-');
+            body = body.replace(/\//g, '_');
+            callback(body);
+          });
+        }
+      })
+    })
+  });
+}
+
+router.getToken = function (uid, callback) {
   createConnection("getToken", (connection) => {
     var request = new tedious.Request(GET_TOKEN_QUERY, function (err, rowcount, rows) {
       if (err) {
@@ -104,16 +178,15 @@ router.getToken = function (user, callback) {
       }
       connection.close();
     });
-    request.addParameter('Id', TYPES.VarChar, user);
+    request.addParameter('Id', TYPES.VarChar, uid);
     connection.execSql(request);
   });
 }
 
-router.newToken = function (user, assertion, refresh, callback) {
-
+router.newToken = function (assertion, refresh, callback) {
   var oauth = getOAuth();
   var data = {
-    assertion: assertion, 
+    assertion: assertion,
     client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
     grant_type: refresh ? "refresh_token" : "urn:ietf:params:oauth:grant-type:jwt-bearer",
     client_assertion: oauth.clientSecret,
@@ -127,22 +200,22 @@ router.newToken = function (user, assertion, refresh, callback) {
       'Content-Type': 'application/x-www-form-urlencoded',
     }
   };
-  var request = https.request(options, function(response) {
+  var request = https.request(options, function (response) {
     var str = '';
     var errored = false;
-    
-    response.on('data', function(chunk) {
+
+    response.on('data', function (chunk) {
       str += chunk
     });
-    
-    response.on('end', function() {
-      if(!errored) {
+
+    response.on('end', function () {
+      if (!errored) {
         var result = JSON.parse(str);
         callback(null, result.access_token, result.refresh_token, result);
       }
     });
-    
-    response.on('error', function(err) {
+
+    response.on('error', function (err) {
       errored = true;
       callback(err);
     });
@@ -151,53 +224,58 @@ router.newToken = function (user, assertion, refresh, callback) {
   request.end();
 }
 
+
+
 router.db = function (req, res) {
-  router.getToken(req.query.user, (response) => {
-    if (response.success) { // recieved row
-      var data = response.data;
-      var expiryLimit = new Date();
-      expiryLimit.setMinutes(expiryLimit.getMinutes() + REFRESH_MINIMUM);
-      if (data.expiry > expiryLimit) { // if the token doesn't expire before our limit
-        res.send("success");
+  router.getUID(req.query.user, (uid) => {
+    router.getToken(uid, (response) => {
+      if (response.success) { // recieved row
+        var data = response.data;
+        var expiryLimit = new Date();
+        expiryLimit.setMinutes(expiryLimit.getMinutes() + REFRESH_MINIMUM);
+        if (data.expiry > expiryLimit) { // if the token doesn't expire before our limit
+          res.send("success");
+        }
+        else {
+          console.log("middle state")
+          router.refreshToken(uid, data.refresh, res);
+        }
       }
       else {
-        console.log("middle state")
-        router.refreshToken(req.query.user, data.refresh, res);
+        res.send("failure");
       }
-    }
-    else {
-      res.send("failure");
-    }
+    });
   });
 };
 router.use('/db', router.db);
 
 router.callback = function (req, res) {
   user = req.query.state;
-  router.newToken(user, req.query.code, false, (err, access_token, refresh_token, results) => {
-      if(err) {
-        console.log(err);
-      } else {
-        res.redirect("../done");
-        saveToken(user, access_token, results['expires_in'], refresh_token);
-      }
-    });
+  router.newToken(req.query.code, false, (err, access_token, refresh_token, results) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.redirect("../done");
+      saveToken(user, access_token, results['expires_in'], refresh_token);
+    }
+  });
 
 };
 router.use('/callback', router.callback);
 
 router.authorize = function (req, res) {
-  
-  var oauth = getOAuth();
-  var authParams = {
-    client_id: oauth.clientId,
-    response_type: 'Assertion',
-    state: req.query.user,
-    scope: oauth.scopes,
-    redirect_uri: oauth.redirectUri,
-  };
-  res.redirect("https://" + oauth.baseUrl + oauth.authEndpoint + '?' + querystring.stringify(authParams));
 
+  router.getUID(req.query.user, (uid) => {
+    var oauth = getOAuth();
+    var authParams = {
+      client_id: oauth.clientId,
+      response_type: 'Assertion',
+      state: uid,
+      scope: oauth.scopes,
+      redirect_uri: oauth.redirectUri,
+    };
+    res.redirect("https://" + oauth.baseUrl + oauth.authEndpoint + '?' + querystring.stringify(authParams));
+  });
 };
 router.use('/', router.authorize);
 
@@ -216,9 +294,8 @@ router.disconnect = function (user, callback) {
 }
 
 router.refreshToken = function (user, refresh, res) {
-  
-  router.newToken(user, refresh, true, (err, access_token, refresh_token, results) => {
-    if(err) {
+  router.newToken(refresh, true, (err, access_token, refresh_token, results) => {
+    if (err) {
       console.log(err);
     } else {
       res.send("success");

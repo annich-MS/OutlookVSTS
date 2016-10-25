@@ -157,7 +157,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
     let teamNamesOnly: string[] = [];
     let selectedTeam: string = this.props.team;
 
-    Rest.getTeams(this.props.email, project, account, (teams: Team[]) => {
+    Rest.getTeams(project, account, (teams: Team[]) => {
       teams = teams.sort(Team.compare);
       teams.forEach(team => {
         teamOptions.push({ label: team.name, value: team.name });

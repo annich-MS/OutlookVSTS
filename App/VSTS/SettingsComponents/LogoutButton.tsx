@@ -54,7 +54,7 @@ export class LogoutButton extends React.Component<ILogoutProps, any> {
     private logout(): void {
         let dispatch: any = this.props.dispatch;
 
-        Rest.removeUser(this.props.email, (error: Object) => {
+        Rest.removeUser((error: Object) => {
             if (error) {
                 // handle error!
                 console.log(error);

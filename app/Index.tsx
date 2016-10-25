@@ -63,6 +63,7 @@ class Main extends React.Component<{}, {}> {
         return(<div>Route: '{route}' is not a valid route!</div>);
     }
   }
+
   private addPolyfill(): void {
     if (!String.prototype.includes) {
       String.prototype.includes = function(): boolean {

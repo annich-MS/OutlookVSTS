@@ -48,10 +48,12 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
    * @returns {void}
    */
   public authOnClick(): void {
-    window.open('./authenticate?user=' + Office.context.mailbox.userProfile.emailAddress);
-    this.props.dispatch(updateAuthAction(AuthState.Request));
-    let pollInterval: number = 3000;
-    this.authInterval = setInterval(this.refreshAuth, pollInterval);
+    Rest.getUser( (user: string) => {
+      window.open('./authenticate?user=' + user);
+      this.props.dispatch(updateAuthAction(AuthState.Request));
+      let pollInterval: number = 3000;
+      this.authInterval = setInterval(this.refreshAuth, pollInterval);
+    });
   }
 
   public constructor() {
@@ -69,11 +71,11 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
     const name: string = Office.context.mailbox.userProfile.displayName;
     const email: string = Office.context.mailbox.userProfile.emailAddress;
     let dispatch: any = this.props.dispatch;
-    Auth.getAuthState(email, function (state: string): void {
+    Auth.getAuthState(function (state: string): void {
       if (state === 'success') {
         clearInterval(authKey);
         let id: string = '';
-        Rest.getUserProfile(email, (profile: UserProfile) => {
+        Rest.getUserProfile((profile: UserProfile) => {
             id = profile.id;
             Office.context.roamingSettings.set('member_ID', '' + id);
             Office.context.roamingSettings.saveAsync();

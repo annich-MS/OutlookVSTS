@@ -33,6 +33,7 @@ declare module Office {
     ewsUrl: string;
     displayNewMessageForm(messageData: Object): void;
     getCallbackTokenAsync(callback: OfficeCallback, userContext?: any): void;
+    getUserIdentityTokenAsync(callback: OfficeCallback, userContext?: any): void;
     item: ItemInterface;
     userProfile: any; 
     diagnostics: DiagnosticsInterface;

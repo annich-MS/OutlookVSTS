@@ -71,13 +71,12 @@ export class Save extends React.Component<ISaveProps, {}> {
   }
 
   public uploadAttachment(token: string, callback: IRestCallback): void {
-    let email: string = this.props.userProfile.email;
     let id: string = Office.context.mailbox.item.itemId;
     let url: string = Office.context.mailbox.ewsUrl || 'https://outlook.office365.com/EWS/Exchange.asmx';
     let account: string = this.props.currentSettings.settings.account;
 
-    Rest.getMessage(email, id, url, token, (data) => {
-      Rest.uploadAttachment(email, data, account, Office.context.mailbox.item.normalizedSubject + '.eml', callback);
+    Rest.getMessage(id, url, token, (data) => {
+      Rest.uploadAttachment(data, account, Office.context.mailbox.item.normalizedSubject + '.eml', callback);
     });
 
   }
@@ -91,12 +90,11 @@ export class Save extends React.Component<ISaveProps, {}> {
     };
     let dispatch: any = this.props.dispatch;
 
-    let user: string = this.props.userProfile.email;
     let account: string = this.props.currentSettings.settings.account;
     let project: string = this.props.currentSettings.settings.project;
     let teamName: string = this.props.currentSettings.settings.team;
 
-    Rest.createTask(user, options, account, project, teamName, (workItemInfo: WorkItemInfo) => {
+    Rest.createTask(options, account, project, teamName, (workItemInfo: WorkItemInfo) => {
       dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
       // dispatch(updateStage(Stage.Saved));
       dispatch(updatePageAction(PageVisibility.QuickActions));
