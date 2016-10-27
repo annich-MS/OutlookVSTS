@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { updateTitle, updateStage, Stage } from '../Redux/WorkItemActions';
+import { TextField } from 'office-ui-fabric-react';
 
 /**
  * Represents the Title Properties
@@ -29,7 +30,6 @@ export interface ITitleProps {
  * @class { Title }
  */
 function mapStateToProps (state: any): ITitleProps  {
-  //  console.log('mapStateToProps' + JSON.stringify(state));
   return {
     stage: state.workItem.stage,
     title: state.workItem.title,
@@ -44,18 +44,13 @@ export class Title extends React.Component<ITitleProps, {}> {
    * @param {any} event
    */
   public handleChangeTitle(event: any): void {
-    this.props.dispatch(updateTitle (event.target.value));
+    this.props.dispatch(updateTitle (event));
   }
   /**
    * Rendersthe Title heading and the Title textbox
    */
   public render(): React.ReactElement<Provider> {
-    let title: any = {
-      'font-size': '15px',
-      height: '100%',
-      padding: '5px',
-      width: '100%',
-    };
+
     /**
      * Gets the normalizedSubject from Office and depending on the Stage, dispatches an action to update the value of title in store
      */
@@ -67,11 +62,10 @@ export class Title extends React.Component<ITitleProps, {}> {
     }
     return (
       <div>
-        <br/>
-        <div className='ms-font-1x ms-fontWeight-semibold ms-fontColor-black'>TITLE</div>
-        <input type='text' style={title} className='ms-segoe-ui ms-TextField-field'
-            id= 'titleval' value={this.props.title} onChange={this.handleChangeTitle.bind(this)}/>
-        <br/><br/>
+        <TextField
+          label='Title'
+          onChanged={this.handleChangeTitle.bind(this)}
+          value={this.props.title} />
       </div>
     );
   }

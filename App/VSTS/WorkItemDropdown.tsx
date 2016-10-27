@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { updateWorkItemType } from '../Redux/WorkItemActions';
-require('react-select/dist/react-select.css');
-let Select: any = require('react-select');
+import { Dropdown } from 'office-ui-fabric-react';
 
 /**
  * Represents the WorkItemType Properties
@@ -38,35 +37,32 @@ export class WorkItemDropdown extends React.Component<IWorkItemTypeDropdownProps
      */
     public handleTypeChange(option: any): void {
         let type: string;
-        if (option.label) {
-            type = option.label;
+        if (option.text) {
+            type = option.text;
         } else {
             type = option;
         }
-        // console.log('Selected: ' + type);
         this.props.dispatch(updateWorkItemType(type));
     }
     /**
      * Renders the workItemType Dropdown using React-Select
      */
     public render(): React.ReactElement<Provider> {
-        // console.log('Selected: ' + this.props.workItemType);
-        let drop: any = {
-            align: 'left',
-            width: '100%',
-        };
 
         let types: any = [
-            { label: 'Bug', value: 'Bug' },
-            { label: 'Task', value: 'Task' },
-            { label: 'User Story', value: 'User Story' },
+            { key: 'Bug', text: 'Bug' },
+            { key: 'Task', text: 'Task' },
+            { key: 'User Story', text: 'User Story' },
         ];
 
         return (
             <div>
                 <br/>
-                <Select style = {drop} className='15px arial, ms-segoe-ui'
-                    name='TypeDropdown' value= {this.props.workItemType} options={types} onChange={this.handleTypeChange.bind(this)}/>
+                <Dropdown
+                    label={'Work Item Type'}
+                    options={types}
+                    selectedKey={this.props.workItemType}
+                    onChanged={this.handleTypeChange.bind(this)} />
             </div>
         );
     }

@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import {PageVisibility, updatePageAction} from '../../Redux/FlowActions';
+import { Button, ButtonType } from 'office-ui-fabric-react';
 
 interface ISettingsProps {
   /**
@@ -60,18 +61,9 @@ export class CancelButton extends React.Component<ISettingsProps, any> {
    * Renders the area path dropdowns and save button
    */
   public render(): React.ReactElement<Provider> {
-    let style_button: any = {
-      background: 'rgb(255,255,255)',
-      border: 'rgb(255,255,255)',
-      color: 'rgb(0,122,204)',
-      float: 'right',
-      font: '15px arial, ms-segoe-ui',
-    };
     return (
-      <div>
-          <button style={style_button} onClick={this.Cancel.bind(this)}>
-            <span font-family='Arial Black, Gadget, sans-serif'> Cancel </span>
-          </button>
+       <div style={{float: 'right'}}>
+          <Button buttonType={ButtonType.command} onClick={this.Cancel.bind(this)}>Cancel</Button>
       </div>
     );
   }

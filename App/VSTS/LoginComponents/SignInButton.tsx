@@ -2,8 +2,9 @@ import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { AuthState, updateAuthAction, updateErrorAction } from '../../Redux/FlowActions';
 import { updateUserProfileAction} from '../../Redux/LogInActions';
-import {Rest, RestError, UserProfile} from '../../RestHelpers/rest';
+import { Rest, RestError, UserProfile} from '../../RestHelpers/rest';
 import { Auth} from '../authMM';
+import { Button, ButtonType } from 'office-ui-fabric-react';
 
 /**
  * Properties needed for the SignInButton component
@@ -96,18 +97,12 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
   public render(): React.ReactElement<Provider> {
 
     let style_button: any = {
-      background: 'rgb(0,122,204)',
-      border: 'rgb(255,255,255)',
-      color: 'rgb(255,255,255)',
-      float: 'left',
-      font: '17px arial, ms-segoe-ui',
-      'margin-left': '20%',
+      'text-align': 'center',
     };
-    let buttonClasses: string = 'ms-Button';
 
     return(
-      <div>
-      <button className={buttonClasses} onClick = {this.authOnClick.bind(this)}> Sign in to get started </button>
+      <div style={style_button}>
+      <Button buttonType={ ButtonType.primary }  onClick = {this.authOnClick.bind(this)}> Sign in to get started </Button>
       </div>);
   }
   }

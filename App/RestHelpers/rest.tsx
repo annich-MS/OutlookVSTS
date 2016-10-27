@@ -160,6 +160,7 @@ export abstract class Rest {
             let parsed: any = JSON.parse(output);
             if (parsed.error) {
                 callback(new RestError(parsed.error), null);
+                return;
             }
             let teams: Team[] = [];
             parsed.value.forEach(team => {

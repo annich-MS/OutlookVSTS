@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { Rest, RestError } from '../../RestHelpers/rest';
 import { AuthState, updateAuthAction, updateErrorAction } from '../../Redux/FlowActions';
+import { Button, ButtonType } from 'office-ui-fabric-react';
 
 /**
  * Properties needed for the LogoutButton component
@@ -35,19 +36,12 @@ function mapStateToProps(state: any): ILogoutProps {
 export class LogoutButton extends React.Component<ILogoutProps, any> {
 
     public render(): React.ReactElement<Provider> {
-        let style: any = {
-            background: 'rgb(255,255,255)',
-            border: 'rgb(255,255,255)',
-            color: 'rgb(0,122,204)',
-            font: '10px arial, ms-segoe-ui',
-            'text-align': 'center',
-        };
 
         return (
             <div style={{margin:'auto', width:'75%', 'text-align':'center'}}>
-                <button style={style} onClick={this.logout.bind(this)}>
-                    <span font-family='Arial Black, Gadget, sans-serif' > Disconnect From VSTS </span>
-                </button>
+                <Button buttonType={ButtonType.command} onClick={this.logout.bind(this)}>
+                    Disconnect From VSTS
+                </Button>
             </div>);
     }
 

@@ -44,39 +44,19 @@ export class Settings extends React.Component<ISettingsProps, any> {
    * Renders the area path dropdowns and save button
    */
   public render(): React.ReactElement<Provider> {
-    let style_text: any = {
-      color: 'rgb(0,0,0)',
-      font: '15px arial, ms-segoe-ui',
-    };
-
-    let style_label: any = {
-      color: 'rgb(0,0,0)',
-      font: '15px arial, ms-segoe-ui',
-    };
-
-    let rowStyle: any = {
-      'margin-top': '25px',
-      'margin-bottom': '25px',
-    };
+    let style_text: string = 'ms-font-m-plus';
 
     return (
       <div>
         <Error />
         <div>
-          <p style = {style_text}> Welcome {this.props.name}!</p>
+          <p className={style_text}> Welcome {this.props.name}!</p>
           <p/>
-          <p style = {style_text}> Take a moment to configure your default settings for work item creation.</p>
+          <p className={style_text}> Take a moment to configure your default settings for work item creation.</p>
         </div>
-        <div style={rowStyle}>
-          <label style = {style_label}> Account </label>
+        <div>
           <AccountDropdown />
-        </div>
-        <div style={rowStyle}>
-          <label style = {style_label}> Project </label>
           <ProjectDropdown />
-        </div>
-        <div style={rowStyle}>
-          <label style = {style_label}> Area </label>
           <AreaDropdown />
         </div>
         <div>

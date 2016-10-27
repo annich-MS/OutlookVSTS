@@ -17,11 +17,11 @@ export class AddInDescription extends React.Component<{}, {}> {
 
     return(<div>
       <div>
-        <h1 className={titleClasses} > Create work items</h1>
+        <p className={titleClasses} > Create work items</p>
         <p className={bodyClasses}>Turn an email thread into a work item directly from Outlook!</p>
       </div>
       <div>
-        <h1 className={titleClasses}> Communicate with your team </h1>
+        <p className={titleClasses}> Communicate with your team </p>
         <p className={bodyClasses}> Once the work item is created,
         use the reply-all feature to close the thread with a link and details to the work item. </p>
       </div>

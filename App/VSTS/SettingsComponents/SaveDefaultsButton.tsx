@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import {PageVisibility, updatePageAction} from '../../Redux/FlowActions';
+import { Button, ButtonType } from 'office-ui-fabric-react';
 
 interface ISettingsProps {
   /**
@@ -72,30 +73,15 @@ export class SaveDefaultsButton extends React.Component<ISettingsProps, any> {
    * Renders the area path dropdowns and save button
    */
   public render(): React.ReactElement<Provider> {
-    let styleDisabled: any = {
-      background: 'rgb(255,255,255)',
-      border: 'rgb(255,255,255)',
-      color: 'rgb(130,130,130)',
-      float: 'left',
-      font: '15px arial, ms-segoe-ui',
-    };
-
-    let styleEnabled: any = {
-       background: 'rgb(255,255,255)',
-       border: 'rgb(255,255,255)',
-       color: 'rgb(0,122,204)',
-       float: 'left',
-       font: '15px arial, ms-segoe-ui',
-     };
-
-    let currentStyle: any = this.props.populationTier > 0 ? styleDisabled : styleEnabled;
-
     return (
-       <div>
-          <button style={currentStyle} onClick={this.saveDefaults.bind(this)} disabled = {this.props.populationTier > 0}>
-            <span className='ms-Icon ms-Icon--save'> </span>
-            <span font-family='Arial Black, Gadget, sans-serif'> Save and continue </span>
-          </button>
+       <div style={{float: 'left'}}>
+          <Button
+              buttonType={ButtonType.command}
+              icon='Save'
+              onClick={this.saveDefaults.bind(this)}
+              disabled = {this.props.populationTier > 0}>
+            Save and continue
+          </Button>
        </div>
     );
   }

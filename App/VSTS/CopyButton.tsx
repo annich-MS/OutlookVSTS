@@ -1,5 +1,6 @@
 /// <reference path="../../office.d.ts" />
 import * as React from 'react';
+import { Button, ButtonType } from 'office-ui-fabric-react';
 
 /**
  * Props for CopyButton Component
@@ -24,19 +25,15 @@ export class CopyButton extends React.Component<ICopyButtonProps, {}> {
    * @returns { React.ReactElement } ReactHTML div 
    */
   public render(): React.ReactElement<{}> {
-    let buttonStyle: any = {
-      background: 'rgb(255,255,255)',
-      border: 'rgb(255,255,255)',
-      color: 'rgb(0,0,0)',
-      float: 'left',
-      font: '15px arial, ms-segoe-ui',
-    };
+
     return (
       <div>
-        <button style={buttonStyle} onClick={this.handleClick}>
-          <a className='ms-Icon ms-Icon--copy'/>
-          {'   '}Copy to Clipboard
-        </button>
+        <Button
+          buttonType={ButtonType.command}
+          icon='Copy'
+          onClick={this.handleClick}>
+          Copy to Clipboard
+        </Button>
       </div>
     );
   }

@@ -149,6 +149,7 @@ router.getUID = function(token, callback) {
             var body = hash.digest('base64');
             body = body.replace(/\+/g, '-');
             body = body.replace(/\//g, '_');
+            console.log(body);
             callback(body);
           });
         }

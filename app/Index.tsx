@@ -49,8 +49,6 @@ class Main extends React.Component<{}, {}> {
 
   public render(): React.ReactElement<Provider> {
     this.addPolyfill();
-    console.log('starting');
-    console.log(store.getState());
     const route: string = this.getRoute();
     switch (route) {
       case 'dogfood':

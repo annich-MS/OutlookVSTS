@@ -1,6 +1,7 @@
 /// <reference path="../../office.d.ts" />
 import * as React from 'react';
 import { Provider } from 'react-redux';
+import { Button, ButtonType } from 'office-ui-fabric-react';
 
 /**
  * Props for ReplyAllButton Component
@@ -24,21 +25,17 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
    * @returns { React.ReactElement } ReactHTML div
    */
   public render(): React.ReactElement<Provider> {
-    let buttonStyle: any = {
-      background: 'rgb(255,255,255)',
-      border: 'rgb(255,255,255)',
-      color: 'rgb(0,0,0)',
-      float: 'left',
-      font: '15px arial, ms-segoe-ui',
-    };
+
     return (
       <div>
-        <button style={buttonStyle} onClick={this.handleClick.bind(this)}>
-          <a className='ms-Icon ms-Icon--replyAll' />
-          {'   '}Reply All with Work Item
-        </button>
+        <Button
+          buttonType={ButtonType.command}
+          icon='ReplyAll'
+          onClick={this.handleClick.bind(this)}>
+          Reply All with Work Item
+        </Button>
       </div>
-    );
+    ); 
   }
 
   /**

@@ -166,7 +166,7 @@ router.accounts = function (req, res) {
   input.query['api-version'] = API1_0;
   input.host = 'app.vssps.visualstudio.com';
   input.path = '/_apis/Accounts';
-  makeAuthenticatedRequest(input.user, createOptions(input, 'GET'), (output) => { res.send(output); });
+  makeAuthenticatedRequest(input.user, createOptions(input, 'GET'), (output) => { console.log(output); res.send(output); });
 }
 router.use('/accounts', router.accounts);
 
@@ -183,7 +183,7 @@ router.projects = function (req, res) {
   input.query['api-version'] = API1_0;
   input.host = input.account + ".visualstudio.com";
   input.path = '/DefaultCollection/_apis/projects';
-  makeAuthenticatedRequest(input.user, createOptions(input, 'GET'), (output) => { res.send(output); });
+  makeAuthenticatedRequest(input.user, createOptions(input, 'GET'), (output) => { console.log(output); res.send(output); });
 
 }
 router.use('/projects', router.projects);
@@ -201,7 +201,7 @@ router.getTeams = function (req, res) {
   input.query['api-version'] = API1_0;
   input.host = input.account + '.visualstudio.com';
   input.path = '/DefaultCollection/_apis/projects/' + input.project + '/teams';
-  makeAuthenticatedRequest(input.user, createOptions(input, 'GET'), (output) => { res.send(output); });
+  makeAuthenticatedRequest(input.user, createOptions(input, 'GET'), (output) => { console.log(output); res.send(output); });
 }
 router.use('/getTeams', router.getTeams);
 

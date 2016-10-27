@@ -12,7 +12,7 @@ export class Connecting extends React.Component<{}, {}> {
    * Renders Connecting page
    */
   public render(): React.ReactElement<Provider> {
-      return (<div>
+      return (<div className='ms-fontSize-xxl ms-fontWeight-semibold'>
       Connecting...
       </div>);
     }

@@ -5,6 +5,7 @@ import { updateStage, Stage, updateSave } from '../Redux/WorkItemActions';
 import { IWorkItem } from '../Redux/WorkItemReducer';
 import { updateErrorAction, updatePageAction, PageVisibility } from '../Redux/FlowActions';
 import { IUserProfileReducer, ISettingsAndListsReducer } from '../Redux/LogInReducer';
+import { Button, ButtonType } from 'office-ui-fabric-react';
 
 /**
  * Represents the Save Properties
@@ -60,7 +61,6 @@ export class Save extends React.Component<ISaveProps, {}> {
    */
   public handleSave(): void {
     this.props.dispatch(updateStage(Stage.Saved));
-    console.log(this.props.workItem.addAsAttachment);
     if (this.props.workItem.addAsAttachment) {
       Office.context.mailbox.getCallbackTokenAsync((tokenResult) => {
         this.uploadAttachment(tokenResult.value, (error, attachmentUrl) => { this.createWorkItem(attachmentUrl); });
@@ -119,44 +119,17 @@ export class Save extends React.Component<ISaveProps, {}> {
    * Renders the Save button and disables it on click
    */
   public render(): React.ReactElement<Provider> {
-    /**
-     * Style for the save button 
-     */
-    let styleEnabled: any = {
-      background: 'rgb(16,130,207)',
-      border: 'rgb(255,255,255)',
-      color: 'rgb(255,255,255)',
-      font: '15px arial, ms-segoe-ui',
-      margin: '10px',
-      'margin-left': '25%',
-    };
-    let styleDisabled: any = {
-      background: 'rgb(192,192,192)',
-      border: 'rgb(255,255,255)',
-      color: 'rgb(255,255,255)',
-      font: '15px arial, ms-segoe-ui',
-      margin: '10px',
-      'margin-left': '25%',
-    };
 
-    let currentStyle: any = this.shouldBeEnabled() ? styleEnabled : styleDisabled;
     let text: any = this.isSaving ? 'Creating...' : 'Create work item';
     return (
-      <div>
+      <div style={{'text-align': 'center'}} >
         <br/>
-        <button
-          className = 'ms-Button'
-          style= {currentStyle}
+        <Button
+          buttonType={ButtonType.primary}
           disabled = {!this.shouldBeEnabled()}
-          onClick = {this.handleSave.bind(this)} > {text}
-        </button>
-        <button onClick={this.throwError.bind(this)} > Throw Error </button>
+          onClick={this.handleSave.bind(this)} > {text} </Button>
       </div>
     );
-  }
-
-  private throwError(): void {
-    this.props.dispatch(updateErrorAction(true, 'Static error'));
   }
 
   private get isSaving(): boolean { return this.props.workItem.stage === Stage.Saved; }

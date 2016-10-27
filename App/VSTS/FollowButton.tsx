@@ -46,7 +46,6 @@ export class FollowButton extends React.Component<IFollowButtonProps, {}> {
    * @returns { React.ReactElement } ReactHTML div
    */
   public render(): React.ReactElement<Provider> {
-    console.log('re-rendering follow');
     /**
      * Text displayed in the button HTML tag
      */

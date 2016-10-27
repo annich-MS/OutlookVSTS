@@ -19,7 +19,6 @@ export class CreateWorkItem extends React.Component<{}, {}> {
    * Renders the div that contains all the components of the Create page
    */
   public render(): React.ReactElement<{}> {
-    console.log('got to create pg');
     return (
       <div>
         <Error />

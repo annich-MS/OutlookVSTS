@@ -1,21 +1,13 @@
 /// <reference path="../../typings/tsd.d.ts" />
+import { IDropdownOption } from 'office-ui-fabric-react';
 
 /**
  * Represents the data for area path information, duplicated values for display in dropdown
+ * Aliased to IDropdownOption for conversion to fabric-react
+ * TODO: Remove alias
  * @interface ISettingsInfo
  */
-export interface ISettingsInfo {
-  /**
-   * the name of the option
-   * @type {string}
-   */
-  label: string;
-  /**
-   * the name of the option
-   * @type {string}
-   */
-  value: string;
-}
+export interface ISettingsInfo extends IDropdownOption { }
 
 /**
  * Represents the currently selected area path

@@ -11,7 +11,7 @@ export class Loading extends React.Component<{}, {}> {
    * Renders Loading page
    */
   public render(): React.ReactElement<Provider> {
-      return (<div>
+      return (<div className='ms-font-xxl ms-fontWeight-semibold'>
       Loading...
       </div>);
     }

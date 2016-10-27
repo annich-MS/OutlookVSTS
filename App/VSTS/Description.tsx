@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { updateAddAsAttachment, updateDescription, Stage } from '../Redux/WorkItemActions';
+import { Checkbox, TextField } from 'office-ui-fabric-react';
 
 /**
  * Represents the Description Properties
@@ -53,13 +54,10 @@ export class Description extends React.Component<IDescriptionProps, {}> {
  * @ returns {void}
  */
 public handleChangeAddAsAttachment (event: any): void {
-  // console.log(JSON.stringify(event.target.checked));
   if (event.target.checked === true) {
-    // console.log(this.props.addAsAttachment);
     this.props.dispatch(updateDescription('For more details, please refer to the attached mail thread. ' + this.props.description));
     this.props.dispatch(updateAddAsAttachment(true));
   } else {
-    // console.log('false');
     this.props.dispatch(updateDescription(
       this.props.description.replace('For more details, please refer to the attached mail thread. ', '')));
     this.props.dispatch(updateAddAsAttachment(false));
@@ -69,32 +67,15 @@ public handleChangeAddAsAttachment (event: any): void {
    * Renders the Description heading, the Add Email as Attachment checkbox, and the Description textbox
    */
   public render(): React.ReactElement<Provider> {
-    let descriptionStyle: any = {
-      'font-size': '15px',
-      height: '150px',
-      overflow: 'auto',
-      padding: '10px',
-      resize: 'none',
-      width: '100%',
-      'padding-top': '5px',
-    };
-    let checkboxStyle: any = {
-      height: '15px',
-      margin: '5px',
-      width: '15px',
-    };
     return (
       <div>
-        <div className='ms-font-1x ms-fontWeight-semibold ms-fontColor-black'> DESCRIPTION </div>
-        <label className='15px arial, ms-segoe-ui' >
-          <input type='checkbox' style={checkboxStyle} id='cbox' onClick={this.handleChangeAddAsAttachment.bind(this)} defaultChecked/>
-          Add e-mail as attachment
-        </label>
-        <br/>
-        <textarea className='15px arial, ms-segoe-ui ms-TextField-field' style={descriptionStyle} id='description'
-          value={this.props.description} onChange={this.handleChangeDescription.bind(this) }>
-        </textarea>
-        <br/><br/>
+        <Checkbox label='Add e-mail as attachment' onChange={this.handleChangeAddAsAttachment.bind(this)} defaultChecked={true} />
+        <TextField
+          id='description'
+          label='Description'
+          value={this.props.description}
+          onChanged={this.handleChangeDescription.bind(this) }
+          multiline={true} />
       </div>
     );
   }

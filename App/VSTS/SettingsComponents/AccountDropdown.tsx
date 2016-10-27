@@ -4,8 +4,7 @@ import { Provider, connect } from 'react-redux';
 import { updateAccountSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
 import { updateErrorAction, updatePopulatingAction } from '../../Redux/FlowActions';
 import {Rest, RestError, Account} from '../../RestHelpers/rest';
-require('react-select/dist/react-select.css');
-let Select: any = require('react-select');
+import { Dropdown, IDropdownOptions } from 'office-ui-fabric-react';
 
 /**
  * Properties needed for the AccountDropdown component
@@ -79,12 +78,6 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * @returns {void}
    */
   public componentWillMount(): void {
-    // let defaultAccount: string = Office.context.roamingSettings.get('default_account');
-    // console.log('comp will mount'+defaultAccount);
-    // if (defaultAccount !== undefined) {
-    //   this.props.dispatch(updateAccountSettingsAction(defaultAccount, this.props.accountList));
-    // }
-    console.log(this.props.populationTier);
     this.populateAccounts();
   }
 
@@ -95,10 +88,9 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * @returns {void}
    */
   public onAccountSelect(option: any): void {
-    console.log('AccountList: ' + JSON.stringify(option));
     let account: string;
-    if (option.label) {
-      account = option.label;
+    if (option.text) {
+      account = option.text;
     } else {
       account = option;
     }
@@ -110,20 +102,28 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * Renders the react-select dropdown component
    */
   public render(): React.ReactElement<Provider> {
-    let renderableName: string = this.props.account;
-    if (renderableName.length > 25) {
-      renderableName = renderableName.slice(0, 20) + '...';
-    }
+    let accounts: IDropdownOptions[] = [];
+    let containsAccount: boolean = false;
+    this.props.accountList.forEach((option: IDropdownOptions) => {
+      let isSelected: boolean = false;
+      if (option.text === this.props.account) {
+        isSelected = true;
+        containsAccount = true;
+      }
+      accounts.push({
+        isSelected: isSelected,
+        key: option.key,
+        text: option.text,
+      });
+    });
+
     return (
-      <Select
-        name='form-field-name'
-        options={this.props.accountList}
-        value={renderableName}
-        onChange={this.onAccountSelect.bind(this) }
-        autoBlur={true}
-        searchable={false}
-        />
-    );
+      <Dropdown
+        label={'Account'}
+        options={accounts}
+        onChanged={this.onAccountSelect.bind(this)}
+        disabled={this.props.populationTier >= this.POPULATION_TIER}
+      />);
   }
 
   /**
@@ -144,7 +144,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
       }
       accountList = accountList.sort(Account.compare);
       accountList.forEach(acc => {
-        accountOptions.push({ label: acc.name, value: acc.name });
+        accountOptions.push({ key: acc.name, text: acc.name });
         accountNamesOnly.push(acc.name);
       });
       // console.log('AccountList: ' + JSON.stringify(accountList));
@@ -158,8 +158,13 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
         console.log('setting first account:' + selectedAccount);
       }
       console.log('popaccounts' + defaultAccount);
-      this.props.dispatch(updateAccountSettingsAction(selectedAccount, accountOptions));
-      this.props.dispatch(updatePopulatingAction(false, this.POPULATION_TIER));
+      try {
+        this.props.dispatch(updateAccountSettingsAction(selectedAccount, accountOptions));
+      } catch (e) {
+        // bug in fabricReact requires this
+        this.props.dispatch(updatePopulatingAction(false, this.POPULATION_TIER));
+        this.props.dispatch(updateAccountSettingsAction(selectedAccount, accountOptions));
+      }
     });
   }
 }

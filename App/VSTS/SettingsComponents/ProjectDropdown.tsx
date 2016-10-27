@@ -4,10 +4,7 @@ import { Provider, connect } from 'react-redux';
 import {ISettingsInfo, updateProjectSettingsAction } from '../../Redux/LogInActions';
 import {updatePopulatingAction, updateErrorAction } from '../../Redux/FlowActions';
 import {Rest, RestError, Project } from '../../RestHelpers/rest';
-
-// other import statements don't work properly
-require('react-select/dist/react-select.css');
-let Select: any = require('react-select');
+import { Dropdown, IDropdownOptions } from 'office-ui-fabric-react';
 
 /**
  * Properties needed for the ProjectDropdown component
@@ -88,7 +85,6 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * @return {void}
    */
   public componentWillMount(): void {
-    console.log('willcomponentmount');
     /*let defaultProject: string = Office.context.roamingSettings.get('default_project');
     if (defaultProject !== undefined) {
       this.props.dispatch(updateProjectSettingsAction(defaultProject, this.props.projects));
@@ -123,8 +119,8 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    */
   public onProjectSelect(option: any): void {
     let project: string;
-    if (option.label) {
-      project = option.label;
+    if (option.text) {
+      project = option.text;
     } else {
       project = option;
     }
@@ -135,20 +131,29 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * Renders the react-select dropdown component
    */
   public render(): React.ReactElement<Provider> {
-    let renderableName: string = this.props.project;
-    if (renderableName.length > 25) {
-      renderableName = renderableName.slice(0, 20) + '...';
-    }
+
+    let projects: IDropdownOptions[] = [];
+    let containsProject: boolean = false;
+    this.props.projects.forEach((option: IDropdownOptions) => {
+      let isSelected: boolean = false;
+      if (option.text === this.props.project) {
+        containsProject = true;
+        isSelected = true;
+      }
+      projects.push({
+        isSelected: isSelected,
+        key: option.key,
+        text: option.text,
+      });
+    });
+
     return (
-      <Select
-        name='form-field-name'
-        options={this.props.projects}
-        value={renderableName}
-        onChange={this.onProjectSelect.bind(this) }
-        searchable={false}
+      <Dropdown
+        label={'Project'}
+        options={projects}
+        onChanged={this.onProjectSelect.bind(this)}
         disabled={this.props.populationTier >= this.POPULATION_TIER}
-        />
-    );
+      />);
   }
 
   /**
@@ -171,7 +176,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
       }
       projects = projects.sort(Project.compare);
       projects.forEach(project => {
-        projectOptions.push({ label: project.name, value: project.name });
+        projectOptions.push({ key: project.name, text: project.name });
         projectNamesOnly.push(project.name);
       });
       // console.log('ProjectList: ' + JSON.stringify(projects));
@@ -184,8 +189,13 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
         selectedProject = projectNamesOnly[0];
         console.log('setting first project:' + selectedProject);
       }
-      this.props.dispatch(updateProjectSettingsAction(selectedProject, projectOptions));
-      this.props.dispatch(updatePopulatingAction(false, this.POPULATION_TIER));
+      try {
+        this.props.dispatch(updateProjectSettingsAction(selectedProject, projectOptions));
+      } catch (e) {
+        // bug in fabric react requires this
+        this.props.dispatch(updatePopulatingAction(false, this.POPULATION_TIER));
+        this.props.dispatch(updateProjectSettingsAction(selectedProject, projectOptions));
+      }
     });
   }
 

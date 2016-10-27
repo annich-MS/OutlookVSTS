@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { updatePageAction, PageVisibility } from '../Redux/FlowActions';
+import { Button, ButtonType } from 'office-ui-fabric-react';
 
 /**
  * Represents the Gear Properties
@@ -24,19 +25,9 @@ export class Gear extends React.Component<IGearProps, {}> {
    * Renders the Gear Icon and the button underneath
    */
   public render(): React.ReactElement<Provider> {
-    let style_button: any = {
-      background: 'rgb(255,255,255)',
-      border: 'rgb(255,255,255)',
-      color: 'rgb(0,0,0)',
-      float: 'right',
-    };
     return (
-      <div>
-        <div className='16px arial, ms-segoe-ui'> Create a work item
-          <button className='ms-Button' style = {style_button} id='gear' onClick = {this.handleGearClick}>
-            <span className='ms-Icon ms-Icon--gear'> </span>
-          </button>
-        </div>
+      <div style={{float: 'right'}}>
+        <Button buttonType={ButtonType.icon} icon='Settings' title='Settings' onClick={this.handleGearClick}/>
       </div>
     );
   }
@@ -46,7 +37,6 @@ export class Gear extends React.Component<IGearProps, {}> {
    * @ returns {void}
    */
   private handleGearClick: () => void = () => {
-    console.log('dispatch action here to change visibility enum');
     this.props.dispatch(updatePageAction(PageVisibility.Settings));
   }
 }

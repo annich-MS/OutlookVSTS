@@ -4,8 +4,7 @@ import { Provider, connect } from 'react-redux';
 import {updateTeamSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
 import {updatePopulatingAction, updateErrorAction } from '../../Redux/FlowActions';
 import {Rest, RestError, Team } from '../../RestHelpers/rest';
-require('react-select/dist/react-select.css');
-let Select: any = require('react-select');
+import { Dropdown, IDropdownOptions } from 'office-ui-fabric-react';
 
 /**
  * Properties needed for the AreaDropdown component
@@ -125,8 +124,8 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    */
   public onTeamSelect(option: any): void {
     let team: string;
-    if (option.label) {
-      team = option.label;
+    if (option.text) {
+      team = option.text;
     } else {
       team = option;
     }
@@ -137,20 +136,28 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    * Renders the react-select dropdown component
    */
   public render(): React.ReactElement<Provider> {
-    let renderableName: string = this.props.team;
-    if (renderableName.length > 25) {
-      renderableName = renderableName.slice(0, 20) + '...';
-    }
+    let teams: IDropdownOptions[] = [];
+    let containsTeam: boolean = false;
+    this.props.teams.forEach((option: IDropdownOptions) => {
+      let isSelected: boolean = false;
+      if (option.text === this.props.team) {
+        containsTeam = true;
+        isSelected = true;
+      }
+      teams.push({
+        isSelected: isSelected,
+        key: option.key,
+        text: option.text,
+      });
+    });
+
     return (
-      <Select
-        name='form-field-name'
-        options={this.props.teams}
-        value={renderableName}
-        onChange={this.onTeamSelect.bind(this) }
-        searchable={false}
+      <Dropdown
+        label={'Team'}
+        options={teams}
+        onChanged={this.onTeamSelect.bind(this)}
         disabled={this.props.populationTier >= this.POPULATION_TIER}
-        />
-    );
+      />);
   }
 
   /**
@@ -172,7 +179,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
       }
       teams = teams.sort(Team.compare);
       teams.forEach(team => {
-        teamOptions.push({ label: team.name, value: team.name });
+        teamOptions.push({ key: team.name, text: team.name });
         teamNamesOnly.push(team.name);
       });
       console.log('teamList: ' + JSON.stringify(teams));
@@ -185,8 +192,13 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
         selectedTeam = teamNamesOnly[0];
         console.log('setting first project:' + selectedTeam);
       }
-      this.props.dispatch(updateTeamSettingsAction(selectedTeam, teamOptions));
-      this.props.dispatch(updatePopulatingAction(false, this.POPULATION_TIER));
+      try {
+        this.props.dispatch(updateTeamSettingsAction(selectedTeam, teamOptions));
+      } catch (e) {
+        // bug in fabricReact requires this
+        this.props.dispatch(updatePopulatingAction(false, this.POPULATION_TIER));
+        this.props.dispatch(updateTeamSettingsAction(selectedTeam, teamOptions));
+      }
     });
   }
 }
