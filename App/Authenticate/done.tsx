@@ -9,6 +9,6 @@ export class Done extends React.Component<{}, {}> {
   }
 
   public render(): React.ReactElement<Provider> {
-    return (<div/>);
+    return (<div>You may now close this window.</div>);
   }
  }
