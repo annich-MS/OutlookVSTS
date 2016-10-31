@@ -50,7 +50,7 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
    */
   public authOnClick(): void {
     Rest.getUser( (user: string) => {
-      window.open('./authenticate?user=' + user);
+      Office.context.ui.displayDialogAsync('https://' + document.location.host + '/authenticate?user=' + user);
       this.props.dispatch(updateAuthAction(AuthState.Request));
       let pollInterval: number = 3000;
       this.authInterval = setInterval(this.refreshAuth, pollInterval);

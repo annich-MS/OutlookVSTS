@@ -3,7 +3,7 @@ import { Provider, connect } from 'react-redux';
 import { Rest, RestError, WorkItemInfo, IStringCallback} from '../RestHelpers/rest';
 import { updateStage, Stage, updateSave } from '../Redux/WorkItemActions';
 import { IWorkItem } from '../Redux/WorkItemReducer';
-import { updateErrorAction, updatePageAction, PageVisibility } from '../Redux/FlowActions';
+import { updateErrorAction, updatePageAction, PageVisibility, PopulationStage } from '../Redux/FlowActions';
 import { IUserProfileReducer, ISettingsAndListsReducer } from '../Redux/LogInReducer';
 import { Button, ButtonType } from 'office-ui-fabric-react';
 
@@ -37,7 +37,7 @@ export interface ISaveProps {
    * Represents what tier is currently being populated
    * @type {number}
    */
-  populationTier?: number;
+  populationStage?: PopulationStage;
 }
 
 /**
@@ -47,7 +47,7 @@ export interface ISaveProps {
 function mapStateToProps(state: any): ISaveProps {
   return {
     currentSettings: state.currentSettings,
-    populationTier: state.controlState.populationTier,
+    populationStage: state.controlState.populationStage,
     userProfile: state.userProfile,
     workItem: state.workItem,
   };
@@ -93,18 +93,18 @@ export class Save extends React.Component<ISaveProps, {}> {
 
   public createWorkItem(attachmentUrl: string): void {
     let options: any = {
+      account: this.props.currentSettings.settings.account,
       attachment: attachmentUrl,
       body: this.props.workItem.description,
+      project: this.props.currentSettings.settings.project,
+      teamName: this.props.currentSettings.settings.team,
       title: this.props.workItem.title,
       type: this.props.workItem.workItemType,
     };
     let dispatch: any = this.props.dispatch;
 
-    let account: string = this.props.currentSettings.settings.account;
-    let project: string = this.props.currentSettings.settings.project;
-    let teamName: string = this.props.currentSettings.settings.team;
 
-    Rest.createTask(options, account, project, teamName, (error: RestError, workItemInfo: WorkItemInfo) => {
+    Rest.createTask(options, (error: RestError, workItemInfo: WorkItemInfo) => {
       if (error) {
         this.props.dispatch(updateErrorAction(true, 'Failed to create work item due to ' + error.type));
         return;
@@ -135,6 +135,6 @@ export class Save extends React.Component<ISaveProps, {}> {
   private get isSaving(): boolean { return this.props.workItem.stage === Stage.Saved; }
 
   private shouldBeEnabled(): boolean {
-    return !(this.isSaving || this.props.populationTier > 0);
+    return !(this.isSaving || this.props.populationStage < PopulationStage.teamReady);
   }
 }

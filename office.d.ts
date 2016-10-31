@@ -42,12 +42,19 @@ declare module Office {
   export function initialize():any;
 
   export var cast:any;
+  
+  interface UiInterface {
+    displayDialogAsync(url: string, options?: any, callback?: OfficeCallback);
+  }
+
   interface ContextInterface {
     mailbox: MailboxInterface;
     roamingSettings: any;
+    ui: UiInterface;
   }
 
   export var context: ContextInterface;
+
 
   export namespace MailboxEnums{
     export class ItemNotificationMessageType{

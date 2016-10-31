@@ -1,6 +1,7 @@
 /// <reference path="../../office.d.ts" />
 import * as React from 'react';
 import { Button, ButtonType } from 'office-ui-fabric-react';
+import * as Clipboard from 'clipboard-js';
 
 /**
  * Props for CopyButton Component
@@ -12,6 +13,11 @@ interface ICopyButtonProps {
    * @type { string }
    */
   workItemHyperlink: string;
+  /** 
+   * textOnly
+   * @type {string}
+   */
+  textOnly: string;
 }
 
 /**
@@ -43,32 +49,9 @@ export class CopyButton extends React.Component<ICopyButtonProps, {}> {
    * @private
    */
   private handleClick: () => void = () => {
-    let id: string = 'Clipboard-Item';
-    let existsTextarea: HTMLTextAreaElement = document.getElementById(id) as HTMLTextAreaElement;
-
-    if (!existsTextarea) {
-      let textarea: HTMLTextAreaElement = document.createElement('textarea');
-      textarea.id = id;
-      let style: any = {
-        background: 'transparent',
-        height: '1px',
-        left: 0,
-        padding: 0,
-        position: 'fixed',
-        top: 0,
-        width: '1px',
-      };
-      Object.keys(style).forEach( key => {
-          textarea.style.setProperty(key, style[key]);
-      });
-
-      document.querySelector('body').appendChild(textarea);
-      existsTextarea = document.getElementById(id) as HTMLTextAreaElement;
-    }
-
-    existsTextarea.value = this.props.workItemHyperlink;
-    existsTextarea.select();
-
-    document.execCommand('copy');
+    Clipboard.copy({
+      'text/plain': this.props.textOnly,
+      'text/html': this.props.workItemHyperlink
+    });
   }
 }

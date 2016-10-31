@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import {ISettingsInfo, updateProjectSettingsAction } from '../../Redux/LogInActions';
-import {updatePopulatingAction, updateErrorAction } from '../../Redux/FlowActions';
+import {updatePopulatingAction, updateErrorAction, PopulationStage } from '../../Redux/FlowActions';
 import {Rest, RestError, Project } from '../../RestHelpers/rest';
 import { Dropdown, IDropdownOptions } from 'office-ui-fabric-react';
 
@@ -46,7 +46,7 @@ interface IProjectProps {
    * Represents what tier is currently being populated
    * @type {number}
    */
-  populationTier?: number;
+  populationStage?: PopulationStage;
 }
 
 /**
@@ -58,7 +58,7 @@ function mapStateToProps(state: any): IProjectProps {
     account: state.currentSettings.settings.account,
     email: state.userProfile.email,
     id: state.userProfile.memberID,
-    populationTier: state.controlState.populationTier,
+    populationStage: state.controlState.populationStage,
     project: state.currentSettings.settings.project,
     projects: state.currentSettings.lists.projectList,
   });
@@ -101,13 +101,14 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
     let accountChanged: boolean = this.props.account !== nextProps.account;
     let projectChanged: boolean =  this.props.project !== nextProps.project;
     let projectListChanged: boolean = JSON.stringify(this.props.projects) !== JSON.stringify(nextProps.projects);
-    let populationChanged: boolean = this.props.populationTier !== nextProps.poulationTier;
+    let populationChanged: boolean = this.props.populationStage !== nextProps.poulationStage;
     return accountChanged || projectChanged || projectListChanged || populationChanged;
   }
 
   public componentWillUpdate(nextProps: any, nextState: any): void {
     console.log('willcomponentupdate project');
-    if (this.props.account !== nextProps.account && nextProps.account !== '') {
+    if ((this.props.account !== nextProps.account && nextProps.account !== '') ||
+        nextProps.populationStage === PopulationStage.accountReady) {
       this.populateProjects(nextProps.account);
     }
   }
@@ -152,7 +153,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
         label={'Project'}
         options={projects}
         onChanged={this.onProjectSelect.bind(this)}
-        disabled={this.props.populationTier >= this.POPULATION_TIER}
+        disabled={this.props.populationStage < PopulationStage.projectReady}
       />);
   }
 
@@ -163,7 +164,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * @returns {void}
    */
   public populateProjects(account: string): void {
-    this.props.dispatch(updatePopulatingAction(true, this.POPULATION_TIER));
+    this.props.dispatch(updatePopulatingAction(PopulationStage.projectPopulating));
     let projectOptions: ISettingsInfo[] = [];
     let projectNamesOnly: string[] = [];
     let selectedProject: string = this.props.project;
@@ -191,9 +192,10 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
       }
       try {
         this.props.dispatch(updateProjectSettingsAction(selectedProject, projectOptions));
+        this.props.dispatch(updatePopulatingAction(PopulationStage.projectReady));
       } catch (e) {
         // bug in fabric react requires this
-        this.props.dispatch(updatePopulatingAction(false, this.POPULATION_TIER));
+        this.props.dispatch(updatePopulatingAction(PopulationStage.projectReady));
         this.props.dispatch(updateProjectSettingsAction(selectedProject, projectOptions));
       }
     });

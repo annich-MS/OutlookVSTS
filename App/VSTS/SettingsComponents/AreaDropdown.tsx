@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import {updateTeamSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
-import {updatePopulatingAction, updateErrorAction } from '../../Redux/FlowActions';
+import {updatePopulatingAction, updateErrorAction, PopulationStage } from '../../Redux/FlowActions';
 import {Rest, RestError, Team } from '../../RestHelpers/rest';
 import { Dropdown, IDropdownOptions } from 'office-ui-fabric-react';
 
@@ -51,7 +51,7 @@ interface IAreaProps {
    * Represents what tier is currently being populated
    * @type {number}
    */
-  populationTier?: number;
+  populationStage?: PopulationStage;
 }
 
 /**
@@ -63,7 +63,7 @@ function mapStateToProps(state: any): IAreaProps {
     account: state.currentSettings.settings.account,
     email: state.userProfile.email,
     id: state.userProfile.memberID,
-    populationTier: state.controlState.populationTier,
+    populationStage: state.controlState.populationStage,
     project: state.currentSettings.settings.project,
     team: state.currentSettings.settings.team,
     teams: state.currentSettings.lists.teamList,
@@ -78,8 +78,6 @@ function mapStateToProps(state: any): IAreaProps {
  * @class {AreaDropdown} 
  */
 export class AreaDropdown extends React.Component<IAreaProps, any> {
-
-  private POPULATION_TIER: number = 1;
 
   public constructor() {
     super();
@@ -107,13 +105,14 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
     let projectChanged: boolean =  this.props.project !== nextProps.project;
     let teamChanged: boolean =  this.props.team !== nextProps.team;
     let teamListChanged: boolean = JSON.stringify(this.props.teams) !== JSON.stringify(nextProps.teams);
-    let populationChanged: boolean = this.props.populationTier !== nextProps.poulationTier;
+    let populationChanged: boolean = this.props.populationStage !== nextProps.poulationStage;
     return projectChanged || teamChanged || teamListChanged || populationChanged;
   }
 
   public componentWillUpdate(nextProps: any, nextState: any): void {
     console.log('willcomponentupdate: team');
-    if (this.props.project !== nextProps.project && nextProps.project !== '') {
+    if ((this.props.project !== nextProps.project && nextProps.project !== '') ||
+        nextProps.populationStage === PopulationStage.projectReady) {
       this.populateTeams(nextProps.account, nextProps.project);
     }
   }
@@ -156,7 +155,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
         label={'Team'}
         options={teams}
         onChanged={this.onTeamSelect.bind(this)}
-        disabled={this.props.populationTier >= this.POPULATION_TIER}
+        disabled={this.props.populationStage < PopulationStage.teamReady}
       />);
   }
 
@@ -167,7 +166,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    * @returns {void}
    */
   public populateTeams(account: string, project: string): void {
-    this.props.dispatch(updatePopulatingAction(true, this.POPULATION_TIER));
+    this.props.dispatch(updatePopulatingAction(PopulationStage.teamPopulating));
     let teamOptions: ISettingsInfo[] = [];
     let teamNamesOnly: string[] = [];
     let selectedTeam: string = this.props.team;
@@ -194,9 +193,10 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
       }
       try {
         this.props.dispatch(updateTeamSettingsAction(selectedTeam, teamOptions));
+        this.props.dispatch(updatePopulatingAction(PopulationStage.teamReady));
       } catch (e) {
         // bug in fabricReact requires this
-        this.props.dispatch(updatePopulatingAction(false, this.POPULATION_TIER));
+        this.props.dispatch(updatePopulatingAction(PopulationStage.teamReady));
         this.props.dispatch(updateTeamSettingsAction(selectedTeam, teamOptions));
       }
     });

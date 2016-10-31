@@ -9,6 +9,7 @@ import { IWorkItem } from '../Redux/WorkItemReducer';
 import { Feedback } from './SimpleComponents/Feedback';
 import { connect } from 'react-redux';
 import * as ReactDOM from 'react-dom/server';
+import { Label, Link } from 'office-ui-fabric-react';
 
 /**
  * Props for QuickActions Component
@@ -45,14 +46,16 @@ export class QuickActions extends React.Component<IQuickActionProps, {}> {
    */
   public buildItemHyperlink(): string {
     return ReactDOM.renderToStaticMarkup(
-      <label>
-        <a target='_blank'
-          href={this.props.workItem.VSTShtmlLink}
-          className='15px arial, ms-segoe-ui'>
+      <Label>
+        <Link href={this.props.workItem.VSTShtmlLink}>
           {this.props.workItem.workItemType} {this.props.workItem.id}
-        </a>
-        <a className='15px arial, ms-segoe-ui'>: {this.props.workItem.title}</a>
-      </label>);
+        </Link>
+        : {this.props.workItem.title}
+      </Label>);
+  }
+
+  public buildTextOnly(): string {
+    return this.props.workItem.workItemType + ' ' + this.props.workItem.id + ': ' + this.props.workItem.title;
   }
 
   /**
@@ -60,19 +63,20 @@ export class QuickActions extends React.Component<IQuickActionProps, {}> {
    * @returns { React.ReactElement } ReactHTML div
    */
   public render(): React.ReactElement<Provider> {
-    let headerStyle: any = {
-      font: '16px arial, ms-segoe-ui',
-      'padding-bottom': '20px',
-    };
     let htmlString: string = this.buildItemHyperlink();
+    let textString: string = this.buildTextOnly();
+    console.log(htmlString);
     return(
       <div>
-        <div style={headerStyle}>Work item successfully created!</div>
+        <div className='ms-font-m-plus'>Work item successfully created!</div>
+        <br />
         <ItemHyperlink workItemHyperlink={htmlString}/>
-        <div style={headerStyle}>Quick Actions:</div>
+        <br />
+        <br />
+        <div className='ms-font-m-plus'>Quick Actions:</div>
         <ReplyAllButton workItemHyperlink={htmlString}/>
-        <br/>
-        <CopyButton workItemHyperlink={this.props.workItem.VSTShtmlLink}/>
+        <CopyButton workItemHyperlink={htmlString} textOnly={textString} />
+        <br />
         <Feedback />
       </div>
     );

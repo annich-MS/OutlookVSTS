@@ -136,6 +136,15 @@ export function updateErrorAction(visibility: boolean, msg: string): IErrorState
     };
 }
 
+export enum PopulationStage {
+    accountPopulating,
+    accountReady,
+    projectPopulating,
+    projectReady,
+    teamPopulating,
+    teamReady
+};
+
 export interface IDropdownStateAction {
     /**
      * the type of the action
@@ -146,19 +155,17 @@ export interface IDropdownStateAction {
      * population tier
      * @type {number}
      */
-    populationTier: number;
+    populationStage: PopulationStage;
 }
 
 /**
  * action to update the message and visibility of an error
- * @param {boolean} visibility
- * @param {string} msg
+ * @param {PopulationStage} stage 
  * @returns {IErrorStateAction}
  */
-export function updatePopulatingAction(populating: boolean, tier: number): IDropdownStateAction {
-    let currentTier: number = tier - (populating ? 0 : 1); // set tier to current if we are populating, or reduce by 1 if we're not
+export function updatePopulatingAction(stage: PopulationStage): IDropdownStateAction {
     return {
-        populationTier: currentTier,
+        populationStage: stage,
         type: 'DropdownState',
     };
 }

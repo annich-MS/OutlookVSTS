@@ -47,8 +47,17 @@ class Main extends React.Component<{}, {}> {
     return output;
   }
 
+  public getDomain(): string {
+    let url: string = document.URL;
+    let strings: string[] = url.split('/');
+    return strings[2];
+  }
+
   public render(): React.ReactElement<Provider> {
     this.addPolyfill();
+    if (this.getDomain().indexOf('outlookvsts') !== -1) {
+      return (<Dogfood />);
+    }
     const route: string = this.getRoute();
     switch (route) {
       case 'dogfood':

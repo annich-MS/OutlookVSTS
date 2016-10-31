@@ -1,7 +1,7 @@
 /// <reference path="../../../office.d.ts" />
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import {PageVisibility, updatePageAction} from '../../Redux/FlowActions';
+import {PageVisibility, updatePageAction, PopulationStage} from '../../Redux/FlowActions';
 import { Button, ButtonType } from 'office-ui-fabric-react';
 
 interface ISettingsProps {
@@ -30,7 +30,7 @@ interface ISettingsProps {
    * Represents what tier is currently being populated
    * @type {number}
    */
-  populationTier?: number;
+  populationStage?: PopulationStage;
 }
 
 /**
@@ -40,7 +40,7 @@ interface ISettingsProps {
 function mapStateToProps(state: any): ISettingsProps {
   return({
       account: state.currentSettings.settings.account,
-      populationTier: state.controlState.populationTier,
+      populationStage: state.controlState.populationStage,
       project: state.currentSettings.settings.project,
       team: state.currentSettings.settings.team,
     });
@@ -79,7 +79,7 @@ export class SaveDefaultsButton extends React.Component<ISettingsProps, any> {
               buttonType={ButtonType.command}
               icon='Save'
               onClick={this.saveDefaults.bind(this)}
-              disabled = {this.props.populationTier > 0}>
+              disabled = {this.props.populationStage < PopulationStage.teamReady}>
             Save and continue
           </Button>
        </div>

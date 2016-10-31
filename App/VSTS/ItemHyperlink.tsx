@@ -23,13 +23,8 @@ export class ItemHyperlink extends React.Component<IItemHyperlinkProps, {}> {
    * @returns { React.ReactElement } ReactHTML div
    */
   public render(): React.ReactElement<any> {
-    let elementStyle: any = {
-      'padding-bottom': '40px',
-    };
     return(
-      <div style={elementStyle}>
-        <td dangerouslySetInnerHTML={{__html: this.props.workItemHyperlink}} />
-      </div>
+        <div dangerouslySetInnerHTML={{__html: this.props.workItemHyperlink}} />
     );
   }
  }

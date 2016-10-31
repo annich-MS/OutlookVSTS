@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { updateAccountSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
-import { updateErrorAction, updatePopulatingAction } from '../../Redux/FlowActions';
+import { updateErrorAction, updatePopulatingAction, PopulationStage } from '../../Redux/FlowActions';
 import {Rest, RestError, Account} from '../../RestHelpers/rest';
 import { Dropdown, IDropdownOptions } from 'office-ui-fabric-react';
 
@@ -41,7 +41,7 @@ interface IAccountProps {
    * Represents what tier is currently being populated
    * @type {number}
    */
-  populationTier?: number;
+  populationStage?: PopulationStage;
 }
 
 /**
@@ -54,7 +54,7 @@ function mapStateToProps(state: any): IAccountProps {
     accountList: state.currentSettings.lists.accountList,
     email: state.userProfile.email,
     memberId: state.userProfile.memberID,
-    populationTier: state.controlState.populationTier,
+    populationStage: state.controlState.populationStage,
   });
 }
 
@@ -94,7 +94,6 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
     } else {
       account = option;
     }
-    console.log('onAccountSelect' + account);
     this.props.dispatch(updateAccountSettingsAction(account, this.props.accountList));
   }
 
@@ -122,7 +121,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
         label={'Account'}
         options={accounts}
         onChanged={this.onAccountSelect.bind(this)}
-        disabled={this.props.populationTier >= this.POPULATION_TIER}
+        disabled={this.props.populationStage < PopulationStage.accountReady}
       />);
   }
 
@@ -132,7 +131,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * @returns {void}
    */
   public populateAccounts(): void {
-    this.props.dispatch(updatePopulatingAction(true, this.POPULATION_TIER));
+    this.props.dispatch(updatePopulatingAction(PopulationStage.accountPopulating));
     let accountOptions: ISettingsInfo[] = [];
     let accountNamesOnly: string[] = [];
     let selectedAccount: string = this.props.account;
@@ -160,9 +159,10 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
       console.log('popaccounts' + defaultAccount);
       try {
         this.props.dispatch(updateAccountSettingsAction(selectedAccount, accountOptions));
+        this.props.dispatch(updatePopulatingAction(PopulationStage.accountReady));
       } catch (e) {
         // bug in fabricReact requires this
-        this.props.dispatch(updatePopulatingAction(false, this.POPULATION_TIER));
+        this.props.dispatch(updatePopulatingAction(PopulationStage.accountReady));
         this.props.dispatch(updateAccountSettingsAction(selectedAccount, accountOptions));
       }
     });

@@ -1,12 +1,12 @@
 /// <reference path="../../typings/tsd.d.ts" />
-import {AuthState, PageVisibility} from './FlowActions';
+import {AuthState, PageVisibility, PopulationStage} from './FlowActions';
 
 /**
  * Represents the error data in the store
  * @interface IControlStateReducer
  */
 export interface IControlStateReducer {
-  arePopulating: boolean;
+  populationStage: PopulationStage;
   authState: AuthState;
   pageState: PageVisibility;
   error: IErrorStateReducer;
@@ -26,12 +26,12 @@ export interface IErrorStateReducer {
  * @type {IControlStateReducer}
  */
 const initialControlState: IControlStateReducer = {
-  arePopulating: true,
   authState : AuthState.None,
   error: {
     isVisible: false,
     message: ''},
   pageState : PageVisibility.Settings,
+  populationStage: PopulationStage.accountPopulating,
 };
 
 /**
@@ -49,7 +49,7 @@ export function updateControlStateReducer(state: IControlStateReducer = initialC
     case 'PAGE_STATE':
        return Object.assign({}, state, { pageState: action.pageState});
     case 'DropdownState':
-      return Object.assign({}, state, { populationTier: action.populationTier});
+      return Object.assign({}, state, { populationStage: action.populationStage});
     default:
       return state;
   }

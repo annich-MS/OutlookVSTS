@@ -255,14 +255,14 @@ export abstract class Rest {
         });
     }
 
-    public static createTask(options: any, account: string,
-                             project: string, team: string, callback: IWorkItemCallback): void {
-        this.getTeamAreaPath(account, project, team, (err, areapath) => {
+    public static createTask(options: any, callback: IWorkItemCallback): void {
+        this.getTeamAreaPath(options.account, options.project, options.team, (err, areapath) => {
             if (err) {
                 callback(err, null);
                 return;
             }
-            this.getCurrentIteration(team, project, account, (err2, iteration) => {
+            options.areapath = areapath;
+            this.getCurrentIteration(options.team, options.project, options.account, (err2, iteration) => {
                 if (err2) {
                     callback(err2, null);
                 }
