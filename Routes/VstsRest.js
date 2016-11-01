@@ -281,7 +281,7 @@ function downloadMessageFromEWS(messageId, ewsUrl, token, callback) {
     },
     method: 'POST'
   };
-
+  console.log(options);
   makeHttpsRequest(options, (output) => { extractMessageId(output, callback); });
 }
 
