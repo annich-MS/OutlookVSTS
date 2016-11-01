@@ -77,11 +77,21 @@ export class WorkItemInfo {
 
 export class RestError {
     public type: string;
-    public more: string;
+    public more: any;
 
     public constructor(blob: any) {
         this.type = blob.type;
         this.more = blob.more;
+    }
+
+    public toString(source: string): string {
+        let contents: string = 'Failed to ' + source + ' due to ';
+        if (this.more.statusCode) {
+            contents += this.more.name + '. External server returned ' + this.more.statusCode;
+        } else {
+            contents += this.type + '.';
+        }
+        return contents;
     }
 }
 

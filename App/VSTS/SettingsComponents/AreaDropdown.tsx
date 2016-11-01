@@ -173,7 +173,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
 
     Rest.getTeams(project, account, (error: RestError, teams: Team[]) => {
       if (error) {
-        this.props.dispatch(updateErrorAction(true, 'Teams failed to populate due to ' + error.type));
+        this.props.dispatch(updateErrorAction(true, error.toString('populate teams')));
         return;
       }
       teams = teams.sort(Team.compare);

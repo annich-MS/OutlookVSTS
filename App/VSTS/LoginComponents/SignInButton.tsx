@@ -78,7 +78,7 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
         let id: string = '';
         Rest.getUserProfile((error: RestError, profile: UserProfile) => {
           if (error) {
-            this.props.dispatch(updateErrorAction(true, 'Failed to retrieve User Profile due to ' + error.type));
+            this.props.dispatch(updateErrorAction(true, error.toString('get user profile')));
             return;
           }
           id = profile.id;

@@ -82,7 +82,7 @@ export class VSTS extends React.Component<IVSTSProps, any> {
         } else {
           Rest.getUserProfile((error: RestError, profile: UserProfile) => {
             if (error) {
-              this.props.dispatch(updateErrorAction(true, 'Failed to retrieve User Profile due to ' + error.type));
+              this.props.dispatch(updateErrorAction(true, error.toString('retrieve user profile')));
               return;
             }
             id = profile.id;

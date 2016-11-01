@@ -77,12 +77,12 @@ export class Save extends React.Component<ISaveProps, {}> {
 
     Rest.getMessage(id, url, token, (error, data) => {
       if (error) {
-        this.props.dispatch(updateErrorAction(true, 'Failed to retrieve message file due to ' + error.type));
+        this.props.dispatch(updateErrorAction(true, error.toString('download message from Exchange')));
         return;
       }
       Rest.uploadAttachment(data, account, Office.context.mailbox.item.normalizedSubject + '.eml', (err, link) => {
         if (err) {
-          this.props.dispatch(updateErrorAction(true, 'Failed to upload email attachment due to ' + err.type));
+          this.props.dispatch(updateErrorAction(true, err.toString('upload attachment to VSTS')));
           return;
         }
         callback(null, link);
@@ -106,7 +106,7 @@ export class Save extends React.Component<ISaveProps, {}> {
 
     Rest.createTask(options, (error: RestError, workItemInfo: WorkItemInfo) => {
       if (error) {
-        this.props.dispatch(updateErrorAction(true, 'Failed to create work item due to ' + error.type));
+        this.props.dispatch(updateErrorAction(true, error.toString('create task')));
         return;
       }
       dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));

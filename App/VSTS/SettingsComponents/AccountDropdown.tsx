@@ -138,7 +138,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
     console.log('populating accounts' + this.props.email + this.props.memberId);
     Rest.getAccounts(this.props.memberId, (error: RestError, accountList: Account[]) => {
       if (error) {
-        this.props.dispatch(updateErrorAction(true, 'Accounts failed to populate due to ' + error.type));
+        this.props.dispatch(updateErrorAction(true, error.toString('populate accounts')));
         return;
       }
       accountList = accountList.sort(Account.compare);

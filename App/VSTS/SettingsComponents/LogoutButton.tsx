@@ -50,7 +50,7 @@ export class LogoutButton extends React.Component<ILogoutProps, any> {
 
         Rest.removeUser((error: RestError) => {
             if (error) {
-                this.props.dispatch(updateErrorAction(true, 'Failed to disconnect due to ' + error.type));
+                this.props.dispatch(updateErrorAction(true, error.toString('disconnect')));
                 return;
             } else {
                 dispatch(updateAuthAction(AuthState.NotAuthorized));

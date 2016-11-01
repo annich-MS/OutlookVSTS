@@ -172,7 +172,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
 
     Rest.getProjects(account, (error: RestError, projects: Project[]) => {
       if (error) {
-        this.props.dispatch(updateErrorAction(true, 'Projects failed to populate due to ' + error.type));
+        this.props.dispatch(updateErrorAction(true, error.toString('populate projects')));
         return;
       }
       projects = projects.sort(Project.compare);
