@@ -172,30 +172,18 @@ export abstract class Rest {
 
 
     public static getTeamAreaPath(account: string, project: string, teamName: string, callback: IStringCallback): void {
-        this.getTeams(project, account, (error: RestError, teams: Team[]) => {
-            if (error) {
-                callback(error, null);
+        this.makeRestCallWithArgs('getTeamField', { account: account, project: project, team: teamName}, (output) => {
+            let parsed: any = JSON.parse(output);
+            if (parsed.error) {
+                callback(new RestError(parsed.error), null);
                 return;
             }
-            let guid: string;
-            teams.forEach(team => {
-                if (team.name === teamName) {
-                    guid = team.id;
-                }
-            });
-            this.makeRestCallWithArgs('getTeamField', { account: account, project: project, team: guid }, (output) => {
-                let parsed: any = JSON.parse(output);
-                if (parsed.error) {
-                    callback(new RestError(parsed.error), null);
-                    return;
-                }
-                if (parsed.field.referenceName !== 'System.AreaPath') {
-                    // we don't support teams that don't use area path as their team field
-                    callback(null, '');
-                } else {
-                    callback(null, parsed.defaultValue);
-                }
-            });
+            if (parsed.field.referenceName !== 'System.AreaPath') {
+                // we don't support teams that don't use area path as their team field
+                callback(null, '');
+            } else {
+                callback(null, parsed.defaultValue);
+            }
         });
     }
 
@@ -222,7 +210,7 @@ export abstract class Rest {
         });
     }
 
-    public static getMessage(ewsId: string, url: string, token: string, callback: IStringCallback ): void {
+    public static getMessage(ewsId: string, url: string, token: string, callback: IStringCallback): void {
         Rest.makeRestCallWithArgs('getMessage', { ewsId: ewsId, token: token, url: url }, (output) => {
             try {
                 let parsed: any = JSON.parse(output); // will only succeed if error returned
@@ -234,7 +222,7 @@ export abstract class Rest {
     }
 
     public static uploadAttachment(data: string, account: string, filename: string, callback: IStringCallback): void {
-        Rest.makePostRestCallWithArgs('uploadAttachment', { account: account, filename: filename}, data, (output) => {
+        Rest.makePostRestCallWithArgs('uploadAttachment', { account: account, filename: filename }, data, (output) => {
             let parsed: any = JSON.parse(output);
             if (parsed.error) {
                 callback(new RestError(parsed.error), null);

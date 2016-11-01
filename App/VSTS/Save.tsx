@@ -97,7 +97,7 @@ export class Save extends React.Component<ISaveProps, {}> {
       attachment: attachmentUrl,
       body: this.props.workItem.description,
       project: this.props.currentSettings.settings.project,
-      teamName: this.props.currentSettings.settings.team,
+      team: this.props.currentSettings.settings.team,
       title: this.props.workItem.title,
       type: this.props.workItem.workItemType,
     };
