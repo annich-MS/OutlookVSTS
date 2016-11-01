@@ -248,6 +248,8 @@ router.getMessage = function (req, res) {
 router.use('/getMessage', router.getMessage);
 
 function downloadMessageFromEWS(messageId, ewsUrl, token, callback) {
+  messageId = messageId.replace(/\+/g, '-');
+  messageId = messageId.replace(/\//g, '_'); 
   var body = '<?xml version="1.0" encoding="utf-8"?>' +
     '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
     '               xmlns:xsd="http://www.w3.org/2001/XMLSchema"' +
