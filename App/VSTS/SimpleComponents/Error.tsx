@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { updateErrorAction } from '../../Redux/FlowActions';
+import { updateStage, Stage } from '../../Redux/WorkItemActions';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react';
 
 /**
@@ -40,9 +41,11 @@ export class Error extends React.Component<IErrorProps, any> {
    * @param {any} nextState
    */
   public shouldComponentUpdate(nextProps: any, nextState: any): boolean {
+    if (nextProps.isVisible) {
+      this.props.dispatch(updateErrorAction(false, ''));
+    }
     return this.props.isVisible !== nextProps.isVisible;
   }
-
 
   /**
    * Renders the error message in parent component
@@ -62,7 +65,7 @@ export class Error extends React.Component<IErrorProps, any> {
   }
 
   private onClick(): void {
-    this.props.dispatch(updateErrorAction(false, ''));
+    this.props.dispatch(updateStage(Stage.New));
   }
 }
 
