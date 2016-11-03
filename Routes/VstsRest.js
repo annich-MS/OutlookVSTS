@@ -79,10 +79,12 @@ function makeHttpsRequest(options, callback) {
   console.log(options.method + ": " + options.uri);
 
   request(options).then((output) => {
-    try {
-      JSON.parse(output);
-    } catch (e) {
-      output = createError("Unparseable output", output)
+    if(!options.isXML) {
+      try {
+        JSON.parse(output);
+      } catch (e) {
+        output = createError("Unparseable output", output)
+      }
     }
     callback(output);
   }, (error) => {
@@ -281,20 +283,25 @@ function downloadMessageFromEWS(messageId, ewsUrl, token, callback) {
       "Content-Type": 'text/xml; charset=utf-8',
       "Content-Length": body.length
     },
-    method: 'POST'
+    method: 'POST',
+    isXML: true
   };
   console.log(options);
-  makeHttpsRequest(options, (output) => { extractMessageId(output.error.more, callback); });
+  makeHttpsRequest(options, (output) => { extractMessageId(output, callback); });
 }
 
 function extractMessageId(response, callback) {
   console.log( response);
   var parser = new flow(stream(response));
+  var done = false;
   parser.on('tag:t:mimecontent', (element) => {
+    done = true;
     callback(element["$text"]);
   });
   parser.on('end', () => {
-    callback(createError('Invalid EWS response', response));
+    if(!done) {
+      callback(createError('Invalid EWS response', response));
+    }
   })
 }
 
