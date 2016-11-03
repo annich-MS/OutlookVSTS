@@ -46,38 +46,60 @@ export class Description extends React.Component<IDescriptionProps, {}> {
    * @param {any} event
    */
   public handleChangeDescription(event: any): void {
-    this.props.dispatch(updateDescription(event.target.value));
+    this.props.dispatch(updateDescription(event));
   }
 
-/**
- * Dispatches the action to update the addAsAttachment and description values in the store
- * @ returns {void}
- */
-public handleChangeAddAsAttachment (event: any): void {
-  if (event.target.checked === true) {
-    this.props.dispatch(updateDescription('For more details, please refer to the attached mail thread. ' + this.props.description));
-    this.props.dispatch(updateAddAsAttachment(true));
-  } else {
-    this.props.dispatch(updateDescription(
-      this.props.description.replace('For more details, please refer to the attached mail thread. ', '')));
-    this.props.dispatch(updateAddAsAttachment(false));
+  /**
+   * Dispatches the action to update the addAsAttachment and description values in the store
+   * @ returns {void}
+   */
+  public handleChangeAddAsAttachment(event: any, isChecked: boolean): void {
+    if (isChecked === true) {
+      this.props.dispatch(updateDescription('For more details, please refer to the attached mail thread. ' + this.props.description));
+      this.props.dispatch(updateAddAsAttachment(true));
+    } else {
+      this.props.dispatch(updateDescription(
+        this.props.description.replace('For more details, please refer to the attached mail thread. ', '')));
+      this.props.dispatch(updateAddAsAttachment(false));
+    }
   }
-}
+
+  public componentWillMount(): void {
+    if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
+      this.props.dispatch(updateAddAsAttachment(false));
+      Office.context.mailbox.item.body.getAsync('text', {}, (result: Office.AsyncResult) => {
+        this.props.dispatch(updateDescription(result.value.trim()));
+      });
+    }
+  }
   /**
    * Renders the Description heading, the Add Email as Attachment checkbox, and the Description textbox
    */
   public render(): React.ReactElement<Provider> {
-    return (
-      <div>
-        <Checkbox label='Add e-mail as attachment' onChange={this.handleChangeAddAsAttachment.bind(this)} defaultChecked={true} />
-        <TextField
-          id='description'
-          label='Description'
-          value={this.props.description}
-          onChanged={this.handleChangeDescription.bind(this) }
-          multiline={true} />
-      </div>
-    );
+    if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
+      return (
+        <div>
+          <TextField
+            id='description'
+            label='Description'
+            value={this.props.description}
+            onChanged={this.handleChangeDescription.bind(this) }
+            multiline={true} />
+        </div>
+      );
+    } else {
+      return (
+        <div>
+          <Checkbox label='Add e-mail as attachment' onChange={this.handleChangeAddAsAttachment.bind(this) } defaultChecked={true} />
+          <TextField
+            id='description'
+            label='Description'
+            value={this.props.description}
+            onChanged={this.handleChangeDescription.bind(this) }
+            multiline={true} />
+        </div>
+      );
+    }
   }
 }
 
