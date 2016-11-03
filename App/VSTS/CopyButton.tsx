@@ -49,9 +49,41 @@ export class CopyButton extends React.Component<ICopyButtonProps, {}> {
    * @private
    */
   private handleClick: () => void = () => {
+    this.ieClipboard();
+    /*
+    switch (Office.context.mailbox.diagnostics.hostName) {
+      case '':
+        break;
+      default:
+        this.defaultClipboard();
+    }
+    */
+  }
+
+  private defaultClipboard(): void {
     Clipboard.copy({
       'text/plain': this.props.textOnly,
-      'text/html': this.props.workItemHyperlink
+      'text/html': this.props.workItemHyperlink,
     });
+  }
+
+  private ieClipboard(): void {
+    // select the email link anchor text
+    let emailLink: Element = document.querySelector('.WorkItemLink');
+    let range: Range = document.createRange();
+    range.selectNode(emailLink);
+    window.getSelection().addRange(range);
+
+    try {
+      // now that we've selected the anchor text, execute the copy command
+      let successful: boolean = document.execCommand('copy');
+      let msg: string = successful ? 'successful' : 'unsuccessful';
+      console.log('Copy email command was ' + msg);
+    } catch (err) {
+      console.log('Oops, unable to copy');
+    }
+    // remove the selections - NOTE: Should use
+    // removeRange(range) when it is supported  
+    window.getSelection().removeAllRanges();
   }
 }

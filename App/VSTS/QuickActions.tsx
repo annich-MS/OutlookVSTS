@@ -46,7 +46,7 @@ export class QuickActions extends React.Component<IQuickActionProps, {}> {
    */
   public buildItemHyperlink(): string {
     return ReactDOM.renderToStaticMarkup(
-      <Label>
+      <Label className='WorkItemLink'>
         <Link target='_blank' href={this.props.workItem.VSTShtmlLink}>
           {this.props.workItem.workItemType} {this.props.workItem.id}
         </Link>
