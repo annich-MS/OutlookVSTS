@@ -284,7 +284,7 @@ function downloadMessageFromEWS(messageId, ewsUrl, token, callback) {
     method: 'POST'
   };
   console.log(options);
-  makeHttpsRequest(options, (output) => { extractMessageId(output, callback); });
+  makeHttpsRequest(options, (output) => { extractMessageId(output.error.more, callback); });
 }
 
 function extractMessageId(response, callback) {
@@ -293,6 +293,9 @@ function extractMessageId(response, callback) {
   parser.on('tag:t:mimecontent', (element) => {
     callback(element["$text"]);
   });
+  parser.on('end', () => {
+    callback(createError('Invalid EWS response', response));
+  })
 }
 
 router.uploadAttachment = function (req, res) {
