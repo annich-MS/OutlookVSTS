@@ -288,6 +288,7 @@ function downloadMessageFromEWS(messageId, ewsUrl, token, callback) {
 }
 
 function extractMessageId(response, callback) {
+  console.log( response);
   var parser = new flow(stream(response));
   parser.on('tag:t:mimecontent', (element) => {
     callback(element["$text"]);

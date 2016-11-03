@@ -31,7 +31,9 @@ export class CopyButton extends React.Component<ICopyButtonProps, {}> {
    * @returns { React.ReactElement } ReactHTML div 
    */
   public render(): React.ReactElement<{}> {
-
+    if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
+      return (<div/>);
+    }
     return (
       <div>
         <Button
@@ -49,25 +51,6 @@ export class CopyButton extends React.Component<ICopyButtonProps, {}> {
    * @private
    */
   private handleClick: () => void = () => {
-    this.ieClipboard();
-    /*
-    switch (Office.context.mailbox.diagnostics.hostName) {
-      case '':
-        break;
-      default:
-        this.defaultClipboard();
-    }
-    */
-  }
-
-  private defaultClipboard(): void {
-    Clipboard.copy({
-      'text/plain': this.props.textOnly,
-      'text/html': this.props.workItemHyperlink,
-    });
-  }
-
-  private ieClipboard(): void {
     // select the email link anchor text
     let emailLink: Element = document.querySelector('.WorkItemLink');
     let range: Range = document.createRange();
