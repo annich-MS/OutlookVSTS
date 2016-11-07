@@ -343,6 +343,7 @@ router.createTask = function (req, res) {
   }
 
   input.body = JSON.stringify(input.body);
+  console.log(input);
   makeAuthenticatedRequest(input.user, createOptions(input, 'PATCH'), (output) => { res.send(output); });
 }
 router.use('/createTask', router.createTask);
