@@ -338,12 +338,12 @@ router.createTask = function (req, res) {
     jsonPatchItem((input.type == "Bug" ? FIELDS.REPRO_STEPS : FIELDS.DESCRIPTION), req.body),
   ];
   console.log("Attachments:" + input.attachment)
-  if (input.attachment) {
+  if (input.attachment !== '') {
     input.body.push(jsonPatchItem(FIELDS.RELATIONS, { "rel": "AttachedFile", "url": input.attachment }));
   }
 
   input.body = JSON.stringify(input.body);
-  console.log(input);
+  console.log(createOptions(input, 'PATCH'));
   makeAuthenticatedRequest(input.user, createOptions(input, 'PATCH'), (output) => { res.send(output); });
 }
 router.use('/createTask', router.createTask);
