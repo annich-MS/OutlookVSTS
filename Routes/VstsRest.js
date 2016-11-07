@@ -335,7 +335,7 @@ router.createTask = function (req, res) {
     jsonPatchItem(FIELDS.AREA_PATH, input.areapath),
     jsonPatchItem(FIELDS.ITERATION_PATH, input.iteration),
     // Bugs and Tasks have different paths
-    jsonPatchItem((input.type == "Bug" ? FIELDS.REPRO_STEPS : FIELDS.DESCRIPTION), input.body),
+    jsonPatchItem((input.type == "Bug" ? FIELDS.REPRO_STEPS : FIELDS.DESCRIPTION), req.body),
   ];
   console.log("Attachments:" + input.attachment)
   if (input.attachment) {

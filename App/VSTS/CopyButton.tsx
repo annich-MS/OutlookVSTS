@@ -1,7 +1,6 @@
 /// <reference path="../../office.d.ts" />
 import * as React from 'react';
 import { Button, ButtonType } from 'office-ui-fabric-react';
-import * as Clipboard from 'clipboard-js';
 
 /**
  * Props for CopyButton Component

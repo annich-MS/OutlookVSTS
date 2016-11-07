@@ -253,7 +253,7 @@ export abstract class Rest {
         });
     }
 
-    public static createTask(options: any, callback: IWorkItemCallback): void {
+    public static createTask(options: any, body: string, callback: IWorkItemCallback): void {
         this.getTeamAreaPath(options.account, options.project, options.team, (err, areapath) => {
             if (err) {
                 callback(err, null);
@@ -265,7 +265,7 @@ export abstract class Rest {
                     callback(err2, null);
                 }
                 options.iteration = iteration;
-                this.makeRestCallWithArgs('createTask', options, (output) => {
+                this.makePostRestCallWithArgs('createTask', options, body, (output) => {
                     let parsed: any = JSON.parse(output);
                     if (parsed.error) {
                         callback(new RestError(parsed.error), null);

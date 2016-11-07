@@ -9,8 +9,6 @@ import { Done } from './Authenticate/done';
 import { completeAddInReducer } from './Redux/GlobalReducer';
 import thunkMiddleware from 'redux-thunk';
 declare const require: (name: String) => any;
-import * as promise from 'es6-promise';
-promise.polyfill();
 
 interface IHotModule {
   hot?: { accept: (path: string, callback: () => void) => void };

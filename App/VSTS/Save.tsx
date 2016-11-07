@@ -95,16 +95,16 @@ export class Save extends React.Component<ISaveProps, {}> {
     let options: any = {
       account: this.props.currentSettings.settings.account,
       attachment: attachmentUrl,
-      body: this.props.workItem.description,
       project: this.props.currentSettings.settings.project,
       team: this.props.currentSettings.settings.team,
       title: this.props.workItem.title,
       type: this.props.workItem.workItemType,
     };
     let dispatch: any = this.props.dispatch;
+    let body: string = this.props.workItem.description;
 
 
-    Rest.createTask(options, (error: RestError, workItemInfo: WorkItemInfo) => {
+    Rest.createTask(options, body, (error: RestError, workItemInfo: WorkItemInfo) => {
       if (error) {
         this.props.dispatch(updateErrorAction(true, error.toString('create task')));
         return;
