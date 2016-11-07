@@ -41,9 +41,6 @@ export class Error extends React.Component<IErrorProps, any> {
    * @param {any} nextState
    */
   public shouldComponentUpdate(nextProps: any, nextState: any): boolean {
-    if (nextProps.isVisible) {
-      this.props.dispatch(updateErrorAction(false, ''));
-    }
     return this.props.isVisible !== nextProps.isVisible;
   }
 
@@ -65,6 +62,7 @@ export class Error extends React.Component<IErrorProps, any> {
   }
 
   private onClick(): void {
+    this.props.dispatch(updateErrorAction(false, ''));
     this.props.dispatch(updateStage(Stage.New));
   }
 }
