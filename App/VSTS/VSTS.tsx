@@ -3,10 +3,11 @@ import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { LogInPage } from './LoginComponents/LogInPage';
 import { Settings} from './SettingsComponents/Settings';
-import { Loading } from './SimpleComponents/Loading';
 import { Connecting } from './SimpleComponents/Connecting';
+import { Saving } from './SimpleComponents/Saving';
 import { Auth } from './authMM';
 import { updateUserProfileAction} from '../Redux/LogInActions';
+import { Stage } from '../Redux/WorkItemActions';
 import { PageVisibility, AuthState, updateAuthAction, IErrorStateAction, updatePageAction, updateErrorAction } from '../Redux/FlowActions';
 import { UserProfile } from '../RestHelpers/rest';
 import { CreateWorkItem } from './CreateWorkItem';
@@ -24,6 +25,7 @@ interface IVSTSProps {
   dispatch?: any;
   authState?: AuthState;
   pageState?: PageVisibility;
+  stage?: Stage;
   error?: IErrorStateAction;
 }
 
@@ -37,6 +39,7 @@ function mapStateToProps(state: any): IVSTSProps {
     authState: state.controlState.authState,
     error: state.controlState.error,
     pageState: state.controlState.pageState,
+    stage: state.workItem.stage,
   });
 }
 
@@ -57,7 +60,8 @@ export class VSTS extends React.Component<IVSTSProps, any> {
    */
   public shouldComponentUpdate(nextProps: any, nextState: any): boolean {
     return (this.props.authState !== nextProps.authState) ||
-      (this.props.pageState !== nextProps.pageState);
+      (this.props.pageState !== nextProps.pageState) ||
+      (this.props.stage !== nextProps.stage);
   }
 
   /**
@@ -111,12 +115,10 @@ export class VSTS extends React.Component<IVSTSProps, any> {
     };
     let body: any;
     switch (this.props.authState) {
-      case AuthState.None:
-        body = (<Loading />);
-        break;
       case AuthState.NotAuthorized:
         body = (<LogInPage />);
         break;
+      case AuthState.None:
       case AuthState.Request:
         body = (<Connecting/>);
         break;
@@ -124,13 +126,15 @@ export class VSTS extends React.Component<IVSTSProps, any> {
         {
           switch (this.props.pageState) {
             case PageVisibility.CreateItem:
-              body = (<CreateWorkItem />);
-              // body = (<QuickActions />);
+              body = [<CreateWorkItem />];
+              if (this.props.stage === Stage.Saved) {
+                body.push(<Saving />);
+              }
               break;
             case PageVisibility.QuickActions:
               body = (<QuickActions />);
               break;
-            case PageVisibility.Settings:
+            // case PageVisibility.Settings:
             default:
               body = (<Settings />);
               break;
