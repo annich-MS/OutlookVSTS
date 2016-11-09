@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import { AuthState, updateAuthAction, updateErrorAction } from '../../Redux/FlowActions';
+import { AuthState, updateAuthAction, updateNotificationAction, NotificationType } from '../../Redux/FlowActions';
 import { updateUserProfileAction} from '../../Redux/LogInActions';
 import { Rest, RestError, UserProfile} from '../../RestHelpers/rest';
 import { Auth} from '../authMM';
@@ -78,7 +78,7 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
         let id: string = '';
         Rest.getUserProfile((error: RestError, profile: UserProfile) => {
           if (error) {
-            this.props.dispatch(updateErrorAction(true, error.toString('get user profile')));
+            this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('get user profile')));
             return;
           }
           id = profile.id;

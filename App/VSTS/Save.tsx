@@ -3,7 +3,7 @@ import { Provider, connect } from 'react-redux';
 import { Rest, RestError, WorkItemInfo, IStringCallback} from '../RestHelpers/rest';
 import { updateStage, Stage, updateSave } from '../Redux/WorkItemActions';
 import { IWorkItem } from '../Redux/WorkItemReducer';
-import { updateErrorAction, updatePageAction, PageVisibility, PopulationStage } from '../Redux/FlowActions';
+import { updateNotificationAction, updatePageAction, PageVisibility, PopulationStage, NotificationType } from '../Redux/FlowActions';
 import { IUserProfileReducer, ISettingsAndListsReducer } from '../Redux/LogInReducer';
 import { Button, ButtonType } from 'office-ui-fabric-react';
 
@@ -77,12 +77,12 @@ export class Save extends React.Component<ISaveProps, {}> {
 
     Rest.getMessage(id, url, token, (error, data) => {
       if (error) {
-        this.props.dispatch(updateErrorAction(true, error.toString('download message from Exchange')));
+        this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('download message from Exchange')));
         return;
       }
       Rest.uploadAttachment(data, account, Office.context.mailbox.item.normalizedSubject + '.eml', (err, link) => {
         if (err) {
-          this.props.dispatch(updateErrorAction(true, err.toString('upload attachment to VSTS')));
+          this.props.dispatch(updateNotificationAction(NotificationType.Error, err.toString('upload attachment to VSTS')));
           return;
         }
         callback(null, link);
@@ -106,7 +106,7 @@ export class Save extends React.Component<ISaveProps, {}> {
 
     Rest.createTask(options, body, (error: RestError, workItemInfo: WorkItemInfo) => {
       if (error) {
-        this.props.dispatch(updateErrorAction(true, error.toString('create task')));
+        this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('create task')));
         return;
       }
       dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));

@@ -7,7 +7,7 @@ import { WorkItemDropdown } from './WorkItemDropdown';
 import { Classification } from './Classification';
 import { Gear } from './Gear';
 import { Feedback } from './SimpleComponents/Feedback';
-import { Error } from './SimpleComponents/Error';
+import { Notification } from './SimpleComponents/Notification';
 
 /**
  * Renders all components of the Create page
@@ -21,7 +21,7 @@ export class CreateWorkItem extends React.Component<{}, {}> {
   public render(): React.ReactElement<{}> {
     return (
       <div>
-        <Error />
+        <Notification />
         <Gear />
         <WorkItemDropdown/>
         <Title/>

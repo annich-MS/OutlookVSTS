@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import {ISettingsInfo, updateProjectSettingsAction } from '../../Redux/LogInActions';
-import {updatePopulatingAction, updateErrorAction, PopulationStage } from '../../Redux/FlowActions';
+import {updatePopulatingAction, updateNotificationAction, PopulationStage, NotificationType } from '../../Redux/FlowActions';
 import {Rest, RestError, Project } from '../../RestHelpers/rest';
 import { Dropdown, IDropdownOptions } from 'office-ui-fabric-react';
 
@@ -72,8 +72,6 @@ function mapStateToProps(state: any): IProjectProps {
  * @class {ProjectDropdown} 
  */
 export class ProjectDropdown extends React.Component<IProjectProps, any> {
-
-  private POPULATION_TIER: number = 2;
 
   public constructor() {
     super();
@@ -172,7 +170,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
 
     Rest.getProjects(account, (error: RestError, projects: Project[]) => {
       if (error) {
-        this.props.dispatch(updateErrorAction(true, error.toString('populate projects')));
+        this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('populate projects')));
         return;
       }
       projects = projects.sort(Project.compare);

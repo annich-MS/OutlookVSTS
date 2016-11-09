@@ -56,12 +56,11 @@ export class Description extends React.Component<IDescriptionProps, {}> {
   public handleChangeAddAsAttachment(event: any, isChecked: boolean): void {
     if (isChecked === true) {
       this.props.dispatch(updateDescription('For more details, please refer to the attached mail thread. ' + this.props.description));
-      this.props.dispatch(updateAddAsAttachment(true));
     } else {
       this.props.dispatch(updateDescription(
         this.props.description.replace('For more details, please refer to the attached mail thread. ', '')));
-      this.props.dispatch(updateAddAsAttachment(false));
     }
+    this.props.dispatch(updateAddAsAttachment(isChecked));
   }
 
   public componentWillMount(): void {

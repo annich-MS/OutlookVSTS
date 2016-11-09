@@ -8,7 +8,8 @@ import { Saving } from './SimpleComponents/Saving';
 import { Auth } from './authMM';
 import { updateUserProfileAction} from '../Redux/LogInActions';
 import { Stage } from '../Redux/WorkItemActions';
-import { PageVisibility, AuthState, updateAuthAction, IErrorStateAction, updatePageAction, updateErrorAction } from '../Redux/FlowActions';
+import { PageVisibility, AuthState, updateAuthAction,
+  INotificationStateAction, updatePageAction, updateNotificationAction, NotificationType } from '../Redux/FlowActions';
 import { UserProfile } from '../RestHelpers/rest';
 import { CreateWorkItem } from './CreateWorkItem';
 import { QuickActions } from './QuickActions';
@@ -26,7 +27,7 @@ interface IVSTSProps {
   authState?: AuthState;
   pageState?: PageVisibility;
   stage?: Stage;
-  error?: IErrorStateAction;
+  notification?: INotificationStateAction;
 }
 
 /**
@@ -37,7 +38,7 @@ function mapStateToProps(state: any): IVSTSProps {
   // console.log('state:' + JSON.stringify(state));
   return ({
     authState: state.controlState.authState,
-    error: state.controlState.error,
+    notification: state.controlState.notification,
     pageState: state.controlState.pageState,
     stage: state.workItem.stage,
   });
@@ -86,7 +87,7 @@ export class VSTS extends React.Component<IVSTSProps, any> {
         } else {
           Rest.getUserProfile((error: RestError, profile: UserProfile) => {
             if (error) {
-              this.props.dispatch(updateErrorAction(true, error.toString('retrieve user profile')));
+              this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('retrieve user profile')));
               return;
             }
             id = profile.id;

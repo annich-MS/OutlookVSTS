@@ -21,6 +21,8 @@ interface IQuickActionProps {
    * @type { IWorkItem }
    */
   workItem?: IWorkItem;
+
+  dispatch?: any;
 }
 
 /**
@@ -74,7 +76,7 @@ export class QuickActions extends React.Component<IQuickActionProps, {}> {
         <br />
         <br />
         <div className='ms-font-m-plus'>Quick Actions:</div>
-        <ReplyAllButton workItemHyperlink={htmlString}/>
+        <ReplyAllButton workItemHyperlink={htmlString} dispatch={this.props.dispatch} />
         <CopyButton workItemHyperlink={htmlString} textOnly={textString} />
         <br />
         <Feedback />

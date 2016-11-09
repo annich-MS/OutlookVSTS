@@ -1,7 +1,7 @@
 /// <reference path="../../../office.d.ts" />
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import {Error } from '../SimpleComponents/Error';
+import { Notification } from '../SimpleComponents/Notification';
 import {AccountDropdown } from './AccountDropdown';
 import {ProjectDropdown } from './ProjectDropdown';
 import {AreaDropdown } from './AreaDropdown';
@@ -48,7 +48,7 @@ export class Settings extends React.Component<ISettingsProps, any> {
 
     return (
       <div>
-        <Error />
+        <Notification />
         <div>
           <p className={style_text}> Welcome {this.props.name}!</p>
           <p/>

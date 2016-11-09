@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import {updateTeamSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
-import {updatePopulatingAction, updateErrorAction, PopulationStage } from '../../Redux/FlowActions';
+import {updatePopulatingAction, updateNotificationAction, PopulationStage, NotificationType } from '../../Redux/FlowActions';
 import {Rest, RestError, Team } from '../../RestHelpers/rest';
 import { Dropdown, IDropdownOptions } from 'office-ui-fabric-react';
 
@@ -173,7 +173,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
 
     Rest.getTeams(project, account, (error: RestError, teams: Team[]) => {
       if (error) {
-        this.props.dispatch(updateErrorAction(true, error.toString('populate teams')));
+        this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('populate teams')));
         return;
       }
       teams = teams.sort(Team.compare);

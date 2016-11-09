@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { Rest, RestError } from '../../RestHelpers/rest';
-import { AuthState, updateAuthAction, updateErrorAction } from '../../Redux/FlowActions';
+import { AuthState, updateAuthAction, updateNotificationAction, NotificationType } from '../../Redux/FlowActions';
 import { Button, ButtonType } from 'office-ui-fabric-react';
 
 /**
@@ -50,7 +50,7 @@ export class LogoutButton extends React.Component<ILogoutProps, any> {
 
         Rest.removeUser((error: RestError) => {
             if (error) {
-                this.props.dispatch(updateErrorAction(true, error.toString('disconnect')));
+                this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('disconnect')));
                 return;
             } else {
                 dispatch(updateAuthAction(AuthState.NotAuthorized));

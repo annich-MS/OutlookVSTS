@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import { updateErrorAction } from '../../Redux/FlowActions';
+import { updateNotificationAction, NotificationType } from '../../Redux/FlowActions';
 import { updateStage, Stage } from '../../Redux/WorkItemActions';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react';
 
@@ -10,7 +10,7 @@ import { MessageBar, MessageBarType } from 'office-ui-fabric-react';
  */
 export interface IErrorProps {
   dispatch?: any;
-  isVisible?: boolean;
+  type?: NotificationType;
   message?: string;
 }
 
@@ -21,8 +21,8 @@ export interface IErrorProps {
 function mapStateToProps(state: any): IErrorProps {
   return (
       {
-      isVisible: state.controlState.error.isVisible,
-      message: state.controlState.error.message,
+      message: state.controlState.notification.message,
+      type: state.controlState.notification.notificationType,
     });
 }
 
@@ -31,9 +31,9 @@ function mapStateToProps(state: any): IErrorProps {
 /**
  * Smart component
  * Renders error response
- * @class {Error} 
+ * @class {Notification} 
  */
-export class Error extends React.Component<IErrorProps, any> {
+export class Notification extends React.Component<IErrorProps, any> {
 
   /**
    * determines whether or not the component should re-render based on changes in state
@@ -41,17 +41,28 @@ export class Error extends React.Component<IErrorProps, any> {
    * @param {any} nextState
    */
   public shouldComponentUpdate(nextProps: any, nextState: any): boolean {
-    return this.props.isVisible !== nextProps.isVisible;
+    return this.props.type !== nextProps.type;
   }
 
   /**
    * Renders the error message in parent component
    */
   public render(): React.ReactElement<Provider> {
-    if (this.props.isVisible === true) {
+    let type: MessageBarType;
+    switch (this.props.type) {
+      case NotificationType.Error:
+        type = MessageBarType.error;
+        break;
+      case NotificationType.Success:
+        type = MessageBarType.success;
+        break;
+      default:
+        break;
+    }
+    if (this.props.type !== NotificationType.Hide) {
       return (<div>
                 <MessageBar
-                    messageBarType={ MessageBarType.error }
+                    messageBarType={ type }
                     onDismiss={this.onClick.bind(this)}>
                   {this.props.message}
                 </MessageBar>
@@ -62,7 +73,7 @@ export class Error extends React.Component<IErrorProps, any> {
   }
 
   private onClick(): void {
-    this.props.dispatch(updateErrorAction(false, ''));
+    this.props.dispatch(updateNotificationAction(NotificationType.Hide, ''));
     this.props.dispatch(updateStage(Stage.New));
   }
 }

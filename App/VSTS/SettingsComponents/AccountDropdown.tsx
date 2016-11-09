@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { updateAccountSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
-import { updateErrorAction, updatePopulatingAction, PopulationStage } from '../../Redux/FlowActions';
+import { updateNotificationAction, updatePopulatingAction, PopulationStage, NotificationType } from '../../Redux/FlowActions';
 import {Rest, RestError, Account} from '../../RestHelpers/rest';
 import { Dropdown, IDropdownOptions } from 'office-ui-fabric-react';
 
@@ -65,8 +65,6 @@ function mapStateToProps(state: any): IAccountProps {
  * @class {AccountDropdown} 
  */
 export class AccountDropdown extends React.Component<IAccountProps, any> {
-
-  private POPULATION_TIER: number = 3;
 
   public constructor() {
     super();
@@ -138,7 +136,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
     console.log('populating accounts' + this.props.email + this.props.memberId);
     Rest.getAccounts(this.props.memberId, (error: RestError, accountList: Account[]) => {
       if (error) {
-        this.props.dispatch(updateErrorAction(true, error.toString('populate accounts')));
+        this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('populate accounts')));
         return;
       }
       accountList = accountList.sort(Account.compare);

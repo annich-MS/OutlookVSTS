@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { Provider } from 'react-redux';
 import { Button, ButtonType } from 'office-ui-fabric-react';
+import { updateNotificationAction, NotificationType } from '../Redux/FlowActions';
 
 /**
  * Props for ReplyAllButton Component
@@ -13,6 +14,8 @@ interface IReplyAllButtonProps {
    * @type { string }
    */
   workItemHyperlink: string;
+
+  dispatch?: Function;
 }
 
 /**
@@ -35,7 +38,7 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
           Reply All with Work Item
         </Button>
       </div>
-    ); 
+    );
   }
 
   /**
@@ -49,7 +52,31 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
    * Handles the click and displays a reply-all form
    * @private
    */
-  private handleClick: () => void = () => {
-    Office.context.mailbox.item.displayReplyAllForm(this.addSignature(this.props.workItemHyperlink));
+  private handleClick(): void {
+    if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
+      Office.context.mailbox.getCallbackTokenAsync((asyncResult: Office.AsyncResult) => {
+        if (asyncResult.error) {
+          this.props.dispatch(updateNotificationAction(NotificationType.Error, 'Reply failed due to ' + asyncResult.error));
+        } else {
+          let settings: any = {
+            contentType: 'application/json',
+            data: JSON.stringify({
+              'Comment': 'I have created the following bug:<br/><br/>' +  this.addSignature(this.props.workItemHyperlink),
+            }),
+            headers: {
+              'Authentication': 'Bearer ' + asyncResult.value,
+            },
+            url: 'https://outlook.office.com/api/v2.0/me/messages/' + Office.context.mailbox.item.itemId + '/replyAll',
+          };
+          $.post(settings).done(() => {
+            this.props.dispatch(updateNotificationAction(NotificationType.Error, 'Reply failed due to ' + asyncResult.error));
+          }).fail((jqXHR, status, errorThrown) => {
+            this.props.dispatch(updateNotificationAction(NotificationType.Success, 'Reply failed due to ' + errorThrown));
+          });
+        }
+      });
+    } else {
+      Office.context.mailbox.item.displayReplyAllForm(this.addSignature(this.props.workItemHyperlink));
+    }
   }
 }

@@ -100,21 +100,27 @@ export function updatePageAction(newState: PageVisibility): IPageStateAction {
     };
 }
 
+export enum NotificationType {
+  Error,
+  Success,
+  Hide
+}
+
 /**
- * Represents the error data in the state
- * @interface IErrorStateAction
+ * Represents the notification data in the state
+ * @interface INotificationStateAction
  */
-export interface IErrorStateAction {
+export interface INotificationStateAction {
     /**
      * the type of the action
      * @type {string}
      */
-    type: 'ErrorState';
+    type: 'NotificationState';
     /**
-     * is error visible
+     * notification type 
      * @type {boolean}
      */
-    isVisible: boolean;
+    notificationType: NotificationType;
     /**
      * error message
      * @type {string}
@@ -126,13 +132,13 @@ export interface IErrorStateAction {
  * action to update the message and visibility of an error
  * @param {boolean} visibility
  * @param {string} msg
- * @returns {IErrorStateAction}
+ * @returns {INotificationStateAction}
  */
-export function updateErrorAction(visibility: boolean, msg: string): IErrorStateAction {
+export function updateNotificationAction(notificationType: NotificationType, msg: string): INotificationStateAction {
     return {
-        isVisible: visibility,
         message: msg,
-        type: 'ErrorState',
+        notificationType: notificationType,
+        type: 'NotificationState',
     };
 }
 
@@ -161,7 +167,7 @@ export interface IDropdownStateAction {
 /**
  * action to update the message and visibility of an error
  * @param {PopulationStage} stage 
- * @returns {IErrorStateAction}
+ * @returns {INotificationStateAction}
  */
 export function updatePopulatingAction(stage: PopulationStage): IDropdownStateAction {
     return {
