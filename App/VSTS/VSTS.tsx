@@ -77,10 +77,8 @@ export class VSTS extends React.Component<IVSTSProps, any> {
     const name: string = Office.context.mailbox.userProfile.displayName;
     if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
       this.props.dispatch(updateAddAsAttachment(false));
-      this.props.dispatch(updateNotificationAction(NotificationType.Success, 'OnIos'));
       Office.context.mailbox.item.body.getAsync('text', (result: Office.AsyncResult) => {
         this.props.dispatch(updateDescription(result.value.trim()));
-        this.props.dispatch(updateNotificationAction(NotificationType.Success, JSON.stringify(result).slice(0, 100)));
       });
     }
     Auth.getAuthState(function (state: string): void {
