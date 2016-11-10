@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Provider } from 'react-redux';
 import { Button, ButtonType } from 'office-ui-fabric-react';
 import { updateNotificationAction, NotificationType } from '../Redux/FlowActions';
+import { Rest } from '../RestHelpers/rest';
 
 /**
  * Props for ReplyAllButton Component
@@ -54,7 +55,9 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
    */
   private handleClick(): void {
     if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
+      Rest.log('ios');
       Office.context.mailbox.getCallbackTokenAsync((asyncResult: Office.AsyncResult) => {
+        Rest.log('got callback token: ' + JSON.stringify(asyncResult));
         if (asyncResult.error) {
           this.props.dispatch(updateNotificationAction(NotificationType.Error, 'Reply failed due to ' + asyncResult.error));
         } else {

@@ -19,6 +19,9 @@ app.use(bodyParser.text({limit: '50mb'})); // support text bodies
 
 app.use('/authenticate', authenticate);
 app.use('/rest', rest);
+app.use('/log', function(req,res) {
+  console.log(req.query.msg);
+});
 app.use('/public', express.static(__dirname + '/public'));
 app.use('/static', express.static(__dirname + '/static'));
 

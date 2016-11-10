@@ -293,6 +293,10 @@ export abstract class Rest {
         });
     }
 
+    public static log(msg: string): void {
+        $.get('./log?msg=' +  encodeURIComponent(msg));
+    }
+
     private static makeRestCall(name: string, callback: IRestCallback): void {
         Rest.getUser((user: string) => {
             $.get('./rest/' + name + '?user=' + user, callback);

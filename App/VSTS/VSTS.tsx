@@ -71,6 +71,7 @@ export class VSTS extends React.Component<IVSTSProps, any> {
    */
   public Initialize(): void {
     console.log('Initiating');
+    Rest.log('init');
     // - TODO check for auth token
     let dispatch: any = this.props.dispatch;
     const email: string = Office.context.mailbox.userProfile.emailAddress;
