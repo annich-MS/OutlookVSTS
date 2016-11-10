@@ -63,14 +63,6 @@ export class Description extends React.Component<IDescriptionProps, {}> {
     this.props.dispatch(updateAddAsAttachment(isChecked));
   }
 
-  public componentWillMount(): void {
-    if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
-      this.props.dispatch(updateAddAsAttachment(false));
-      Office.context.mailbox.item.body.getAsync('text', {}, (result: Office.AsyncResult) => {
-        this.props.dispatch(updateDescription(result.value.trim()));
-      });
-    }
-  }
   /**
    * Renders the Description heading, the Add Email as Attachment checkbox, and the Description textbox
    */

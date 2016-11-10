@@ -7,7 +7,7 @@ import { Connecting } from './SimpleComponents/Connecting';
 import { Saving } from './SimpleComponents/Saving';
 import { Auth } from './authMM';
 import { updateUserProfileAction} from '../Redux/LogInActions';
-import { Stage } from '../Redux/WorkItemActions';
+import { Stage, updateAddAsAttachment, updateDescription } from '../Redux/WorkItemActions';
 import { PageVisibility, AuthState, updateAuthAction,
   INotificationStateAction, updatePageAction, updateNotificationAction, NotificationType } from '../Redux/FlowActions';
 import { UserProfile } from '../RestHelpers/rest';
@@ -75,6 +75,12 @@ export class VSTS extends React.Component<IVSTSProps, any> {
     let dispatch: any = this.props.dispatch;
     const email: string = Office.context.mailbox.userProfile.emailAddress;
     const name: string = Office.context.mailbox.userProfile.displayName;
+    if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
+      this.props.dispatch(updateAddAsAttachment(false));
+      Office.context.mailbox.item.body.getAsync('text', (result: Office.AsyncResult) => {
+        this.props.dispatch(updateDescription(result.value.trim()));
+      });
+    }
     Auth.getAuthState(function (state: string): void {
       if (state === 'success') {
         let id: string = Office.context.roamingSettings.get('memberID');
@@ -143,8 +149,8 @@ export class VSTS extends React.Component<IVSTSProps, any> {
         }
         break;
       default:
-       body = (<LogInPage />);
+        body = (<LogInPage />);
     }
-    return(<div style={bodyStyle}> {body} </div>);
+    return (<div style={bodyStyle}> {body} </div>);
   }
 }
