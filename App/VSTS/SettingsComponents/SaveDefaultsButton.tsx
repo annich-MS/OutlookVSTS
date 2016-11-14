@@ -26,6 +26,10 @@ interface ISettingsProps {
    */
   team?: string;
 
+  accounts?: string[];
+  projects?: string[];
+  teams?: string[];
+
   /**
    * Represents what tier is currently being populated
    * @type {number}
@@ -40,9 +44,12 @@ interface ISettingsProps {
 function mapStateToProps(state: any): ISettingsProps {
   return({
       account: state.currentSettings.settings.account,
+      accounts: state.currentSettings.lists.accountList,
       populationStage: state.controlState.populationStage,
       project: state.currentSettings.settings.project,
+      projects: state.currentSettings.lists.projectList,
       team: state.currentSettings.settings.team,
+      teams: state.currentSettings.lists.teamList,
     });
 }
 
@@ -64,6 +71,9 @@ export class SaveDefaultsButton extends React.Component<ISettingsProps, any> {
     Office.context.roamingSettings.set('default_account', this.props.account);
     Office.context.roamingSettings.set('default_project', this.props.project);
     Office.context.roamingSettings.set('default_team', this.props.team);
+    Office.context.roamingSettings.set('accounts', this.props.accounts);
+    Office.context.roamingSettings.set('projects', this.props.projects);
+    Office.context.roamingSettings.set('teams', this.props.teams);
     Office.context.roamingSettings.saveAsync();
 
     this.props.dispatch(updatePageAction(PageVisibility.CreateItem));

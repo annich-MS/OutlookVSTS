@@ -89,10 +89,18 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    * @return {void}
    */
   public componentWillMount(): void {
-    /*let defaultTeam: string = Office.context.roamingSettings.get('default_team');
-    if (defaultTeam !== undefined) {
-      this.props.dispatch(updateTeamSettingsAction(defaultTeam, this.props.teams));
-    }*/
+    if (this.props.project === '') {
+      this.populateTeams(this.props.account, this.props.project);
+    } else {
+      this.runPopulate(this.props.account, this.props.project, (team: string, teams: ISettingsInfo[]) => {
+        if (JSON.stringify(teams) !== JSON.stringify(this.props.teams)) {
+          Office.context.roamingSettings.set('teams', teams);
+        }
+        this.props.dispatch(updateTeamSettingsAction(team, teams));
+      });
+
+      this.props.dispatch(updatePopulatingAction(PopulationStage.teamReady));
+    }
   }
 
   /**
@@ -102,8 +110,8 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    */
   public shouldComponentUpdate(nextProps: any, nextState: any): boolean {
     console.log('shouldcomponentupdate: team');
-    let projectChanged: boolean =  this.props.project !== nextProps.project;
-    let teamChanged: boolean =  this.props.team !== nextProps.team;
+    let projectChanged: boolean = this.props.project !== nextProps.project;
+    let teamChanged: boolean = this.props.team !== nextProps.team;
     let teamListChanged: boolean = JSON.stringify(this.props.teams) !== JSON.stringify(nextProps.teams);
     let populationChanged: boolean = this.props.populationStage !== nextProps.poulationStage;
     return projectChanged || teamChanged || teamListChanged || populationChanged;
@@ -112,7 +120,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
   public componentWillUpdate(nextProps: any, nextState: any): void {
     console.log('willcomponentupdate: team');
     if ((this.props.project !== nextProps.project && nextProps.project !== '') ||
-        nextProps.populationStage === PopulationStage.projectReady) {
+      nextProps.populationStage === PopulationStage.projectReady) {
       this.populateTeams(nextProps.account, nextProps.project);
     }
   }
@@ -154,9 +162,9 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
       <Dropdown
         label={'Team'}
         options={teams}
-        onChanged={this.onTeamSelect.bind(this)}
+        onChanged={this.onTeamSelect.bind(this) }
         disabled={this.props.populationStage < PopulationStage.teamReady}
-      />);
+        />);
   }
 
   /**
@@ -167,6 +175,19 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    */
   public populateTeams(account: string, project: string): void {
     this.props.dispatch(updatePopulatingAction(PopulationStage.teamPopulating));
+    this.runPopulate(account, project, (team: string, teams: ISettingsInfo[]) => {
+      try {
+        this.props.dispatch(updateTeamSettingsAction(team, teams));
+        this.props.dispatch(updatePopulatingAction(PopulationStage.teamReady));
+      } catch (e) {
+        // bug in fabricReact requires this
+        this.props.dispatch(updatePopulatingAction(PopulationStage.teamReady));
+        this.props.dispatch(updateTeamSettingsAction(team, teams));
+      }
+    });
+  }
+
+  private runPopulate(account: string, project: string, callback: Function): void {
     let teamOptions: ISettingsInfo[] = [];
     let teamNamesOnly: string[] = [];
     let selectedTeam: string = this.props.team;
@@ -191,14 +212,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
         selectedTeam = teamNamesOnly[0];
         console.log('setting first project:' + selectedTeam);
       }
-      try {
-        this.props.dispatch(updateTeamSettingsAction(selectedTeam, teamOptions));
-        this.props.dispatch(updatePopulatingAction(PopulationStage.teamReady));
-      } catch (e) {
-        // bug in fabricReact requires this
-        this.props.dispatch(updatePopulatingAction(PopulationStage.teamReady));
-        this.props.dispatch(updateTeamSettingsAction(selectedTeam, teamOptions));
-      }
+      callback(selectedTeam, teamOptions);
     });
   }
 }

@@ -83,10 +83,16 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * @return {void}
    */
   public componentWillMount(): void {
-    /*let defaultProject: string = Office.context.roamingSettings.get('default_project');
-    if (defaultProject !== undefined) {
-      this.props.dispatch(updateProjectSettingsAction(defaultProject, this.props.projects));
-    }*/
+    if (this.props.project === '') {
+      this.populateProjects(this.props.account);
+    } else {
+      this.runPopulate(this.props.account, (project: string, projects: ISettingsInfo[]) => {
+        if (JSON.stringify(projects) !== JSON.stringify(this.props.projects)) {
+          Office.context.roamingSettings.set('projects', projects);
+        }
+        this.props.dispatch(updateProjectSettingsAction(project, projects));
+      });
+    }
   }
 
   /**
@@ -97,7 +103,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
   public shouldComponentUpdate(nextProps: any, nextState: any): boolean {
     console.log('shouldcomponentupdate project');
     let accountChanged: boolean = this.props.account !== nextProps.account;
-    let projectChanged: boolean =  this.props.project !== nextProps.project;
+    let projectChanged: boolean = this.props.project !== nextProps.project;
     let projectListChanged: boolean = JSON.stringify(this.props.projects) !== JSON.stringify(nextProps.projects);
     let populationChanged: boolean = this.props.populationStage !== nextProps.poulationStage;
     return accountChanged || projectChanged || projectListChanged || populationChanged;
@@ -106,7 +112,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
   public componentWillUpdate(nextProps: any, nextState: any): void {
     console.log('willcomponentupdate project');
     if ((this.props.account !== nextProps.account && nextProps.account !== '') ||
-        nextProps.populationStage === PopulationStage.accountReady) {
+      nextProps.populationStage === PopulationStage.accountReady) {
       this.populateProjects(nextProps.account);
     }
   }
@@ -150,9 +156,9 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
       <Dropdown
         label={'Project'}
         options={projects}
-        onChanged={this.onProjectSelect.bind(this)}
+        onChanged={this.onProjectSelect.bind(this) }
         disabled={this.props.populationStage < PopulationStage.projectReady}
-      />);
+        />);
   }
 
   /**
@@ -163,6 +169,20 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    */
   public populateProjects(account: string): void {
     this.props.dispatch(updatePopulatingAction(PopulationStage.projectPopulating));
+    this.runPopulate(account, (project: string, projects: ISettingsInfo[]) => {
+      try {
+        this.props.dispatch(updateProjectSettingsAction(project, projects));
+        this.props.dispatch(updatePopulatingAction(PopulationStage.projectReady));
+      } catch (e) {
+        // bug in fabric react requires this
+        this.props.dispatch(updatePopulatingAction(PopulationStage.projectReady));
+        this.props.dispatch(updateProjectSettingsAction(project, projects));
+
+      }
+    });
+  }
+
+  public runPopulate(account: string, callback: Function): void {
     let projectOptions: ISettingsInfo[] = [];
     let projectNamesOnly: string[] = [];
     let selectedProject: string = this.props.project;
@@ -188,15 +208,8 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
         selectedProject = projectNamesOnly[0];
         console.log('setting first project:' + selectedProject);
       }
-      try {
-        this.props.dispatch(updateProjectSettingsAction(selectedProject, projectOptions));
-        this.props.dispatch(updatePopulatingAction(PopulationStage.projectReady));
-      } catch (e) {
-        // bug in fabric react requires this
-        this.props.dispatch(updatePopulatingAction(PopulationStage.projectReady));
-        this.props.dispatch(updateProjectSettingsAction(selectedProject, projectOptions));
-      }
+      callback(selectedProject, projectOptions);
     });
-  }
+}
 
 }

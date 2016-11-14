@@ -143,6 +143,7 @@ export function updateNotificationAction(notificationType: NotificationType, msg
 }
 
 export enum PopulationStage {
+    prepopulate,
     accountPopulating,
     accountReady,
     projectPopulating,

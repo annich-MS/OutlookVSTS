@@ -76,7 +76,16 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * @returns {void}
    */
   public componentWillMount(): void {
-    this.populateAccounts();
+    if (this.props.account === '') {
+      this.populateAccounts();
+    } else {
+      this.runPopulate((account: string, accounts: ISettingsInfo[]) => {
+        if (JSON.stringify(accounts) !== JSON.stringify(this.props.accountList)) {
+          Office.context.roamingSettings.set('accounts', accounts);
+        }
+        this.props.dispatch(updateAccountSettingsAction(account, accounts));
+      });
+    }
   }
 
   /**
@@ -118,9 +127,9 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
       <Dropdown
         label={'Account'}
         options={accounts}
-        onChanged={this.onAccountSelect.bind(this)}
+        onChanged={this.onAccountSelect.bind(this) }
         disabled={this.props.populationStage < PopulationStage.accountReady}
-      />);
+        />);
   }
 
   /**
@@ -130,6 +139,19 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    */
   public populateAccounts(): void {
     this.props.dispatch(updatePopulatingAction(PopulationStage.accountPopulating));
+    this.runPopulate((account: string, accounts: ISettingsInfo[]) => {
+      try {
+        this.props.dispatch(updateAccountSettingsAction(account, accounts));
+        this.props.dispatch(updatePopulatingAction(PopulationStage.accountReady));
+      } catch (e) {
+        // bug in fabricReact requires this
+        this.props.dispatch(updatePopulatingAction(PopulationStage.accountReady));
+        this.props.dispatch(updateAccountSettingsAction(account, accounts));
+      }
+    });
+  }
+
+  private runPopulate(callback: Function): void {
     let accountOptions: ISettingsInfo[] = [];
     let accountNamesOnly: string[] = [];
     let selectedAccount: string = this.props.account;
@@ -155,14 +177,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
         console.log('setting first account:' + selectedAccount);
       }
       console.log('popaccounts' + defaultAccount);
-      try {
-        this.props.dispatch(updateAccountSettingsAction(selectedAccount, accountOptions));
-        this.props.dispatch(updatePopulatingAction(PopulationStage.accountReady));
-      } catch (e) {
-        // bug in fabricReact requires this
-        this.props.dispatch(updatePopulatingAction(PopulationStage.accountReady));
-        this.props.dispatch(updateAccountSettingsAction(selectedAccount, accountOptions));
-      }
+      callback(selectedAccount, accountOptions);
     });
   }
 }

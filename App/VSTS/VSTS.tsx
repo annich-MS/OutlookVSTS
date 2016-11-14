@@ -6,10 +6,21 @@ import { Settings} from './SettingsComponents/Settings';
 import { Connecting } from './SimpleComponents/Connecting';
 import { Saving } from './SimpleComponents/Saving';
 import { Auth } from './authMM';
-import { updateUserProfileAction} from '../Redux/LogInActions';
+import {
+  updateUserProfileAction, updateTeamSettingsAction, updateAccountSettingsAction, updateProjectSettingsAction
+} from '../Redux/LogInActions';
 import { Stage, updateAddAsAttachment, updateDescription } from '../Redux/WorkItemActions';
-import { PageVisibility, AuthState, updateAuthAction,
-  INotificationStateAction, updatePageAction, updateNotificationAction, NotificationType } from '../Redux/FlowActions';
+import {
+  PageVisibility,
+  AuthState,
+  updateAuthAction,
+  INotificationStateAction,
+  updatePageAction,
+  updateNotificationAction,
+  NotificationType,
+  updatePopulatingAction,
+  PopulationStage,
+} from '../Redux/FlowActions';
 import { UserProfile } from '../RestHelpers/rest';
 import { CreateWorkItem } from './CreateWorkItem';
 import { QuickActions } from './QuickActions';
@@ -65,31 +76,24 @@ export class VSTS extends React.Component<IVSTSProps, any> {
       (this.props.stage !== nextProps.stage);
   }
 
-  /**
-   * Executed after Office.initialize is complete. 
-   * Initial check for user authentication token and determines correct first page to show
-   */
-  public Initialize(): void {
-    console.log('Initiating');
-    Rest.log('init');
-    // - TODO check for auth token
-    let dispatch: any = this.props.dispatch;
-    const email: string = Office.context.mailbox.userProfile.emailAddress;
-    const name: string = Office.context.mailbox.userProfile.displayName;
+  public iosInit(): void {
     if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
       this.props.dispatch(updateAddAsAttachment(false));
       Office.context.mailbox.item.body.getAsync('text', (result: Office.AsyncResult) => {
         this.props.dispatch(updateDescription(result.value.trim()));
       });
     }
+  }
+
+  public authInit(): void {
+    let dispatch: any = this.props.dispatch;
+    const email: string = Office.context.mailbox.userProfile.emailAddress;
+    const name: string = Office.context.mailbox.userProfile.displayName;
     Auth.getAuthState(function (state: string): void {
       if (state === 'success') {
         let id: string = Office.context.roamingSettings.get('memberID');
         if (id) {
           dispatch(updateUserProfileAction(name, email, Office.context.roamingSettings.get('member_ID')));
-          if (Office.context.roamingSettings.get('default_team') !== undefined) {
-            dispatch(updatePageAction(PageVisibility.CreateItem)); // todo - may cause issues here
-          }
           dispatch(updateAuthAction(AuthState.Authorized));
         } else {
           Rest.getUserProfile((error: RestError, profile: UserProfile) => {
@@ -103,7 +107,6 @@ export class VSTS extends React.Component<IVSTSProps, any> {
             dispatch(updateUserProfileAction(name, email, id));
             dispatch(updateAuthAction(AuthState.Authorized));
           });
-
           if (Office.context.roamingSettings.get('default_team') !== undefined) {
             dispatch(updatePageAction(PageVisibility.CreateItem)); // todo - may cause issues here
           }
@@ -112,6 +115,34 @@ export class VSTS extends React.Component<IVSTSProps, any> {
         dispatch(updateAuthAction(AuthState.NotAuthorized));
       }
     });
+  }
+
+  public prepopDropdowns(): void {
+    this.props.dispatch(updatePopulatingAction(PopulationStage.prepopulate));
+    let account: string = Office.context.roamingSettings.get('default_account');
+    let project: string = Office.context.roamingSettings.get('default_project');
+    let team: string = Office.context.roamingSettings.get('default_team');
+    let accounts: string[] = Office.context.roamingSettings.get('accounts');
+    let projects: string[] = Office.context.roamingSettings.get('projects');
+    let teams: string[] = Office.context.roamingSettings.get('teams');
+    if (account && project && team && accounts && projects && teams) {
+      this.props.dispatch(updateAccountSettingsAction(account, accounts));
+      this.props.dispatch(updateProjectSettingsAction(project, projects));
+      this.props.dispatch(updateTeamSettingsAction(team, teams));
+    }
+  }
+
+
+  /**
+   * Executed after Office.initialize is complete. 
+   * Initial check for user authentication token and determines correct first page to show
+   */
+  public Initialize(): void {
+    console.log('Initiating');
+    // - TODO check for auth token
+    this.iosInit();
+    this.authInit();
+    this.prepopDropdowns();
   }
 
   /**
