@@ -74,7 +74,6 @@ export class Notification extends React.Component<IErrorProps, any> {
 
   private onClick(): void {
     this.props.dispatch(updateNotificationAction(NotificationType.Hide, ''));
-    this.props.dispatch(updateStage(Stage.New));
   }
 }
 

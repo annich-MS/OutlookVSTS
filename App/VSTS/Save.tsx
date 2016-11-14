@@ -78,11 +78,13 @@ export class Save extends React.Component<ISaveProps, {}> {
     Rest.getMessage(id, url, token, (error, data) => {
       if (error) {
         this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('download message from Exchange')));
+        this.props.dispatch(updateStage(Stage.New));
         return;
       }
       Rest.uploadAttachment(data, account, Office.context.mailbox.item.normalizedSubject + '.eml', (err, link) => {
         if (err) {
           this.props.dispatch(updateNotificationAction(NotificationType.Error, err.toString('upload attachment to VSTS')));
+          this.props.dispatch(updateStage(Stage.New));
           return;
         }
         callback(null, link);
@@ -107,6 +109,7 @@ export class Save extends React.Component<ISaveProps, {}> {
     Rest.createTask(options, body, (error: RestError, workItemInfo: WorkItemInfo) => {
       if (error) {
         this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('create task')));
+        this.props.dispatch(updateStage(Stage.New));
         return;
       }
       dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
@@ -122,12 +125,12 @@ export class Save extends React.Component<ISaveProps, {}> {
 
     let text: any = this.isSaving ? 'Creating...' : 'Create work item';
     return (
-      <div style={{'text-align': 'center'}} >
+      <div style={{ 'text-align': 'center' }} >
         <br/>
         <Button
           buttonType={ButtonType.primary}
-          disabled = {!this.shouldBeEnabled()}
-          onClick={this.handleSave.bind(this)} > {text} </Button>
+          disabled = {!this.shouldBeEnabled() }
+          onClick={this.handleSave.bind(this) } > {text} </Button>
       </div>
     );
   }
