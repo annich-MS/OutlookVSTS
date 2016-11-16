@@ -126,9 +126,15 @@ export class VSTS extends React.Component<IVSTSProps, any> {
     let projects: string[] = Office.context.roamingSettings.get('projects');
     let teams: string[] = Office.context.roamingSettings.get('teams');
     if (account && project && team && accounts && projects && teams) {
+      console.log('prepopulating');
       this.props.dispatch(updateAccountSettingsAction(account, accounts));
       this.props.dispatch(updateProjectSettingsAction(project, projects));
       this.props.dispatch(updateTeamSettingsAction(team, teams));
+    } else if (!accounts || !projects || !teams) {
+      console.log('paving');
+      Office.context.roamingSettings.remove('default_account');
+      Office.context.roamingSettings.remove('default_project');
+      Office.context.roamingSettings.remove('default_team');
     }
   }
 
@@ -141,8 +147,8 @@ export class VSTS extends React.Component<IVSTSProps, any> {
     console.log('Initiating');
     // - TODO check for auth token
     this.iosInit();
-    this.authInit();
     this.prepopDropdowns();
+    this.authInit();
   }
 
   /**

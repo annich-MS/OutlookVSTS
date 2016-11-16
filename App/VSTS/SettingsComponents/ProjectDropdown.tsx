@@ -83,6 +83,9 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * @return {void}
    */
   public componentWillMount(): void {
+    if (this.props.account === '') {
+      return;
+    }
     if (this.props.project === '') {
       this.populateProjects(this.props.account);
     } else {

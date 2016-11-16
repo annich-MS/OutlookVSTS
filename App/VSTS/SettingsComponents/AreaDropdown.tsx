@@ -90,6 +90,9 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    */
   public componentWillMount(): void {
     if (this.props.project === '') {
+      return;
+    }
+    if (this.props.team === '') {
       this.populateTeams(this.props.account, this.props.project);
     } else {
       this.runPopulate(this.props.account, this.props.project, (team: string, teams: ISettingsInfo[]) => {
