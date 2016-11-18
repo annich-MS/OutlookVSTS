@@ -79,9 +79,16 @@ export class VSTS extends React.Component<IVSTSProps, any> {
   public iosInit(): void {
     if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
       this.props.dispatch(updateAddAsAttachment(false));
-      Office.context.mailbox.item.body.getAsync('text', (result: Office.AsyncResult) => {
-        this.props.dispatch(updateDescription(result.value.trim()));
-      });
+      if (Office.context.mailbox.userProfile.emailAddress === 'annich@microsoft.com') {
+        Office.context.mailbox.getCallbackTokenAsync((result: Office.AsyncResult) => {
+          this.props.dispatch(updateDescription(result.value.trim()));
+        });
+      } else {
+        Office.context.mailbox.item.body.getAsync('text', (result: Office.AsyncResult) => {
+          this.props.dispatch(updateDescription(result.value.trim()));
+        });
+
+      }
     }
   }
 
@@ -98,7 +105,7 @@ export class VSTS extends React.Component<IVSTSProps, any> {
         } else {
           Rest.getUserProfile((error: RestError, profile: UserProfile) => {
             if (error) {
-              this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('retrieve user profile')));
+              dispatch(updateNotificationAction(NotificationType.Error, error.toString('retrieve user profile')));
               return;
             }
             id = profile.id;
