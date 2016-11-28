@@ -109,6 +109,10 @@ export abstract class Rest {
 
     private static userProfile: UserProfile;
     private static accounts: Account[];
+    private static uidToken: string = '';
+    private static tokenRefresh: Date = new Date();
+    private static tokenRequests: number = 0;
+    private static tokenCacheHits: number = 0;
 
 
     public static getItem(item: number, callback: IItemCallback): void {
@@ -182,7 +186,7 @@ export abstract class Rest {
 
 
     public static getTeamAreaPath(account: string, project: string, teamName: string, callback: IStringCallback): void {
-        this.makeRestCallWithArgs('getTeamField', { account: account, project: project, team: teamName}, (output) => {
+        this.makeRestCallWithArgs('getTeamField', { account: account, project: project, team: teamName }, (output) => {
             let parsed: any = JSON.parse(output);
             if (parsed.error) {
                 callback(new RestError(parsed.error), null);
@@ -288,13 +292,23 @@ export abstract class Rest {
         });
     }
     public static getUser(callback: IRestCallback): void {
-        Office.context.mailbox.getUserIdentityTokenAsync((asyncResult: Office.AsyncResult) => {
-            callback(asyncResult.value);
-        });
+        Rest.tokenRequests++;
+        if (Rest.uidToken !== '' && Rest.tokenRefresh.getTime() > Date.now()) {
+            callback(Rest.uidToken);
+            Rest.tokenCacheHits++;
+        } else {
+            Office.context.mailbox.getUserIdentityTokenAsync((asyncResult: Office.AsyncResult) => {
+                Rest.uidToken = asyncResult.value;
+                Rest.tokenRefresh = new Date(Date.now() + 10 * 60 * 1000); // 10 * sec/min * ms/sec
+                callback(asyncResult.value);
+            });
+        }
+        console.log('Chached ' + Rest.tokenCacheHits + '/' + Rest.tokenRequests);
+
     }
 
     public static log(msg: string): void {
-        $.get('./log?msg=' +  encodeURIComponent(msg));
+        $.get('./log?msg=' + encodeURIComponent(msg));
     }
 
     private static makeRestCall(name: string, callback: IRestCallback): void {
