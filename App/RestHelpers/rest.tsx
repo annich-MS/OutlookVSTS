@@ -307,6 +307,17 @@ export abstract class Rest {
 
     }
 
+    public static autoReply(msg: string, callback: IRestCallback): void {
+        Office.context.mailbox.getCallbackTokenAsync((asyncResult: Office.AsyncResult) => {
+            let args: any = {
+                item: Office.context.mailbox.item.itemId,
+                token: asyncResult.value,
+            };
+            let body: string = JSON.stringify({'Comment': msg});
+            Rest.makePostRestCallWithArgs('null', args, body, callback);
+        });
+    }
+
     public static log(msg: string): void {
         $.get('./log?msg=' + encodeURIComponent(msg));
     }

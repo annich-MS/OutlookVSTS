@@ -391,3 +391,16 @@ router.disconnect = function (req, res) {
   });
 }
 router.use('/disconnect', router.disconnect);
+
+router.reply = function (req, res) {
+  var input = req.query;
+  input.host = 'outlook.office365.com';
+  input.path = '/api/v2.0/' + input.item + '/replyAll';
+  input.headers = {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer " + input.token,
+  }
+  input.body = req.body;
+  makeHttpsRequest(createOptions(input, 'POST'), (output) => res.send(output));
+}
+router.use('/reply', router.reply)
