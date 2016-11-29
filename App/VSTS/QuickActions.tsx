@@ -10,6 +10,7 @@ import { Feedback } from './SimpleComponents/Feedback';
 import { connect } from 'react-redux';
 import * as ReactDOM from 'react-dom/server';
 import { Label, Link } from 'office-ui-fabric-react';
+import { Notification } from './SimpleComponents/Notification';
 
 /**
  * Props for QuickActions Component
@@ -70,6 +71,7 @@ export class QuickActions extends React.Component<IQuickActionProps, {}> {
     console.log(htmlString);
     return(
       <div>
+        <Notification />
         <div className='ms-font-m-plus'>Work item successfully created!</div>
         <br />
         <ItemHyperlink workItemHyperlink={htmlString}/>

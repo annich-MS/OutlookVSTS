@@ -56,9 +56,8 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
   private handleClick(): void {
     let props: IReplyAllButtonProps = this.props;
     if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
-      props.dispatch(updateNotificationAction(NotificationType.Success, 'Clicked'));
-      Rest.autoReply('I have created the following bug:<br/><br/>' + this.addSignature(this.props.workItemHyperlink), () => {
-        props.dispatch(updateNotificationAction(NotificationType.Success, 'Done!'));
+      Rest.autoReply('I have created the following bug:<br/><br/>' + this.addSignature(this.props.workItemHyperlink), (output: string) => {
+        props.dispatch(updateNotificationAction(NotificationType.Success, 'Done: ' + output));
       });
     } else {
       Office.context.mailbox.item.displayReplyAllForm(this.addSignature(this.props.workItemHyperlink));
