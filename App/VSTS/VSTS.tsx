@@ -9,7 +9,7 @@ import { Auth } from './authMM';
 import {
   updateUserProfileAction, updateTeamSettingsAction, updateAccountSettingsAction, updateProjectSettingsAction
 } from '../Redux/LogInActions';
-import { Stage, updateAddAsAttachment, updateDescription } from '../Redux/WorkItemActions';
+import { Stage, updateAddAsAttachment, updateDescription, updateTitle } from '../Redux/WorkItemActions';
 import {
   PageVisibility,
   AuthState,
@@ -83,11 +83,11 @@ export class VSTS extends React.Component<IVSTSProps, any> {
         Office.context.mailbox.getCallbackTokenAsync((result: Office.AsyncResult) => {
           this.props.dispatch(updateDescription(result.value.trim()));
         });
+        this.props.dispatch(updateTitle(Office.context.mailbox.item.itemId));
       } else {
         Office.context.mailbox.item.body.getAsync('text', (result: Office.AsyncResult) => {
           this.props.dispatch(updateDescription(result.value.trim()));
         });
-
       }
     }
   }
