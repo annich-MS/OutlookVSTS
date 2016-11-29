@@ -54,27 +54,34 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
    * @private
    */
   private handleClick(): void {
+    let props: IReplyAllButtonProps = this.props;
     if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
       Rest.log('ios');
       Office.context.mailbox.getCallbackTokenAsync((asyncResult: Office.AsyncResult) => {
         Rest.log('got callback token: ' + JSON.stringify(asyncResult));
         if (asyncResult.error) {
-          this.props.dispatch(updateNotificationAction(NotificationType.Error, 'Reply failed due to ' + asyncResult.error));
+          props.dispatch(updateNotificationAction(NotificationType.Error, 'Reply failed due to ' + asyncResult.error));
         } else {
           let settings: any = {
             contentType: 'application/json',
             data: JSON.stringify({
               'Comment': 'I have created the following bug:<br/><br/>' +  this.addSignature(this.props.workItemHyperlink),
             }),
+            error: function (a:any, b:any, c:any) {
+               props.dispatch(updateNotificationAction(NotificationType.Error, 'Reply failed due to ' + b));
+            },
             headers: {
               'Authorization': 'Bearer ' + asyncResult.value,
             },
-            url: 'https://outlook.office.com/api/v2.0/me/messages/' + Office.context.mailbox.item.itemId + '/replyAll',
+            success: function () {
+              props.dispatch(updateNotificationAction(NotificationType.Success, 'Done!'));
+            },
+            url: 'https://outlook.office365.com/api/v2.0/me/messages/' + Office.context.mailbox.item.itemId + '/replyAll',
           };
           $.post(settings).done(() => {
-            this.props.dispatch(updateNotificationAction(NotificationType.Error, 'Reply failed due to ' + asyncResult.error));
+            props.dispatch(updateNotificationAction(NotificationType.Error, 'Reply failed due to ' + asyncResult.error));
           }).fail((jqXHR, status, errorThrown) => {
-            this.props.dispatch(updateNotificationAction(NotificationType.Success, 'Reply failed due to ' + errorThrown));
+            props.dispatch(updateNotificationAction(NotificationType.Success, 'Reply succeded due to ' + errorThrown));
           });
         }
       });
