@@ -62,25 +62,30 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
         if (asyncResult.error) {
           props.dispatch(updateNotificationAction(NotificationType.Error, 'Reply failed due to ' + asyncResult.error));
         } else {
+          Rest.log('Sending Message');
           let settings: any = {
             contentType: 'application/json',
             data: JSON.stringify({
               'Comment': 'I have created the following bug:<br/><br/>' +  this.addSignature(this.props.workItemHyperlink),
             }),
-            error: function (a:any, b:any, c:any) {
-               props.dispatch(updateNotificationAction(NotificationType.Error, 'Reply failed due to ' + b));
+            error: function (a: any, b: any, c: any): void {
+              Rest.log('Error' + b);
+              props.dispatch(updateNotificationAction(NotificationType.Error, 'Reply failed due to ' + b));
             },
             headers: {
               'Authorization': 'Bearer ' + asyncResult.value,
             },
-            success: function () {
+            success: function (): void {
+              Rest.log('Success!');
               props.dispatch(updateNotificationAction(NotificationType.Success, 'Done!'));
             },
             url: 'https://outlook.office365.com/api/v2.0/me/messages/' + Office.context.mailbox.item.itemId + '/replyAll',
           };
           $.post(settings).done(() => {
+            Rest.log('Success!');
             props.dispatch(updateNotificationAction(NotificationType.Error, 'Reply failed due to ' + asyncResult.error));
           }).fail((jqXHR, status, errorThrown) => {
+            Rest.log('Error' + status);
             props.dispatch(updateNotificationAction(NotificationType.Success, 'Reply succeded due to ' + errorThrown));
           });
         }
