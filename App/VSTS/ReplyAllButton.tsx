@@ -67,7 +67,7 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
               'Comment': 'I have created the following bug:<br/><br/>' +  this.addSignature(this.props.workItemHyperlink),
             }),
             headers: {
-              'Authentication': 'Bearer ' + asyncResult.value,
+              'Authorization': 'Bearer ' + asyncResult.value,
             },
             url: 'https://outlook.office.com/api/v2.0/me/messages/' + Office.context.mailbox.item.itemId + '/replyAll',
           };
