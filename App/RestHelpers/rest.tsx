@@ -314,7 +314,7 @@ export abstract class Rest {
                 token: asyncResult.value,
             };
             let body: string = JSON.stringify({'Comment': msg});
-            Rest.makePostRestCallWithArgs('null', args, body, callback);
+            Rest.makePostRestCallWithArgs('reply', args, body, callback);
         });
     }
 
