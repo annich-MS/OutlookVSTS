@@ -1,7 +1,7 @@
 /// <reference path="../../office.d.ts" />
 import * as React from 'react';
 import { Provider } from 'react-redux';
-import { Button, ButtonType } from 'office-ui-fabric-react';
+import { Button, ButtonType, Spinner, SpinnerType } from 'office-ui-fabric-react';
 import { updateNotificationAction, NotificationType } from '../Redux/FlowActions';
 import { Rest } from '../RestHelpers/rest';
 
@@ -23,21 +23,34 @@ interface IReplyAllButtonProps {
  * Renders a button that on-click, opens a reply-all form with the item hyperlink inserted in-line
  * @class { ReplyAllButton }
  */
-export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
+export class ReplyAllButton extends React.Component<IReplyAllButtonProps, { saving: boolean }> {
+
+  public constructor() {
+    super();
+    this.state = { saving: false };
+  }
+
   /**
    * Renders the ReplyAllButton Component and reads IReplyAllButtonProps
    * @returns { React.ReactElement } ReactHTML div
    */
   public render(): React.ReactElement<Provider> {
 
+    let item: any = (
+      <Button
+        buttonType={ButtonType.command}
+        icon='ReplyAll'
+        onClick={this.handleClick.bind(this) }>
+        Reply All with Work Item
+      </Button>);
+
+    if (this.state.saving) {
+      item = <Spinner />;
+    }
+
     return (
       <div>
-        <Button
-          buttonType={ButtonType.command}
-          icon='ReplyAll'
-          onClick={this.handleClick.bind(this) }>
-          Reply All with Work Item
-        </Button>
+        {item}
       </div>
     );
   }
@@ -56,7 +69,9 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
   private handleClick(): void {
     let props: IReplyAllButtonProps = this.props;
     if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
+      this.setState({ saving: true });
       Rest.autoReply('I have created the following bug:<br/><br/>' + this.addSignature(this.props.workItemHyperlink), (output: string) => {
+        this.setState({ saving: false});
         props.dispatch(updateNotificationAction(NotificationType.Success, 'Message Sent!'));
       });
     } else {
