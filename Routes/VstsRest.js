@@ -401,6 +401,7 @@ router.reply = function (req, res) {
     "Authorization": "Bearer " + input.token,
   }
   input.body = req.body;
+  input.isXML = true;
   console.log("reply out: " + createOptions(input, 'POST') );
   makeHttpsRequest(createOptions(input, 'POST'), (output) => res.send(output));
 }

@@ -57,7 +57,7 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, {}> {
     let props: IReplyAllButtonProps = this.props;
     if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
       Rest.autoReply('I have created the following bug:<br/><br/>' + this.addSignature(this.props.workItemHyperlink), (output: string) => {
-        props.dispatch(updateNotificationAction(NotificationType.Success, 'Done: ' + output));
+        props.dispatch(updateNotificationAction(NotificationType.Success, 'Message Sent!'));
       });
     } else {
       Office.context.mailbox.item.displayReplyAllForm(this.addSignature(this.props.workItemHyperlink));
