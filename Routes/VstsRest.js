@@ -395,7 +395,7 @@ router.use('/disconnect', router.disconnect);
 router.reply = function (req, res) {
   var input = req.query;
   input.host = 'outlook.office365.com';
-  input.path = '/api/v2.0/' + input.item + '/replyAll';
+  input.path = '/api/v2.0/me/messages/' + input.item + '/replyAll';
   input.headers = {
     "Content-Type": "application/json",
     "Authorization": "Bearer " + input.token,
