@@ -41,33 +41,22 @@ export class Notification extends React.Component<IErrorProps, any> {
    * @param {any} nextState
    */
   public shouldComponentUpdate(nextProps: any, nextState: any): boolean {
-    return this.props.type !== nextProps.type;
+    return this.props.type !== nextProps.type || this.props.message !== nextProps.message;
   }
 
   /**
    * Renders the error message in parent component
    */
   public render(): React.ReactElement<Provider> {
-    let type: MessageBarType;
-    switch (this.props.type) {
-      case NotificationType.Error:
-        type = MessageBarType.error;
-        break;
-      case NotificationType.Success:
-        type = MessageBarType.success;
-        break;
-      default:
-        break;
-    }
     if (this.props.type !== NotificationType.Hide) {
       return (<div>
                 <MessageBar
-                    messageBarType={ type }
+                    messageBarType={ this.getMessageBarType(this.props.type) }
                     onDismiss={this.onClick.bind(this)}>
                   {this.props.message}
                 </MessageBar>
               </div>);
-    }else {
+    } else {
       return (<div/>);
     }
   }
@@ -75,5 +64,20 @@ export class Notification extends React.Component<IErrorProps, any> {
   private onClick(): void {
     this.props.dispatch(updateNotificationAction(NotificationType.Hide, ''));
   }
+
+  private getMessageBarType(type: NotificationType): MessageBarType {
+    switch (type) {
+      case NotificationType.Error:
+        return MessageBarType.error;
+      case NotificationType.Warning:
+        return MessageBarType.warning;
+      case NotificationType.Success:
+        return MessageBarType.success;
+      default:
+        return null;
+    }
+  }
+
+
 }
 

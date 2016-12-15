@@ -126,6 +126,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
       nextProps.populationStage === PopulationStage.projectReady) {
       this.populateTeams(nextProps.account, nextProps.project);
     }
+    this.confirmValidity();
   }
   /**
    * Reaction to selection of team option from dropdown list
@@ -139,6 +140,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
     } else {
       team = option;
     }
+    this.confirmValidity();
     this.props.dispatch(updateTeamSettingsAction(team, this.props.teams));
   }
 
@@ -216,6 +218,25 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
         console.log('setting first project:' + selectedTeam);
       }
       callback(selectedTeam, teamOptions);
+    });
+  }
+
+  private confirmValidity(): void {
+    Rest.getCurrentIteration(this.props.team, this.props.project, this.props.account, (error: RestError, value: string) => {
+      if (error) {
+        let inner: any = JSON.parse(error.more.error);
+        if (inner.typeKey === 'CurrentIterationDoesNotExistException') {
+          this.props.dispatch(updateNotificationAction(
+            NotificationType.Warning,
+            'Cannot make bugs with the "' + this.props.team + '" team because it doesn\'t have a current iteration'));
+          return;
+        }
+      }
+      if (value === '') {
+        this.props.dispatch(updateNotificationAction(
+          NotificationType.Warning,
+          'Cannot make bugs with the "' + this.props.team + '" team because it doesn\'t have a current iteration'));
+      }
     });
   }
 }

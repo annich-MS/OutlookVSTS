@@ -102,6 +102,7 @@ export function updatePageAction(newState: PageVisibility): IPageStateAction {
 
 export enum NotificationType {
   Error,
+  Warning,
   Success,
   Hide
 }

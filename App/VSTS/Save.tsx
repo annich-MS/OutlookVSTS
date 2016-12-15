@@ -38,6 +38,8 @@ export interface ISaveProps {
    * @type {number}
    */
   populationStage?: PopulationStage;
+
+  errorActive?: boolean;
 }
 
 /**
@@ -47,6 +49,8 @@ export interface ISaveProps {
 function mapStateToProps(state: any): ISaveProps {
   return {
     currentSettings: state.currentSettings,
+    errorActive: state.controlState.notification.notificationType === NotificationType.Error ||
+                  state.controlState.notification.notificationType === NotificationType.Warning,
     populationStage: state.controlState.populationStage,
     userProfile: state.userProfile,
     workItem: state.workItem,
@@ -138,6 +142,6 @@ export class Save extends React.Component<ISaveProps, {}> {
   private get isSaving(): boolean { return this.props.workItem.stage === Stage.Saved; }
 
   private shouldBeEnabled(): boolean {
-    return !(this.isSaving || this.props.populationStage < PopulationStage.teamReady);
+    return !(this.isSaving || this.props.populationStage < PopulationStage.teamReady || this.props.errorActive);
   }
 }
