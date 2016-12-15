@@ -72,7 +72,7 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, { savi
       this.setState({ saving: true });
       Rest.autoReply('I have created the following bug:<br/><br/>' + this.addSignature(this.props.workItemHyperlink), (output: string) => {
         this.setState({ saving: false});
-        props.dispatch(updateNotificationAction(NotificationType.Success, 'Message Sent!'));
+        props.dispatch(updateNotificationAction(NotificationType.Success, 'Reply Sent!'));
       });
     } else {
       Office.context.mailbox.item.displayReplyAllForm(this.addSignature(this.props.workItemHyperlink));
