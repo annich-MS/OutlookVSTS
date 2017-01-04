@@ -95,6 +95,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * @returns {void}
    */
   public onAccountSelect(option: any): void {
+    this.props.dispatch(updateNotificationAction(NotificationType.Hide, ''));
     let account: string;
     if (option.text) {
       account = option.text;

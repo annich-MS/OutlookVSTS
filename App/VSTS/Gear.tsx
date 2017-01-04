@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import { updatePageAction, PageVisibility } from '../Redux/FlowActions';
+import { updatePageAction, PageVisibility, updateNotificationAction, NotificationType } from '../Redux/FlowActions';
 import { Button, ButtonType } from 'office-ui-fabric-react';
 
 /**
@@ -37,6 +37,7 @@ export class Gear extends React.Component<IGearProps, {}> {
    * @ returns {void}
    */
   private handleGearClick: () => void = () => {
+    this.props.dispatch(updateNotificationAction(NotificationType.Hide, ''));
     this.props.dispatch(updatePageAction(PageVisibility.Settings));
   }
 }

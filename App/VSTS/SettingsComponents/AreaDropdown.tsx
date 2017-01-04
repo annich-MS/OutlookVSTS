@@ -134,6 +134,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    * @returns {void}
    */
   public onTeamSelect(option: any): void {
+    this.props.dispatch(updateNotificationAction(NotificationType.Hide, ''));
     let team: string;
     if (option.text) {
       team = option.text;

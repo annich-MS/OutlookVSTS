@@ -126,6 +126,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    * @returns {void}
    */
   public onProjectSelect(option: any): void {
+    this.props.dispatch(updateNotificationAction(NotificationType.Hide, ''));
     let project: string;
     if (option.text) {
       project = option.text;
