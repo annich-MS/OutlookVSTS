@@ -40,6 +40,9 @@ function mapStateToProps(state: any): IDescriptionProps {
 
 @connect(mapStateToProps)
 export class Description extends React.Component<IDescriptionProps, {}> {
+
+  private CHECKBOX_LABEL: string = 'Add e-mail as attachment';
+
   /**
    * Dispatches the action to change the description value in the store
    * @ returns {void}
@@ -67,30 +70,23 @@ export class Description extends React.Component<IDescriptionProps, {}> {
    * Renders the Description heading, the Add Email as Attachment checkbox, and the Description textbox
    */
   public render(): React.ReactElement<Provider> {
-    if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
-      return (
-        <div>
-          <TextField
-            id='description'
-            label='Description'
-            value={this.props.description}
-            onChanged={this.handleChangeDescription.bind(this) }
-            multiline={true} />
-        </div>
-      );
-    } else {
-      return (
-        <div>
-          <Checkbox label='Add e-mail as attachment' onChange={this.handleChangeAddAsAttachment.bind(this) } defaultChecked={true} />
-          <TextField
-            id='description'
-            label='Description'
-            value={this.props.description}
-            onChanged={this.handleChangeDescription.bind(this) }
-            multiline={true} />
-        </div>
-      );
+
+    let checkbox: any = null;
+
+    if (Office.context.mailbox.diagnostics.hostName !== 'OutlookIOS') {
+      checkbox = <Checkbox label={this.CHECKBOX_LABEL} onChange={this.handleChangeAddAsAttachment.bind(this) } defaultChecked={true} />;
     }
+    return (
+      <div>
+        {checkbox}
+        <TextField
+          id='description'
+          label='Description'
+          value={this.props.description}
+          onChanged={this.handleChangeDescription.bind(this) }
+          multiline={true} />
+      </div>
+    );
   }
 }
 
