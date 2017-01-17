@@ -68,7 +68,6 @@ export class QuickActions extends React.Component<IQuickActionProps, {}> {
   public render(): React.ReactElement<Provider> {
     let htmlString: string = this.buildItemHyperlink();
     let textString: string = this.buildTextOnly();
-    console.log(htmlString);
     return(
       <div>
         <Notification />

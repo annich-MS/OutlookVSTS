@@ -82,14 +82,10 @@ var DELETE_USER_QUERY = "DELETE FROM " + table + " WHERE Id = @Id";
 createConnection = function (reason, callback) {
   var config = getDbConfig();
   var connection = new tedious.Connection(config);
-  connection.on('end', () => {
-    console.log("Close Connection for " + reason);
-  });
   connection.on('error', (err) => {
     console.log(err);
   });
   connection.on('connect', function (err) {
-    console.log("Open Connection for " + reason);
     if (err) {
       console.log(err);
     }
@@ -149,7 +145,6 @@ router.getUID = function(token, callback) {
             var body = hash.digest('base64');
             body = body.replace(/\+/g, '-');
             body = body.replace(/\//g, '_');
-            console.log(body);
             callback(body);
           });
         }
@@ -238,7 +233,6 @@ router.db = function (req, res) {
           res.send("success");
         }
         else {
-          console.log("middle state")
           router.refreshToken(uid, data.refresh, res);
         }
       }

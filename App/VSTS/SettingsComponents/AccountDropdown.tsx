@@ -156,7 +156,6 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
     let accountOptions: ISettingsInfo[] = [];
     let accountNamesOnly: string[] = [];
     let selectedAccount: string = this.props.account;
-    console.log('populating accounts' + this.props.email + this.props.memberId);
     Rest.getAccounts(this.props.memberId, (error: RestError, accountList: Account[]) => {
       if (error) {
         this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('populate accounts')));

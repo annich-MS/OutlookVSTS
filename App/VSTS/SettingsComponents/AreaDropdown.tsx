@@ -223,20 +223,15 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
   }
 
   private confirmValidity(): void {
-    Rest.getCurrentIteration(this.props.team, this.props.project, this.props.account, (error: RestError, value: string) => {
+    Rest.getIteration(this.props.team, this.props.project, this.props.account, (error: RestError, value: string) => {
       if (error) {
-        let inner: any = JSON.parse(error.more.error);
-        if (inner.typeKey === 'CurrentIterationDoesNotExistException') {
+        this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('find an iteration')));
+      } else {
+        if (value === '') {
           this.props.dispatch(updateNotificationAction(
-            NotificationType.Warning,
-            'Cannot make bugs with the "' + this.props.team + '" team because it doesn\'t have a current iteration'));
-          return;
+              NotificationType.Warning,
+              `Cannot make bugs with the "${this.props.team}" team because it doesn't have a default iteration`));
         }
-      }
-      if (value === '') {
-        this.props.dispatch(updateNotificationAction(
-          NotificationType.Warning,
-          'Cannot make bugs with the "' + this.props.team + '" team because it doesn\'t have a current iteration'));
       }
     });
   }

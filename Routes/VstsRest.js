@@ -13,7 +13,8 @@ var router = express.Router({ mergeParams: true });
 module.exports = router;
 var API1_0 = "1.0";
 var API2_0_Preview = '2.0-preview.1';
-var API2_0 = "1.0";
+var API2_0 = "2.0";
+var API3_0_Preview = '3.0-preview';
 
 var FIELDS = {
   REPRO_STEPS: '/fields/Microsoft.VSTS.TCM.ReproSteps',
@@ -119,7 +120,6 @@ function makeHttpsRequest(options, callback) {
     }
     callback(output);
   }, (error) => {
-    console.log(JSON.stringify(error));
     callback(createError("Request Error", error))
   });
 
@@ -199,7 +199,7 @@ router.accounts = function (req, res) {
   input.query['api-version'] = API1_0;
   input.host = 'app.vssps.visualstudio.com';
   input.path = '/_apis/Accounts';
-  makeAuthenticatedRequest(input.user, createOptions(input, 'GET'), (output) => { console.log(output); res.send(output); });
+  makeAuthenticatedRequest(input.user, createOptions(input, 'GET'), (output) => { res.send(output); });
 }
 router.use('/accounts', router.accounts);
 
@@ -216,7 +216,7 @@ router.projects = function (req, res) {
   input.query['api-version'] = API1_0;
   input.host = input.account + ".visualstudio.com";
   input.path = '/DefaultCollection/_apis/projects';
-  makeAuthenticatedRequest(input.user, createOptions(input, 'GET'), (output) => { console.log(output); res.send(output); });
+  makeAuthenticatedRequest(input.user, createOptions(input, 'GET'), (output) => { res.send(output); });
 
 }
 router.use('/projects', router.projects);
@@ -234,7 +234,7 @@ router.getTeams = function (req, res) {
   input.query['api-version'] = API1_0;
   input.host = input.account + '.visualstudio.com';
   input.path = '/DefaultCollection/_apis/projects/' + input.project + '/teams';
-  makeAuthenticatedRequest(input.user, createOptions(input, 'GET'), (output) => { console.log(output); res.send(output); });
+  makeAuthenticatedRequest(input.user, createOptions(input, 'GET'), (output) => { res.send(output); });
 }
 router.use('/getTeams', router.getTeams);
 
@@ -262,7 +262,6 @@ router.use('/getTeamField', router.getTeamField);
  * @param {any} res
  */
 router.getCurrentIteration = function (req, res) {
-  console.log('in vstsrest iteration');
   var input = req.query;
   if (!input.query) { input.query = {}; }
   input.query['$timeframe'] = 'current';
@@ -315,12 +314,10 @@ function downloadMessageFromEWS(messageId, ewsUrl, token, callback) {
     method: 'POST',
     isXML: true
   };
-  console.log(options);
   makeHttpsRequest(options, (output) => { extractMessageId(output, callback); });
 }
 
 function extractMessageId(response, callback) {
-  console.log( response);
   var parser = new flow(stream(response));
   var done = false;
   parser.on('tag:t:mimecontent', (element) => {
@@ -364,19 +361,44 @@ router.createTask = function (req, res) {
   input.body = [
     jsonPatchItem(FIELDS.TITLE, input.title),
     jsonPatchItem(FIELDS.AREA_PATH, input.areapath),
-    jsonPatchItem(FIELDS.ITERATION_PATH, input.iteration),
+    jsonPatchItem(FIELDS.ITERATION_PATH, input.project + input.iteration),
     jsonPatchItem(FIELDS.DESCRIPTION, req.body),
   ];
-  console.log("Attachments:" + input.attachment)
   if (input.attachment !== '') {
     input.body.push(jsonPatchItem(FIELDS.RELATIONS, { "rel": "AttachedFile", "url": input.attachment }));
   }
 
   input.body = JSON.stringify(input.body);
-  console.log(createOptions(input, 'PATCH'));
   makeAuthenticatedRequest(input.user, createOptions(input, 'PATCH'), (output) => { res.send(output); });
 }
 router.use('/createTask', router.createTask);
+
+router.reply = function (req, res) {
+  var input = req.query;
+  input.host = 'outlook.office365.com';
+  input.path = '/api/v2.0/me/messages/' + input.item + '/replyAll';
+  input.headers = {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer " + input.token,
+  }
+  input.body = req.body;
+  input.isXML = true;
+  makeHttpsRequest(createOptions(input, 'POST'), (output) => res.send(output));
+}
+router.use('/reply', router.reply);
+
+router.backlog = function (req, res) {
+  var input = req.query;
+  input.host = input.account + '.visualstudio.com';
+  input.path = '/defaultcollection/' + input.project + '/' + input.team + "/_apis/work/teamsettings";
+  input.query = {
+    'api-version': API3_0_Preview
+  }
+  makeAuthenticatedRequest(input.user, createOptions(input, 'GET'), (output) => {
+    res.send(output);
+  })
+}
+router.use('/backlog', router.backlog);
 
 router.disconnect = function (req, res) {
   Authenticate.getUID(req.query.user, (uid) => {
@@ -391,17 +413,3 @@ router.disconnect = function (req, res) {
 }
 router.use('/disconnect', router.disconnect);
 
-router.reply = function (req, res) {
-  var input = req.query;
-  input.host = 'outlook.office365.com';
-  input.path = '/api/v2.0/me/messages/' + input.item + '/replyAll';
-  input.headers = {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer " + input.token,
-  }
-  input.body = req.body;
-  input.isXML = true;
-  console.log("reply out: " + createOptions(input, 'POST') );
-  makeHttpsRequest(createOptions(input, 'POST'), (output) => res.send(output));
-}
-router.use('/reply', router.reply)

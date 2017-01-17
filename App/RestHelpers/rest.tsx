@@ -201,7 +201,7 @@ export abstract class Rest {
         });
     }
 
-    public static getCurrentIteration(teamName: string, project: string, account: string, callback: IStringCallback): void {
+    public static getIteration(teamName: string, project: string, account: string, callback: IStringCallback): void {
         this.getTeams(project, account, (error: RestError, teams: Team[]) => {
             if (error) {
                 callback(error, null);
@@ -213,13 +213,17 @@ export abstract class Rest {
                     guid = team.id;
                 }
             });
-            this.makeRestCallWithArgs('getCurrentIteration', { account: account, project: project, team: guid }, (output) => {
+            this.makeRestCallWithArgs('backlog', { account: account, project: project, team: guid }, (output) => {
                 let parsed: any = JSON.parse(output);
                 if (parsed.error) {
                     callback(new RestError(parsed.error), null);
                     return;
                 }
-                callback(null, parsed.value[0].path);
+                if (parsed.defaultIteration) {
+                    callback(null, parsed.defaultIteration.path);
+                } else {
+                    callback(null, '');
+                }
             });
         });
     }
@@ -264,7 +268,7 @@ export abstract class Rest {
                 return;
             }
             options.areapath = areapath;
-            this.getCurrentIteration(options.team, options.project, options.account, (err2, iteration) => {
+            this.getIteration(options.team, options.project, options.account, (err2, iteration) => {
                 if (err2) {
                     callback(err2, null);
                 }
@@ -303,7 +307,6 @@ export abstract class Rest {
                 callback(asyncResult.value);
             });
         }
-        console.log('Chached ' + Rest.tokenCacheHits + '/' + Rest.tokenRequests);
 
     }
 

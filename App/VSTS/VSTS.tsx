@@ -46,7 +46,6 @@ interface IVSTSProps {
  * @param {any} state
  */
 function mapStateToProps(state: any): IVSTSProps {
-  // console.log('state:' + JSON.stringify(state));
   return ({
     authState: state.controlState.authState,
     notification: state.controlState.notification,
