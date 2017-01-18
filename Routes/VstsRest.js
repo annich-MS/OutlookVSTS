@@ -120,6 +120,7 @@ function makeHttpsRequest(options, callback) {
     }
     callback(output);
   }, (error) => {
+    console.log(JSON.stringify(error));
     callback(createError("Request Error", error))
   });
 
