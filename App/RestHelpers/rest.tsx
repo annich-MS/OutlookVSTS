@@ -210,7 +210,7 @@ export abstract class Rest {
             let guid: string;
             teams.forEach(team => {
                 if (team.name === teamName) {
-                    guid = team.id;
+                    guid = team.id
                 }
             });
             this.makeRestCallWithArgs('backlog', { account: account, project: project, team: guid }, (output) => {
@@ -219,10 +219,10 @@ export abstract class Rest {
                     callback(new RestError(parsed.error), null);
                     return;
                 }
-                if (parsed.defaultIteration) {
-                    callback(null, parsed.defaultIteration.path);
+                if (parsed.backlogIteration.id !== '00000000-0000-0000-0000-000000000000') {
+                    callback(null, parsed.backlogIteration.path);
                 } else {
-                    callback(null, '');
+                    callback(new RestError({ more: 'Missing Backlog Iteration', type: 'Missing Backlog Iteration'}), '');
                 }
             });
         });

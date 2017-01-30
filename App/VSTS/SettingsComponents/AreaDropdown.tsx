@@ -126,7 +126,6 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
       nextProps.populationStage === PopulationStage.projectReady) {
       this.populateTeams(nextProps.account, nextProps.project);
     }
-    this.confirmValidity();
   }
   /**
    * Reaction to selection of team option from dropdown list
@@ -141,7 +140,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
     } else {
       team = option;
     }
-    this.confirmValidity();
+    this.confirmValidity(team);
     this.props.dispatch(updateTeamSettingsAction(team, this.props.teams));
   }
 
@@ -190,6 +189,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
         this.props.dispatch(updatePopulatingAction(PopulationStage.teamReady));
         this.props.dispatch(updateTeamSettingsAction(team, teams));
       }
+      this.confirmValidity(team);
     });
   }
 
@@ -222,16 +222,12 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
     });
   }
 
-  private confirmValidity(): void {
-    Rest.getIteration(this.props.team, this.props.project, this.props.account, (error: RestError, value: string) => {
+  private confirmValidity(team: string): void {
+    Rest.getIteration(team, this.props.project, this.props.account, (error: RestError, value: string) => {
       if (error) {
-        this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('find an iteration')));
-      } else {
-        if (value === '') {
-          this.props.dispatch(updateNotificationAction(
-              NotificationType.Warning,
-              `Cannot make bugs with the "${this.props.team}" team because it doesn't have a default iteration`));
-        }
+        this.props.dispatch(updateNotificationAction(
+          NotificationType.Error,
+          'Cannot create bugs for this team due to having no backlog iteration.'));
       }
     });
   }
