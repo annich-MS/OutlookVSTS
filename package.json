@@ -1,10 +1,10 @@
 {
-  "name": "react-typescript-boilerplate",
+  "name": "vsts-addin-for-outlook",
   "engines": {
     "node": ">=0.12.0"
   },
   "version": "1.0.0",
-  "description": "Boilerplate project that uses Typescript, React, and Webpack",
+  "description": "An add-in for turning emails into bugs",
   "main": "index.js",
   "scripts": {
     "build": "npm run webpack",
@@ -18,7 +18,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://socialmemory.visualstudio.com/DefaultCollection/_git/Outlook%20Social%20Memory"
+    "url": "git+https://github.com/annich-ms/OutlookVSTS"
   },
   "dependencies": {
     "babel-core": "^6.4.5",
