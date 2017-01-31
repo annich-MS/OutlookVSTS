@@ -1,11 +1,11 @@
 var path = require('path');
 var webpack = require('webpack');
 
-var APP_DIR = path.join(__dirname, '..', 'app');
+var APP_DIR = path.join(__dirname, '..', 'src/client');
 
 module.exports = {
   devtool: 'source-map',
-  entry: './app/index.tsx',
+  entry: './src/client/index.tsx',
   module: {
     preLoaders: [{
       test: /\.tsx?$/,
@@ -38,7 +38,7 @@ module.exports = {
     })*/
   ],
   resolve: {
-    root: [path.resolve('../app')],
+    root: [path.resolve('../src/client')],
     extensions: ['', '.jsx', '.js', '.tsx', '.ts', '.css']
   },
   tslint: {

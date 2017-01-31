@@ -1,12 +1,8 @@
-var webpack = require('webpack');
-var path = require('path');
-
-var APP_DIR = path.join(__dirname, '..', 'app');
 
 module.exports = {
-  entry: "../app/Index.tsx",
+  entry: "./src/client/Index.tsx",
   output: {
-    filename: "../app/build/app.js"
+    filename: "./bin/app.js"
   },
   devtool: "source-map",
   resolve: {
