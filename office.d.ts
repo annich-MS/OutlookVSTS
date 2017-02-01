@@ -10,7 +10,14 @@ declare module Office {
     value: any;
   }
 
+  interface EventResult {
+    type: string;
+    message: any;
+    error: number;
+  }
+
   interface OfficeCallback { (asyncResult:AsyncResult): void }
+  interface EventCallback { (eventResult:EventResult): void}
 
   interface BodyInterface {
     getAsync(coersionType:string, options?:any, callback?: OfficeCallback);
@@ -45,6 +52,7 @@ declare module Office {
   
   interface UiInterface {
     displayDialogAsync(url: string, options?: any, callback?: OfficeCallback);
+    messageParent(message: string);
   }
 
   interface ContextInterface {
@@ -63,6 +71,10 @@ declare module Office {
       static ErrorMessage: string;
     }
   }
+  export class Dialog {
+    public addEventHandler(eventType: string, callback: EventCallback);
+    public close();
+  }
 }
 
 declare module 'office' {
@@ -70,3 +82,18 @@ declare module 'office' {
   export = out;
 }
 
+declare module Microsoft {
+  export namespace Office {
+    export namespace WebExtension {
+      export class EventType {
+        static DialogEventRecieved: string;
+        static DialogMessageRecieved: string;
+      }
+    }
+  }
+}
+
+declare module 'Microsoft' {
+  var out:typeof Microsoft;
+  export = out;
+}
