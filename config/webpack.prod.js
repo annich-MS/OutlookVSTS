@@ -20,9 +20,9 @@ module.exports = {
       { test: /\.css$/, loader: "style-loader!css-loader" }]
   },
   output: {
-    path: path.join(__dirname, '..', 'static'),
+    path: path.join(__dirname, '..', 'public/js'),
     filename: 'app.js',
-    publicPath: '/static/'
+    publicPath: '/public/js/'
   },
   plugins: [
     new webpack.optimize.OccurrenceOrderPlugin(),

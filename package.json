@@ -11,7 +11,7 @@
     "typings": "node_modules\\.bin\\tsd.cmd install",
     "webpack": "node_modules\\.bin\\webpack.cmd --config config\\webpack.prod.js",
     "rimraf": "node_modules\\.bin\\rimraf.cmd node_modules",
-    "start": "node server.js",
+    "start": "node src\\server\\server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Microsoft",

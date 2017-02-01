@@ -22,11 +22,10 @@ app.use('/rest', rest);
 app.use('/log', function(req,res) {
   console.log(req.query.msg);
 });
-app.use('/public', express.static(__dirname + '/public'));
-app.use('/static', express.static(__dirname + '/static'));
+app.use('/public', express.static(path.join(__dirname, '../../public')));
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, '../..', 'public/html', 'index.html'));
 });
 
 if(PROD != true){

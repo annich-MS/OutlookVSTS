@@ -20,7 +20,7 @@ function getSalt() {
       salt = JSON.parse(process.env.salt);
     }
     else {
-      salt = require('../secrets/salt.js')
+      salt = require('../../../secrets/salt.js')
     }
   }
   return salt;
@@ -33,7 +33,7 @@ getClientInfo = function () {
       _clientInfo = JSON.parse(process.env.ClientSecretJson);
     }
     else {
-      _clientInfo = require('../secrets/clientSecret');
+      _clientInfo = require('../../../secrets/clientSecret');
     }
   }
   return _clientInfo;
@@ -63,7 +63,7 @@ getDbConfig = function () {
       dbConfig = JSON.parse(process.env.dbConfigJson);
     }
     else {
-      dbConfig = require('../secrets/dbConfig.js')
+      dbConfig = require('../../../secrets/dbConfig.js')
     }
   }
   return dbConfig;
