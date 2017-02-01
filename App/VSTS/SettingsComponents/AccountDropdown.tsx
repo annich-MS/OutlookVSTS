@@ -82,6 +82,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
       this.runPopulate((account: string, accounts: ISettingsInfo[]) => {
         if (JSON.stringify(accounts) !== JSON.stringify(this.props.accountList)) {
           Office.context.roamingSettings.set('accounts', accounts);
+          Office.context.roamingSettings.saveAsync();
         }
         this.props.dispatch(updateAccountSettingsAction(account, accounts));
       });

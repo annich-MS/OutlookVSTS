@@ -98,6 +98,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
       this.runPopulate(this.props.account, this.props.project, (team: string, teams: ISettingsInfo[]) => {
         if (JSON.stringify(teams) !== JSON.stringify(this.props.teams)) {
           Office.context.roamingSettings.set('teams', teams);
+          Office.context.roamingSettings.saveAsync();
         }
         this.props.dispatch(updateTeamSettingsAction(team, teams));
       });

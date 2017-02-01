@@ -92,6 +92,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
       this.runPopulate(this.props.account, (project: string, projects: ISettingsInfo[]) => {
         if (JSON.stringify(projects) !== JSON.stringify(this.props.projects)) {
           Office.context.roamingSettings.set('projects', projects);
+          Office.context.roamingSettings.saveAsync();
         }
         this.props.dispatch(updateProjectSettingsAction(project, projects));
       });
