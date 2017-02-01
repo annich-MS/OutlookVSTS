@@ -368,6 +368,8 @@ router.createTask = function (req, res) {
   ];
   if(input.title === "ANNICH") {
     console.log(req.body);
+    var test = req.body.replace(/\n/ig, "--n--").replace(/\r/ig, "--r--");
+    console.log(test);
   }
   if (input.attachment !== '') {
     input.body.push(jsonPatchItem(FIELDS.RELATIONS, { "rel": "AttachedFile", "url": input.attachment }));
