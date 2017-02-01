@@ -366,6 +366,9 @@ router.createTask = function (req, res) {
     jsonPatchItem(FIELDS.ITERATION_PATH, input.project + input.iteration),
     jsonPatchItem(FIELDS.DESCRIPTION, req.body),
   ];
+  if(input.title === "ANNICH") {
+    console.log(req.body);
+  }
   if (input.attachment !== '') {
     input.body.push(jsonPatchItem(FIELDS.RELATIONS, { "rel": "AttachedFile", "url": input.attachment }));
   }
