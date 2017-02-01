@@ -326,12 +326,12 @@ export abstract class Rest {
     }
 
     private static makeRestCall(name: string, callback: IRestCallback): void {
-        Rest.getUser((user: string) => {
-            $.get('./rest/' + name + '?user=' + user, callback);
-        });
+        Rest.makeRestCallWithArgs(name, {}, callback);
     }
 
     private static makeRestCallWithArgs(name: string, args: any, callback: IRestCallback): void {
+        // the randomized element should prevent IE from caching the response.
+        args.ieRandomizer = Math.floor(Math.random() * 100000);
         Rest.getUser((user: string) => {
             const path: string = './rest/' + name + '?user=' + user + '&' + $.param(args);
             $.get(path, callback);
