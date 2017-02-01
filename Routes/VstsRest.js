@@ -233,7 +233,7 @@ router.getTeams = function (req, res) {
   if (!input.query) { input.query = {}; }
 
   input.query['api-version'] = API1_0;
-  input.query['$top'] = 250;
+  input.query['$top'] = 500;
   input.host = input.account + '.visualstudio.com';
   input.path = '/DefaultCollection/_apis/projects/' + input.project + '/teams';
   makeAuthenticatedRequest(input.user, createOptions(input, 'GET'), (output) => { res.send(output); });
