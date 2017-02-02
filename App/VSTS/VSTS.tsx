@@ -87,9 +87,6 @@ export class VSTS extends React.Component<IVSTSProps, any> {
   public authInit(): void {
     let dispatch: any = this.props.dispatch;
     const email: string = Office.context.mailbox.userProfile.emailAddress;
-    if (email === 'annich@microsoft.com') {
-      Rest.removeUser(()=>{});
-    }
     const name: string = Office.context.mailbox.userProfile.displayName;
     Auth.getAuthState(function (state: string): void {
       if (state === 'success') {
