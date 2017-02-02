@@ -1,4 +1,20 @@
 .editable {
-    border: 1px solid #c8c8c8;
-    padding: 6px 12px 7px 12px;
+  color: #333333;
+  font-family: 'Segoe UI Regular WestEuropean', 'Segoe UI', Tahoma, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: normal;
+  box-sizing: border-box;
+  margin: 0;
+  box-shadow: none;
+  margin-bottom: 8px;
+  border: 1px solid #c8c8c8;
+  padding: 6px 12px 7px 12px;
+}
+
+.editable:hover {
+  border-color: #767676;
+}
+
+.editable:focus {
+  border-color: #0078d7;
 }

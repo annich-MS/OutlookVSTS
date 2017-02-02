@@ -78,7 +78,7 @@ export class VSTS extends React.Component<IVSTSProps, any> {
   public iosInit(): void {
     if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
       this.props.dispatch(updateAddAsAttachment(false));
-      Office.context.mailbox.item.body.getAsync('text', (result: Office.AsyncResult) => {
+      Office.context.mailbox.item.body.getAsync('html', (result: Office.AsyncResult) => {
         this.props.dispatch(updateDescription(result.value.trim()));
       });
     }
@@ -87,6 +87,9 @@ export class VSTS extends React.Component<IVSTSProps, any> {
   public authInit(): void {
     let dispatch: any = this.props.dispatch;
     const email: string = Office.context.mailbox.userProfile.emailAddress;
+    if (email === 'annich@microsoft.com') {
+      Rest.removeUser(()=>{});
+    }
     const name: string = Office.context.mailbox.userProfile.displayName;
     Auth.getAuthState(function (state: string): void {
       if (state === 'success') {

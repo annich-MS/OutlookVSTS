@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { updateAddAsAttachment, updateDescription, Stage } from '../Redux/WorkItemActions';
 import { Checkbox, TextField } from 'office-ui-fabric-react';
+let Editable = require("react-contentEditable");
 
 /**
  * Represents the Description Properties
@@ -49,7 +50,7 @@ export class Description extends React.Component<IDescriptionProps, {}> {
    * @param {any} event
    */
   public handleChangeDescription(event: any): void {
-    this.props.dispatch(updateDescription(event));
+    this.props.dispatch(updateDescription(event.target.value));
   }
 
   /**
@@ -79,12 +80,11 @@ export class Description extends React.Component<IDescriptionProps, {}> {
     return (
       <div>
         {checkbox}
-        <TextField
-          id='description'
-          label='Description'
-          value={this.props.description}
-          onChanged={this.handleChangeDescription.bind(this) }
-          multiline={true} />
+        <Editable
+          className={'editable'}
+          disabled={false}
+          html={this.props.description}
+          onChange={this.handleChangeDescription.bind(this) } />
       </div>
     );
   }
