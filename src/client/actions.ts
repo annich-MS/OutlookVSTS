@@ -1,5 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
-
 import { IField } from './workItemModel';
 
 export enum ACTION { CreateWorkItem, ChangeWorkItemType }

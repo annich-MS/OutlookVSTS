@@ -1,4 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Store, createStore, applyMiddleware} from 'redux';

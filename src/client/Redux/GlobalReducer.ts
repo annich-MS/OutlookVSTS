@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/tsd.d.ts" />
-
 import { Reducer, combineReducers } from 'redux';
 import { updateUserProfileReducer, updateSettingsAndListsReducer } from './LoginReducer';
 import { updateControlStateReducer} from './FlowReducer';

@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/tsd.d.ts" />
-
 /**
  * enum for Authentication State Process
  * @type {enum}

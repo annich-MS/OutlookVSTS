@@ -1,4 +1,3 @@
-/// <reference path="../../../office.d.ts" />
 import * as React from 'react';
 import { Provider } from 'react-redux';
 import { Button, ButtonType, Spinner, SpinnerType } from 'office-ui-fabric-react';

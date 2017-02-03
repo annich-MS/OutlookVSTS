@@ -1,5 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
-
 import { Reducer, combineReducers } from 'redux';
 import { IWorkItemAction, ACTION } from './actions';
 import { IWorkItemState, IField }  from './workItemModel';

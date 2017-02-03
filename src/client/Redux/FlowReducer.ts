@@ -1,4 +1,3 @@
-/// <reference path="../../../typings/tsd.d.ts" />
 import {AuthState, PageVisibility, PopulationStage, NotificationType} from './FlowActions';
 
 /**

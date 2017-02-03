@@ -1,4 +1,3 @@
-/// <reference path="../../../../office.d.ts" />
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { updateAccountSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';

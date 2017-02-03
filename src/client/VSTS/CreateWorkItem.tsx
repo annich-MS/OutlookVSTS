@@ -1,4 +1,3 @@
-/// <reference path="../../../office.d.ts" />
 import * as React from 'react';
 import { Description } from './Description';
 import { Title } from './Title';

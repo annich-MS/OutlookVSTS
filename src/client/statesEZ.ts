@@ -1,5 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
-
 /**
  * Enum for follow state types
  * @type { enum }
