@@ -58,9 +58,6 @@ Temporary Items
 # =========================
 *.d.ts
 node_modules/
-bower_components/
 secrets/
-static/
 public/js/app.js
 public/js/app.js.map
-typings/

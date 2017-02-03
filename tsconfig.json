@@ -1,8 +1,20 @@
 {
   "compilerOptions": {
-    "target": "ES6",
-    "jsx": "preserve",
+    "target": "es6",
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "jsx": "react",
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "outDir": "bin",
     "experimentalDecorators": true
   },
-  "exclude": ["node_modules", "config", "server.js"]
+  "exclude": [
+    "node_modules",
+    "bin"
+  ],
+  "include": [
+    "src/client"
+  ]
 }
