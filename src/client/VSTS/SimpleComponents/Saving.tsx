@@ -14,10 +14,10 @@ export class Saving extends React.Component<{}, {}> {
    */
   public render(): React.ReactElement<Provider> {
     let divStyle: any = {
-      'align-items': 'center',
+      alignItems: 'center',
       display: 'flex',
       height: '100%',
-      'justify-content': 'center',
+      justifyContent: 'center',
     };
     return (
       <Overlay isDarkThemed={true}>

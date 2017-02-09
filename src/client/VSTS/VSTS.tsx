@@ -6,9 +6,9 @@ import { Connecting } from './SimpleComponents/Connecting';
 import { Saving } from './SimpleComponents/Saving';
 import { Auth } from './authMM';
 import {
-  updateUserProfileAction, updateTeamSettingsAction, updateAccountSettingsAction, updateProjectSettingsAction
+  updateUserProfileAction, updateTeamSettingsAction, updateAccountSettingsAction, updateProjectSettingsAction, SettingsInfo
 } from '../Redux/LogInActions';
-import { Stage, updateAddAsAttachment, updateDescription, updateTitle } from '../Redux/WorkItemActions';
+import { Stage, updateAddAsAttachment, updateDescription } from '../Redux/WorkItemActions';
 import {
   PageVisibility,
   AuthState,
@@ -77,7 +77,7 @@ export class VSTS extends React.Component<IVSTSProps, any> {
   public iosInit(): void {
     if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
       this.props.dispatch(updateAddAsAttachment(false));
-      Office.context.mailbox.item.body.getAsync('html', (result: Office.AsyncResult) => {
+      (Office.context.mailbox.item as Office.Types.MessageCompose).body.getAsync(Office.CoercionType.Text, (result: Office.AsyncResult) => {
         this.props.dispatch(updateDescription(result.value.trim()));
       });
     }
@@ -120,9 +120,9 @@ export class VSTS extends React.Component<IVSTSProps, any> {
     let account: string = Office.context.roamingSettings.get('default_account');
     let project: string = Office.context.roamingSettings.get('default_project');
     let team: string = Office.context.roamingSettings.get('default_team');
-    let accounts: string[] = Office.context.roamingSettings.get('accounts');
-    let projects: string[] = Office.context.roamingSettings.get('projects');
-    let teams: string[] = Office.context.roamingSettings.get('teams');
+    let accounts: SettingsInfo[] = Office.context.roamingSettings.get('accounts');
+    let projects: SettingsInfo[] = Office.context.roamingSettings.get('projects');
+    let teams: SettingsInfo[] = Office.context.roamingSettings.get('teams');
     if (account && project && team && accounts && projects && teams) {
       console.log('prepopulating');
       this.props.dispatch(updateAccountSettingsAction(account, accounts));

@@ -33,7 +33,7 @@
     "https": "*",
     "jquery": "^3.1.1",
     "jsonwebtoken": "^7.1.9",
-    "office-ui-fabric-react": "^1.4.0",
+    "office-ui-fabric-react": "^1.5.5",
     "react": "^0.14.7",
     "react-contenteditable": "^2.0.2",
     "react-dom": "^0.14.7",

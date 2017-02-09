@@ -1,4 +1,4 @@
-import { IUserProfileAction, ISettingsInfo} from './LogInActions';
+import { IUserProfileAction, SettingsInfo} from './LogInActions';
 
 /**
  * Represents the currently selected area path and lists in the store
@@ -9,9 +9,9 @@ export interface ISettingsAndListsReducer {
    * Represents the lists of options for current area path
    */
   lists: {
-    accountList: ISettingsInfo[],
-    projectList: ISettingsInfo[],
-    teamList: ISettingsInfo[],
+    accountList: SettingsInfo[],
+    projectList: SettingsInfo[],
+    teamList: SettingsInfo[],
   };
   /**
    * Represents the current selected area path

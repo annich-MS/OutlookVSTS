@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import {PageVisibility, updatePageAction, PopulationStage} from '../../Redux/FlowActions';
+import { SettingsInfo } from '../../Redux/LogInActions';
+import { PageVisibility, updatePageAction, PopulationStage } from '../../Redux/FlowActions';
 import { Button, ButtonType } from 'office-ui-fabric-react';
 
 interface ISettingsProps {
@@ -25,9 +26,9 @@ interface ISettingsProps {
    */
   team?: string;
 
-  accounts?: string[];
-  projects?: string[];
-  teams?: string[];
+  accounts?: SettingsInfo[];
+  projects?: SettingsInfo[];
+  teams?: SettingsInfo[];
 
   /**
    * Represents what tier is currently being populated
@@ -41,15 +42,15 @@ interface ISettingsProps {
  * @param {any} state
  */
 function mapStateToProps(state: any): ISettingsProps {
-  return({
-      account: state.currentSettings.settings.account,
-      accounts: state.currentSettings.lists.accountList,
-      populationStage: state.controlState.populationStage,
-      project: state.currentSettings.settings.project,
-      projects: state.currentSettings.lists.projectList,
-      team: state.currentSettings.settings.team,
-      teams: state.currentSettings.lists.teamList,
-    });
+  return ({
+    account: state.currentSettings.settings.account,
+    accounts: state.currentSettings.lists.accountList,
+    populationStage: state.controlState.populationStage,
+    project: state.currentSettings.settings.project,
+    projects: state.currentSettings.lists.projectList,
+    team: state.currentSettings.settings.team,
+    teams: state.currentSettings.lists.teamList,
+  });
 }
 
 @connect(mapStateToProps)
@@ -83,15 +84,15 @@ export class SaveDefaultsButton extends React.Component<ISettingsProps, any> {
    */
   public render(): React.ReactElement<Provider> {
     return (
-       <div style={{float: 'left'}}>
-          <Button
-              buttonType={ButtonType.command}
-              icon='Save'
-              onClick={this.saveDefaults.bind(this)}
-              disabled = {this.props.populationStage < PopulationStage.teamReady}>
-            Save and continue
+      <div style={{ float: 'left' }}>
+        <Button
+          buttonType={ButtonType.command}
+          icon='Save'
+          onClick={this.saveDefaults.bind(this)}
+          disabled={this.props.populationStage < PopulationStage.teamReady}>
+          Save and continue
           </Button>
-       </div>
+      </div>
     );
   }
 }

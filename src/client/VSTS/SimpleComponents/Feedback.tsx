@@ -8,7 +8,7 @@ export class Feedback extends React.Component<{}, {}> {
             return (<div/>);
         } else {
             return (
-                <div style={{'text-align': 'center'}}>
+                <div style={{textAlign: 'center'}}>
                     <Button buttonType={ButtonType.command} onClick={this.feedback.bind(this)}>Give Feedback</Button>
                 </div>);
         }

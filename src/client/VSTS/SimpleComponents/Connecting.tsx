@@ -22,10 +22,10 @@ export class Connecting extends React.Component<{}, {}> {
       top: 0,
     };
     let divStyle: any = {
-      'align-items': 'center',
+      alignItems: 'center',
       display: 'flex',
       height: '100%',
-      'justify-content': 'center',
+      justifyContent: 'center',
     };
     return (
       <div style={overlayStyle}>

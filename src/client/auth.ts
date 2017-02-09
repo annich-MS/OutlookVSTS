@@ -1,4 +1,4 @@
-import { Rest } from 'RestHelpers/rest';
+import { Rest } from './RestHelpers/rest';
 
 export enum AuthState {
     None,       // no auth data is available

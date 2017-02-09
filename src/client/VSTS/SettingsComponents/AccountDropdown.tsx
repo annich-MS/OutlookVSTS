@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import { updateAccountSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
+import { updateAccountSettingsAction, SettingsInfo} from '../../Redux/LogInActions';
 import { updateNotificationAction, updatePopulatingAction, PopulationStage, NotificationType } from '../../Redux/FlowActions';
 import {Rest, RestError, Account} from '../../RestHelpers/rest';
-import { Dropdown, IDropdownOptions } from 'office-ui-fabric-react';
+import { Dropdown } from 'office-ui-fabric-react';
 
 /**
  * Properties needed for the AccountDropdown component
@@ -32,9 +32,9 @@ interface IAccountProps {
   account?: string;
   /**
    * list of accounts associated with user's VSTS profile
-   * @type {ISettingsInfo[]}
+   * @type {SettingsInfo[]}
    */
-  accountList?: ISettingsInfo[];
+  accountList?: SettingsInfo[];
 
   /**
    * Represents what tier is currently being populated
@@ -78,7 +78,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
     if (this.props.account === '') {
       this.populateAccounts();
     } else {
-      this.runPopulate((account: string, accounts: ISettingsInfo[]) => {
+      this.runPopulate((account: string, accounts: SettingsInfo[]) => {
         if (JSON.stringify(accounts) !== JSON.stringify(this.props.accountList)) {
           Office.context.roamingSettings.set('accounts', accounts);
           Office.context.roamingSettings.saveAsync();
@@ -109,9 +109,9 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    * Renders the react-select dropdown component
    */
   public render(): React.ReactElement<Provider> {
-    let accounts: IDropdownOptions[] = [];
+    let accounts: SettingsInfo[] = [];
     let containsAccount: boolean = false;
-    this.props.accountList.forEach((option: IDropdownOptions) => {
+    this.props.accountList.forEach((option: SettingsInfo) => {
       let isSelected: boolean = false;
       if (option.text === this.props.account) {
         isSelected = true;
@@ -140,7 +140,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
    */
   public populateAccounts(): void {
     this.props.dispatch(updatePopulatingAction(PopulationStage.accountPopulating));
-    this.runPopulate((account: string, accounts: ISettingsInfo[]) => {
+    this.runPopulate((account: string, accounts: SettingsInfo[]) => {
       try {
         this.props.dispatch(updateAccountSettingsAction(account, accounts));
         this.props.dispatch(updatePopulatingAction(PopulationStage.accountReady));
@@ -153,7 +153,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
   }
 
   private runPopulate(callback: Function): void {
-    let accountOptions: ISettingsInfo[] = [];
+    let accountOptions: SettingsInfo[] = [];
     let accountNamesOnly: string[] = [];
     let selectedAccount: string = this.props.account;
     Rest.getAccounts(this.props.memberId, (error: RestError, accountList: Account[]) => {

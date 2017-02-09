@@ -38,7 +38,7 @@ export class LogoutButton extends React.Component<ILogoutProps, any> {
     public render(): React.ReactElement<Provider> {
 
         return (
-            <div style={{margin:'auto', width:'75%', 'text-align':'center'}}>
+            <div style={{margin:'auto', width:'75%', textAlign:'center'}}>
                 <Button buttonType={ButtonType.command} onClick={this.logout.bind(this)}>
                     Disconnect From VSTS
                 </Button>

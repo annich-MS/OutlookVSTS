@@ -5,7 +5,9 @@ import { updateStage, Stage, updateSave } from '../Redux/WorkItemActions';
 import { IWorkItem } from '../Redux/WorkItemReducer';
 import { updateNotificationAction, updatePageAction, PageVisibility, PopulationStage, NotificationType } from '../Redux/FlowActions';
 import { IUserProfileReducer, ISettingsAndListsReducer } from '../Redux/LogInReducer';
-import { Button, ButtonType } from 'office-ui-fabric-react';
+import { PrimaryButton } from 'office-ui-fabric-react/lib/button';
+
+type Message = Office.Types.MessageRead;
 
 /**
  * Represents the Save Properties
@@ -85,7 +87,7 @@ export class Save extends React.Component<ISaveProps, {}> {
         this.props.dispatch(updateStage(Stage.New));
         return;
       }
-      Rest.uploadAttachment(data, account, Office.context.mailbox.item.normalizedSubject + '.eml', (err, link) => {
+      Rest.uploadAttachment(data, account, (Office.context.mailbox.item as Message).normalizedSubject + '.eml', (err, link) => {
         if (err) {
           this.props.dispatch(updateNotificationAction(NotificationType.Error, err.toString('upload attachment to VSTS')));
           this.props.dispatch(updateStage(Stage.New));
@@ -127,14 +129,13 @@ export class Save extends React.Component<ISaveProps, {}> {
    */
   public render(): React.ReactElement<Provider> {
 
-    let text: any = this.isSaving ? 'Creating...' : 'Create work item';
+    let text: string = this.isSaving ? 'Creating...' : 'Create work item';
     return (
-      <div style={{ 'text-align': 'center' }} >
+      <div style={{ textAlign: 'center' }} >
         <br/>
-        <Button
-          buttonType={ButtonType.primary}
+        <PrimaryButton
           disabled = {!this.shouldBeEnabled() }
-          onClick={this.handleSave.bind(this) } > {text} </Button>
+          onClick={this.handleSave.bind(this) } > {text} </PrimaryButton>
       </div>
     );
   }

@@ -54,8 +54,8 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
         'https://' + document.location.host + '/authenticate?user=' + user,
         {height: 50, width: 50},
         (result: Office.AsyncResult) => {
-          let dialog: Office.Dialog = result.value;
-          dialog.addEventHandler(Microsoft.Office.WebExtension.EventType.DialogMessageRecieved, (callback: Office.EventResult) => {
+          let dialog: Office.DialogHandler = result.value;
+          dialog.addEventHandler(Office.EventType.DialogMessageReceived, (message: Office.AsyncResult) => {
             this.props.dispatch(updateAuthAction(AuthState.Request));
             this.refreshAuth();
             dialog.close();
@@ -104,7 +104,7 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
   public render(): React.ReactElement<Provider> {
 
     let style_button: any = {
-      'text-align': 'center',
+      textAlign: 'center',
     };
 
     return(

@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import {ISettingsInfo, updateProjectSettingsAction } from '../../Redux/LogInActions';
+import {SettingsInfo, updateProjectSettingsAction } from '../../Redux/LogInActions';
 import {updatePopulatingAction, updateNotificationAction, PopulationStage, NotificationType } from '../../Redux/FlowActions';
 import {Rest, RestError, Project } from '../../RestHelpers/rest';
-import { Dropdown, IDropdownOptions } from 'office-ui-fabric-react';
+import { Dropdown } from 'office-ui-fabric-react';
 
 /**
  * Properties needed for the ProjectDropdown component
@@ -37,9 +37,9 @@ interface IProjectProps {
   project?: string;
   /**
    * Represents the lists of projects for current account
-   * @type {ISettingsInfo[]}
+   * @type {SettingsInfo[]}
    */
-  projects?: ISettingsInfo[];
+  projects?: SettingsInfo[];
 
   /**
    * Represents what tier is currently being populated
@@ -88,7 +88,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
     if (this.props.project === '') {
       this.populateProjects(this.props.account);
     } else {
-      this.runPopulate(this.props.account, (project: string, projects: ISettingsInfo[]) => {
+      this.runPopulate(this.props.account, (project: string, projects: SettingsInfo[]) => {
         if (JSON.stringify(projects) !== JSON.stringify(this.props.projects)) {
           Office.context.roamingSettings.set('projects', projects);
           Office.context.roamingSettings.saveAsync();
@@ -141,9 +141,9 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    */
   public render(): React.ReactElement<Provider> {
 
-    let projects: IDropdownOptions[] = [];
+    let projects: SettingsInfo[] = [];
     let containsProject: boolean = false;
-    this.props.projects.forEach((option: IDropdownOptions) => {
+    this.props.projects.forEach((option: SettingsInfo) => {
       let isSelected: boolean = false;
       if (option.text === this.props.project) {
         containsProject = true;
@@ -173,7 +173,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
    */
   public populateProjects(account: string): void {
     this.props.dispatch(updatePopulatingAction(PopulationStage.projectPopulating));
-    this.runPopulate(account, (project: string, projects: ISettingsInfo[]) => {
+    this.runPopulate(account, (project: string, projects: SettingsInfo[]) => {
       try {
         this.props.dispatch(updateProjectSettingsAction(project, projects));
         this.props.dispatch(updatePopulatingAction(PopulationStage.projectReady));
@@ -187,7 +187,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
   }
 
   public runPopulate(account: string, callback: Function): void {
-    let projectOptions: ISettingsInfo[] = [];
+    let projectOptions: SettingsInfo[] = [];
     let projectNamesOnly: string[] = [];
     let selectedProject: string = this.props.project;
     console.log('populating projects');

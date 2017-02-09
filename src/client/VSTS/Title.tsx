@@ -54,7 +54,7 @@ export class Title extends React.Component<ITitleProps, {}> {
     /**
      * Gets the normalizedSubject from Office and depending on the Stage, dispatches an action to update the value of title in store
      */
-    let normalizedSubject: string = Office.context.mailbox.item.normalizedSubject;
+    let normalizedSubject: string = (Office.context.mailbox.item as Office.Types.MessageRead).normalizedSubject;
     let currentTitle: string = this.props.title;
     if (currentTitle === '' && this.props.stage === Stage.New) {
         this.props.dispatch(updateTitle (normalizedSubject));

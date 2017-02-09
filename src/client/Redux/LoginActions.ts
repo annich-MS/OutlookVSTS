@@ -4,9 +4,22 @@ import { IDropdownOption } from 'office-ui-fabric-react';
  * Represents the data for area path information, duplicated values for display in dropdown
  * Aliased to IDropdownOption for conversion to fabric-react
  * TODO: Remove alias
- * @interface ISettingsInfo
+ * @interface SettingsInfo
  */
-export interface ISettingsInfo extends IDropdownOption { }
+export class SettingsInfo implements IDropdownOption {
+  public key: string | number;
+  public text: string;
+  public isSelected?: boolean;
+
+  public static convertStringArray(array: string[]): SettingsInfo[] {
+    let ret: SettingsInfo[] = [];
+    array.forEach((element: string) => {
+      ret.push({ key: element, text: element });
+    });
+    return ret;
+  }
+
+}
 
 /**
  * Represents the currently selected area path
@@ -20,9 +33,9 @@ export interface IAccountSettingsAction {
   account: string;
   /**
    * list of accounts for user's profile
-   * @type {ISettingsInfo[]}
+   * @type {SettingsInfo[]}
    */
-  accountList: ISettingsInfo[];
+  accountList: SettingsInfo[];
   /**
    * the type of the action
    * @type {string}
@@ -33,14 +46,14 @@ export interface IAccountSettingsAction {
 /**
  * action to update the area path and lists in the state
  * @param {string} accountNew
- * @param {ISettingsInfo[]} accounts
+ * @param {SettingsInfo[]} accounts
  * @returns {IAccountSettingsAction}
  */
-export function updateAccountSettingsAction(accountNew: string, accounts: ISettingsInfo[]): IAccountSettingsAction {
+export function updateAccountSettingsAction(accountNew: string, accounts: SettingsInfo[]): IAccountSettingsAction {
   return {
-        account: accountNew,
-        accountList: accounts,
-        type: 'ACCOUNT_SETTINGS',
+    account: accountNew,
+    accountList: accounts,
+    type: 'ACCOUNT_SETTINGS',
   };
 }
 
@@ -56,9 +69,9 @@ export interface IProjectSettingsAction {
   project: string;
   /**
    * list of projects for currently selected account
-   * @type {ISettingsInfo[]}
+   * @type {SettingsInfo[]}
    */
-  projectList: ISettingsInfo[];
+  projectList: SettingsInfo[];
   /**
    * the type of the action
    * @type {string}
@@ -69,14 +82,14 @@ export interface IProjectSettingsAction {
 /**
  * action to update the area path and lists in the state
  * @param {string} projectNew
- * @param {ISettingsInfo[]} projects
+ * @param {SettingsInfo[]} projects
  * @returns {IProjectSettingsAction}
  */
-export function updateProjectSettingsAction(projectNew: string, projects: ISettingsInfo[]): IProjectSettingsAction {
+export function updateProjectSettingsAction(projectNew: string, projects: SettingsInfo[]): IProjectSettingsAction {
   return {
-        project: projectNew,
-        projectList: projects,
-        type: 'PROJECT_SETTINGS',
+    project: projectNew,
+    projectList: projects,
+    type: 'PROJECT_SETTINGS',
   };
 }
 
@@ -92,9 +105,9 @@ export interface ITeamSettingsAction {
   team: string;
   /**
    * list of teams for currently selected project
-   * @type {ISettingsInfo[]}
+   * @type {SettingsInfo[]}
    */
-  teamList: ISettingsInfo[];
+  teamList: SettingsInfo[];
   /**
    * the type of the action
    * @type {string}
@@ -105,14 +118,14 @@ export interface ITeamSettingsAction {
 /**
  * action to update the area path and lists in the state
  * @param {string} teamNew
- * @param {ISettingsInfo[]} teams
+ * @param {SettingsInfo[]} teams
  * @returns {ITeamSettingsAction}
  */
-export function updateTeamSettingsAction(teamNew: string, teams: ISettingsInfo[]): ITeamSettingsAction {
+export function updateTeamSettingsAction(teamNew: string, teams: SettingsInfo[]): ITeamSettingsAction {
   return {
-        team: teamNew,
-        teamList: teams,
-        type: 'TEAM_SETTINGS',
+    team: teamNew,
+    teamList: teams,
+    type: 'TEAM_SETTINGS',
   };
 }
 
@@ -151,11 +164,11 @@ export interface IUserProfileAction {
  * @returns {IUserProfileAction}
  */
 export function updateUserProfileAction(name: string, mail: string, id: string): IUserProfileAction {
-  return{
-      displayName: name,
-      email: mail,
-      memberID: id,
-      type: 'USER_PROFILE',
+  return {
+    displayName: name,
+    email: mail,
+    memberID: id,
+    type: 'USER_PROFILE',
   };
 }
 

@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import {updateTeamSettingsAction, ISettingsInfo} from '../../Redux/LogInActions';
+import {updateTeamSettingsAction, SettingsInfo} from '../../Redux/LogInActions';
 import {updatePopulatingAction, updateNotificationAction, PopulationStage, NotificationType } from '../../Redux/FlowActions';
 import {Rest, RestError, Team } from '../../RestHelpers/rest';
-import { Dropdown, IDropdownOptions } from 'office-ui-fabric-react';
+import { Dropdown } from 'office-ui-fabric-react';
 
 /**
  * Properties needed for the AreaDropdown component
@@ -42,9 +42,9 @@ interface IAreaProps {
   team?: string;
   /**
    * Represents the lists of teams for current project
-   * @type {ISettingsInfo[]}
+   * @type {SettingsInfo[]}
    */
-  teams?: ISettingsInfo[];
+  teams?: SettingsInfo[];
 
   /**
    * Represents what tier is currently being populated
@@ -94,7 +94,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
     if (this.props.team === '') {
       this.populateTeams(this.props.account, this.props.project);
     } else {
-      this.runPopulate(this.props.account, this.props.project, (team: string, teams: ISettingsInfo[]) => {
+      this.runPopulate(this.props.account, this.props.project, (team: string, teams: SettingsInfo[]) => {
         if (JSON.stringify(teams) !== JSON.stringify(this.props.teams)) {
           Office.context.roamingSettings.set('teams', teams);
           Office.context.roamingSettings.saveAsync();
@@ -148,9 +148,9 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    * Renders the react-select dropdown component
    */
   public render(): React.ReactElement<Provider> {
-    let teams: IDropdownOptions[] = [];
+    let teams: SettingsInfo[] = [];
     let containsTeam: boolean = false;
-    this.props.teams.forEach((option: IDropdownOptions) => {
+    this.props.teams.forEach((option: SettingsInfo) => {
       let isSelected: boolean = false;
       if (option.text === this.props.team) {
         containsTeam = true;
@@ -180,7 +180,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
    */
   public populateTeams(account: string, project: string): void {
     this.props.dispatch(updatePopulatingAction(PopulationStage.teamPopulating));
-    this.runPopulate(account, project, (team: string, teams: ISettingsInfo[]) => {
+    this.runPopulate(account, project, (team: string, teams: SettingsInfo[]) => {
       try {
         this.props.dispatch(updateTeamSettingsAction(team, teams));
         this.props.dispatch(updatePopulatingAction(PopulationStage.teamReady));
@@ -194,7 +194,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
   }
 
   private runPopulate(account: string, project: string, callback: Function): void {
-    let teamOptions: ISettingsInfo[] = [];
+    let teamOptions: SettingsInfo[] = [];
     let teamNamesOnly: string[] = [];
     let selectedTeam: string = this.props.team;
 
