@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { Rest, RestError } from '../../RestHelpers/rest';
 import { AuthState, updateAuthAction, updateNotificationAction, NotificationType } from '../../Redux/FlowActions';
+import { RoamingSettings } from '../RoamingSettings';
 import { Button, ButtonType } from 'office-ui-fabric-react';
 
 /**
@@ -53,6 +54,7 @@ export class LogoutButton extends React.Component<ILogoutProps, any> {
                 this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('disconnect')));
                 return;
             } else {
+                RoamingSettings.GetInstance().clear();
                 dispatch(updateAuthAction(AuthState.NotAuthorized));
             }
         });

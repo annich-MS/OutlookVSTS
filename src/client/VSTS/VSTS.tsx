@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { LogInPage } from './LoginComponents/LogInPage';
-import { Settings} from './SettingsComponents/Settings';
+import { Settings } from './SettingsComponents/Settings';
 import { Connecting } from './SimpleComponents/Connecting';
 import { Saving } from './SimpleComponents/Saving';
 import { Auth } from './authMM';
@@ -23,6 +23,7 @@ import {
 import { UserProfile } from '../RestHelpers/rest';
 import { CreateWorkItem } from './CreateWorkItem';
 import { QuickActions } from './QuickActions';
+import { RoamingSettings } from './RoamingSettings';
 import { Rest, RestError } from '../RestHelpers/rest';
 
 interface IRefreshCallback { (): void; }
@@ -57,6 +58,8 @@ function mapStateToProps(state: any): IVSTSProps {
 
 export class VSTS extends React.Component<IVSTSProps, any> {
 
+  private roamingSettings: RoamingSettings;
+
   public constructor() {
     super();
     this.Initialize = this.Initialize.bind(this);
@@ -85,27 +88,29 @@ export class VSTS extends React.Component<IVSTSProps, any> {
 
   public authInit(): void {
     let dispatch: any = this.props.dispatch;
+    let roamingSettings: RoamingSettings = this.roamingSettings;
     const email: string = Office.context.mailbox.userProfile.emailAddress;
     const name: string = Office.context.mailbox.userProfile.displayName;
     Auth.getAuthState(function (state: string): void {
       if (state === 'success') {
-        let id: string = Office.context.roamingSettings.get('memberID');
-        if (id) {
-          dispatch(updateUserProfileAction(name, email, Office.context.roamingSettings.get('member_ID')));
+        if (roamingSettings.id) {
+          dispatch(updateUserProfileAction(name, email, roamingSettings.id));
           dispatch(updateAuthAction(AuthState.Authorized));
+          if (roamingSettings.isValid) {
+            dispatch(updatePageAction(PageVisibility.CreateItem)); // todo - may cause issues here
+          }
         } else {
           Rest.getUserProfile((error: RestError, profile: UserProfile) => {
             if (error) {
               dispatch(updateNotificationAction(NotificationType.Error, error.toString('retrieve user profile')));
               return;
             }
-            id = profile.id;
-            Office.context.roamingSettings.set('member_ID', id);
-            Office.context.roamingSettings.saveAsync();
-            dispatch(updateUserProfileAction(name, email, id));
+            roamingSettings.id = profile.id;
+            roamingSettings.save();
+            dispatch(updateUserProfileAction(name, email, profile.id));
             dispatch(updateAuthAction(AuthState.Authorized));
           });
-          if (Office.context.roamingSettings.get('default_team') !== undefined) {
+          if (roamingSettings.isValid) {
             dispatch(updatePageAction(PageVisibility.CreateItem)); // todo - may cause issues here
           }
         }
@@ -117,22 +122,11 @@ export class VSTS extends React.Component<IVSTSProps, any> {
 
   public prepopDropdowns(): void {
     this.props.dispatch(updatePopulatingAction(PopulationStage.prepopulate));
-    let account: string = Office.context.roamingSettings.get('default_account');
-    let project: string = Office.context.roamingSettings.get('default_project');
-    let team: string = Office.context.roamingSettings.get('default_team');
-    let accounts: SettingsInfo[] = Office.context.roamingSettings.get('accounts');
-    let projects: SettingsInfo[] = Office.context.roamingSettings.get('projects');
-    let teams: SettingsInfo[] = Office.context.roamingSettings.get('teams');
-    if (account && project && team && accounts && projects && teams) {
+    if (this.roamingSettings.isValid) {
       console.log('prepopulating');
-      this.props.dispatch(updateAccountSettingsAction(account, accounts));
-      this.props.dispatch(updateProjectSettingsAction(project, projects));
-      this.props.dispatch(updateTeamSettingsAction(team, teams));
-    } else if (!accounts || !projects || !teams) {
-      console.log('paving');
-      Office.context.roamingSettings.remove('default_account');
-      Office.context.roamingSettings.remove('default_project');
-      Office.context.roamingSettings.remove('default_team');
+      this.props.dispatch(updateAccountSettingsAction(this.roamingSettings.account, this.roamingSettings.accounts));
+      this.props.dispatch(updateProjectSettingsAction(this.roamingSettings.project, this.roamingSettings.projects));
+      this.props.dispatch(updateTeamSettingsAction(this.roamingSettings.team, this.roamingSettings.teams));
     }
   }
 
@@ -143,7 +137,7 @@ export class VSTS extends React.Component<IVSTSProps, any> {
    */
   public Initialize(): void {
     console.log('Initiating');
-    // - TODO check for auth token
+    this.roamingSettings = RoamingSettings.GetInstance();
     this.iosInit();
     this.prepopDropdowns();
     this.authInit();
@@ -163,7 +157,7 @@ export class VSTS extends React.Component<IVSTSProps, any> {
         break;
       case AuthState.None:
       case AuthState.Request:
-        body = (<Connecting/>);
+        body = (<Connecting />);
         break;
       case AuthState.Authorized:
         {

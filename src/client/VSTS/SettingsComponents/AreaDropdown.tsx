@@ -3,6 +3,7 @@ import { Provider, connect } from 'react-redux';
 import {updateTeamSettingsAction, SettingsInfo} from '../../Redux/LogInActions';
 import {updatePopulatingAction, updateNotificationAction, PopulationStage, NotificationType } from '../../Redux/FlowActions';
 import {Rest, RestError, Team } from '../../RestHelpers/rest';
+import { RoamingSettings } from '../RoamingSettings';
 import { Dropdown } from 'office-ui-fabric-react';
 
 /**
@@ -96,8 +97,8 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
     } else {
       this.runPopulate(this.props.account, this.props.project, (team: string, teams: SettingsInfo[]) => {
         if (JSON.stringify(teams) !== JSON.stringify(this.props.teams)) {
-          Office.context.roamingSettings.set('teams', teams);
-          Office.context.roamingSettings.saveAsync();
+          RoamingSettings.GetInstance().teams = teams;
+          RoamingSettings.GetInstance().save();
         }
         this.props.dispatch(updateTeamSettingsAction(team, teams));
       });
@@ -209,7 +210,7 @@ export class AreaDropdown extends React.Component<IAreaProps, any> {
         teamNamesOnly.push(team.name);
       });
       console.log('teamList: ' + JSON.stringify(teams));
-      let defaultTeam: string = Office.context.roamingSettings.get('default_team');
+      let defaultTeam: string = RoamingSettings.GetInstance().team;
       if (defaultTeam !== undefined && defaultTeam !== '') {
         selectedTeam = defaultTeam;
         console.log('setting default project:' + defaultTeam);

@@ -3,6 +3,7 @@ import { Provider, connect } from 'react-redux';
 import {SettingsInfo, updateProjectSettingsAction } from '../../Redux/LogInActions';
 import {updatePopulatingAction, updateNotificationAction, PopulationStage, NotificationType } from '../../Redux/FlowActions';
 import {Rest, RestError, Project } from '../../RestHelpers/rest';
+import { RoamingSettings } from '../RoamingSettings';
 import { Dropdown } from 'office-ui-fabric-react';
 
 /**
@@ -90,8 +91,8 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
     } else {
       this.runPopulate(this.props.account, (project: string, projects: SettingsInfo[]) => {
         if (JSON.stringify(projects) !== JSON.stringify(this.props.projects)) {
-          Office.context.roamingSettings.set('projects', projects);
-          Office.context.roamingSettings.saveAsync();
+          RoamingSettings.GetInstance().projects = projects;
+          RoamingSettings.GetInstance().save();
         }
         this.props.dispatch(updateProjectSettingsAction(project, projects));
       });
@@ -202,8 +203,7 @@ export class ProjectDropdown extends React.Component<IProjectProps, any> {
         projectOptions.push({ key: project.name, text: project.name });
         projectNamesOnly.push(project.name);
       });
-      // console.log('ProjectList: ' + JSON.stringify(projects));
-      let defaultProject: string = Office.context.roamingSettings.get('default_project');
+      let defaultProject: string = RoamingSettings.GetInstance().project;
       if (defaultProject !== undefined && defaultProject !== '') {
         selectedProject = defaultProject;
         console.log('setting default project:' + defaultProject);

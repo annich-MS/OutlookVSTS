@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import { updateAccountSettingsAction, SettingsInfo} from '../../Redux/LogInActions';
+import { updateAccountSettingsAction, SettingsInfo } from '../../Redux/LogInActions';
 import { updateNotificationAction, updatePopulatingAction, PopulationStage, NotificationType } from '../../Redux/FlowActions';
-import {Rest, RestError, Account} from '../../RestHelpers/rest';
+import { Rest, RestError, Account } from '../../RestHelpers/rest';
+import { RoamingSettings } from '../RoamingSettings';
 import { Dropdown } from 'office-ui-fabric-react';
 
 /**
@@ -80,8 +81,8 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
     } else {
       this.runPopulate((account: string, accounts: SettingsInfo[]) => {
         if (JSON.stringify(accounts) !== JSON.stringify(this.props.accountList)) {
-          Office.context.roamingSettings.set('accounts', accounts);
-          Office.context.roamingSettings.saveAsync();
+          RoamingSettings.GetInstance().accounts = accounts;
+          RoamingSettings.GetInstance().save();
         }
         this.props.dispatch(updateAccountSettingsAction(account, accounts));
       });
@@ -128,9 +129,9 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
       <Dropdown
         label={'Account'}
         options={accounts}
-        onChanged={this.onAccountSelect.bind(this) }
+        onChanged={this.onAccountSelect.bind(this)}
         disabled={this.props.populationStage < PopulationStage.accountReady}
-        />);
+      />);
   }
 
   /**
@@ -167,7 +168,7 @@ export class AccountDropdown extends React.Component<IAccountProps, any> {
         accountNamesOnly.push(acc.name);
       });
       // console.log('AccountList: ' + JSON.stringify(accountList));
-      let defaultAccount: string = Office.context.roamingSettings.get('default_account');
+      let defaultAccount: string = RoamingSettings.GetInstance().account;
       if (defaultAccount !== undefined && defaultAccount !== '') {
         selectedAccount = defaultAccount;
         console.log('setting default account:' + defaultAccount);

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { SettingsInfo } from '../../Redux/LogInActions';
 import { PageVisibility, updatePageAction, PopulationStage } from '../../Redux/FlowActions';
+import { RoamingSettings } from '../RoamingSettings';
 import { Button, ButtonType } from 'office-ui-fabric-react';
 
 interface ISettingsProps {
@@ -68,13 +69,14 @@ export class SaveDefaultsButton extends React.Component<ISettingsProps, any> {
    * @returns {void}
    */
   public saveDefaults(): void {
-    Office.context.roamingSettings.set('default_account', this.props.account);
-    Office.context.roamingSettings.set('default_project', this.props.project);
-    Office.context.roamingSettings.set('default_team', this.props.team);
-    Office.context.roamingSettings.set('accounts', this.props.accounts);
-    Office.context.roamingSettings.set('projects', this.props.projects);
-    Office.context.roamingSettings.set('teams', this.props.teams);
-    Office.context.roamingSettings.saveAsync();
+    let rs: RoamingSettings = RoamingSettings.GetInstance();
+    rs.account = this.props.account;
+    rs.project = this.props.project;
+    rs.team = this.props.team;
+    rs.accounts = this.props.accounts;
+    rs.projects = this.props.projects;
+    rs.teams = this.props.teams;
+    rs.save();
 
     this.props.dispatch(updatePageAction(PageVisibility.CreateItem));
   }

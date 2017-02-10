@@ -4,7 +4,8 @@ import { AuthState, updateAuthAction, updateNotificationAction, NotificationType
 import { updateUserProfileAction} from '../../Redux/LogInActions';
 import { Rest, RestError, UserProfile} from '../../RestHelpers/rest';
 import { Auth} from '../authMM';
-import { Button, ButtonType } from 'office-ui-fabric-react';
+import { RoamingSettings } from '../RoamingSettings';
+import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
 
 /**
  * Properties needed for the SignInButton component
@@ -82,16 +83,14 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
     Auth.getAuthState(function (state: string): void {
       if (state === 'success') {
         clearInterval(authKey);
-        let id: string = '';
         Rest.getUserProfile((error: RestError, profile: UserProfile) => {
           if (error) {
             this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('get user profile')));
             return;
           }
-          id = profile.id;
-          Office.context.roamingSettings.set('member_ID', '' + id);
-          Office.context.roamingSettings.saveAsync();
-          dispatch(updateUserProfileAction(name, email, id));
+          RoamingSettings.GetInstance().id = profile.id;
+          RoamingSettings.GetInstance().save();
+          dispatch(updateUserProfileAction(name, email, profile.id));
           dispatch(updateAuthAction(AuthState.Authorized));
       });
       }
@@ -109,7 +108,7 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
 
     return(
       <div style={style_button}>
-      <Button buttonType={ ButtonType.primary }  onClick = {this.authOnClick.bind(this)}> Sign in to get started </Button>
+      <PrimaryButton onClick = {this.authOnClick.bind(this)}> Sign in to get started </PrimaryButton>
       </div>);
   }
   }
