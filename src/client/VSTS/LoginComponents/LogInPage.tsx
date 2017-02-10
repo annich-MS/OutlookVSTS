@@ -17,8 +17,8 @@ export class LogInPage extends React.Component<{}, {}> {
     let style_image: any = {
       display: 'block',
       margin: 'auto',
+      maxWidth: '325px',
       width: '100%',
-      'max-width': '325px',
     };
 
 

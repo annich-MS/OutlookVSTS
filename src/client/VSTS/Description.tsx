@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { updateAddAsAttachment, updateDescription, Stage } from '../Redux/WorkItemActions';
-import { Checkbox, TextField } from 'office-ui-fabric-react';
-let Editable = require("react-contentEditable");
+import { Checkbox } from 'office-ui-fabric-react';
+import * as Editable from 'react-contenteditable';
 
 /**
  * Represents the Description Properties
