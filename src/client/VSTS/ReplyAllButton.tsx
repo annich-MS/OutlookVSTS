@@ -3,6 +3,7 @@ import { Provider } from 'react-redux';
 import { Button, ButtonType, Spinner, SpinnerType } from 'office-ui-fabric-react';
 import { updateNotificationAction, NotificationType } from '../Redux/FlowActions';
 import { Rest } from '../RestHelpers/rest';
+import { Constants } from './Constants';
 
 /**
  * Props for ReplyAllButton Component
@@ -59,7 +60,7 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, { savi
    * @returns { string } Full HTML body with signature line
    */
   public addSignature(workItemHyperlink: string): string {
-    return workItemHyperlink + '<br/><br/><br/>Created using VSTS Outlook add-in';
+    return workItemHyperlink + Constants.CREATED_STRING;
   }
   /**
    * Handles the click and displays a reply-all form

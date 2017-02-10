@@ -1,5 +1,7 @@
 // import { Reducer, combineReducers } from 'redux';
 import { ACTION, FollowTypes, Stage } from './WorkItemActions';
+import { Constants } from '../VSTS/Constants';
+
  /**
   * Represents the part of the state for the new WorkItem
   * @interface IWorkItem
@@ -53,7 +55,7 @@ export interface IWorkItem {
 export const initialState: IWorkItem = {
   VSTShtmlLink: 'https://www.visualstudio.com/products/what-is-visual-studio-online-vs?WT.srch=1&WT.mc_ID=SEM_xXsQTNj1',
   addAsAttachment: true,
-  description: 'For more details, please refer to the attached mail thread. ',
+  description: 'For more details, please refer to the attached mail thread. ' + Constants.CREATED_STRING,
   followState: FollowTypes.Unfollowed,
   id: '<work item id>',
   stage: Stage.New,
