@@ -19,7 +19,7 @@ export class Auth {
      */
     public static getAuthState(callback: IAuthStateCallback): void {
         Rest.getUser((user: string) => {
-            $.get('./authenticate/db?user=' + user, (output) => {
+            $.get('./authenticate/db?user=' + user + '&trash=' + (Math.random() * 1000), (output) => {
                 if (output === 'success') {
                     callback('success');
                 } else {
