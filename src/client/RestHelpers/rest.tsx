@@ -75,23 +75,37 @@ export class WorkItemInfo {
     }
 }
 
+interface VSTSErrorBody{
+    message: string;
+    typeKey: string;
+}
+
 export class RestError {
+
     public type: string;
     public more: any;
+    public body: VSTSErrorBody;
 
     public constructor(blob: any) {
         this.type = blob.type;
         this.more = blob.more;
+        try {
+            this.body = JSON.parse(this.more.response.body);
+        } catch (e) {
+            // not parsable
+        }
     }
 
-    public toString(source: string): string {
-        let contents: string = 'Failed to ' + source + ' due to ';
-        if (this.more.statusCode) {
-            contents += this.more.name + '. External server returned ' + this.more.statusCode;
+    public toString(action: string): string {
+        let reason: string = '';
+        if (this.body) {
+            reason = `${this.body.typeKey}: ${this.body.message}`;
+        } else if (this.more.statusCode) {
+            reason = `${this.more.name}. Server returned ${this.more.statusCode}`;
         } else {
-            contents += this.type + '.';
+            reason = `${this.type}.`;
         }
-        return contents;
+        return `Failed to ${action} due to ${reason}`;
     }
 }
 
