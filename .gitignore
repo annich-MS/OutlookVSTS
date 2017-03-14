@@ -57,6 +57,7 @@ Temporary Items
 # Other
 # =========================
 *.d.ts
+bin/
 node_modules/
 secrets/
 public/js/app.js

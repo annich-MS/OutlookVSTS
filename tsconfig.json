@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
-    "noImplicitAny": true,
     "jsx": "react",
     "removeComments": true,
     "preserveConstEnums": true,
@@ -15,6 +14,6 @@
     "bin"
   ],
   "include": [
-    "src/client"
+    "src/server"
   ]
 }
