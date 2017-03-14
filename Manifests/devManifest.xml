@@ -8,9 +8,9 @@
   <Version>1.0</Version>
   <ProviderName>Apps Platform</ProviderName>
   <DefaultLocale>en-us</DefaultLocale>
-  <DisplayName DefaultValue="[DEBUG] Visual Studio Team Services" />
+  <DisplayName DefaultValue="VSTS local" />
   <Description DefaultValue="Creates bugs using content of message"/>
-  <IconUrl DefaultValue="https://azure.localtest.me:3001/public/Images/logo.png" />
+  <IconUrl DefaultValue="https://[REPLACE]/public/Images/logo.png" />
   <Hosts>
     <Host Name="Mailbox" />
   </Hosts>
@@ -23,17 +23,17 @@
     <Form xsi:type="ItemRead">
       <DesktopSettings>
         <SourceLocation DefaultValue=
-          "https://azure.localtest.me:3001/vsts" />
+          "https://[REPLACE]/vsts" />
         <RequestedHeight>350</RequestedHeight>
       </DesktopSettings>
       <TabletSettings>
         <SourceLocation DefaultValue=
-          "https://azure.localtest.me:3001/vsts" />
+          "https://[REPLACE]/vsts" />
         <RequestedHeight>250</RequestedHeight>
       </TabletSettings>
       <PhoneSettings>
         <SourceLocation DefaultValue=
-          "https://azure.localtest.me:3001/vsts" />
+          "https://[REPLACE]/vsts" />
       </PhoneSettings>
     </Form>
   </FormSettings>
@@ -79,15 +79,15 @@
 	</Hosts>
 	<Resources>
       <bt:Images>
-        <bt:Image id="taskpanecommand-icon" DefaultValue="https://azure.localtest.me:3001/public/Images/logo.png"/>
+        <bt:Image id="taskpanecommand-icon" DefaultValue="https://[REPLACE]/public/Images/logo.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="readTaskPaneUrl" DefaultValue="https://azure.localtest.me:3001/vsts"/>
+        <bt:Url id="readTaskPaneUrl" DefaultValue="https://[REPLACE]/vsts"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="groupLabel" DefaultValue="Visual Stuido Team Services"/>
+        <bt:String id="groupLabel" DefaultValue="VSTS"/>
         <!-- Read mode -->
-        <bt:String id="paneReadButtonLabel" DefaultValue="[DEBUG} Create Bug"/>
+        <bt:String id="paneReadButtonLabel" DefaultValue="VSTS Local"/>
         <bt:String id="paneReadSuperTipTitle" DefaultValue="Creates a bug using the contents of this email"/>
       </bt:ShortStrings>
       <bt:LongStrings>

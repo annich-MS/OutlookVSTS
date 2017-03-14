@@ -1,217 +1,170 @@
-var express = require('express');
-var fs = require('fs');
-var tedious = require('tedious');
-var https = require('https');
-var querystring = require('querystring');
-var jwt = require('jsonwebtoken');
-var crypto = require('crypto');
-var PROD = process.env.prod;
-var TYPES = tedious.TYPES;
+import * as Bluebird from "bluebird";
+import * as Crypto from "crypto";
+import * as Knex from "knex";
+import connections from "../db/connections";
+import Token from "../db/token";
+import * as express from "express";
+import * as https from "https";
+import * as querystring from "querystring";
+import * as jwt from "jsonwebtoken";
 
-var REFRESH_MINIMUM = 60;
+const DevMode: boolean = process.env.NODE_ENV === "development";
 
-var router = express.Router({ mergeParams: true });
-module.exports = router;
+let REFRESH_MINIMUM = 60;
 
-var salt = null;
+let router = express.Router({ mergeParams: true });
+export default router;
+
+const connection: Knex = Knex(connections[process.env.NODE_ENV]);
+connection.migrate.latest(connections);
+
+let salt = null;
 function getSalt() {
   if (salt === null) {
-    if (PROD) {
+    if (DevMode) {
+      salt = [];
+    } else {
       salt = JSON.parse(process.env.salt);
-    }
-    else {
-      salt = require('../../../secrets/salt.js')
     }
   }
   return salt;
 }
 
-var _clientInfo = null;
-getClientInfo = function () {
-  if (_clientInfo == null) {
-    if (PROD) {
-      _clientInfo = JSON.parse(process.env.ClientSecretJson);
-    }
-    else {
-      _clientInfo = require('../../../secrets/clientSecret');
+let clientInfo = null;
+let getClientInfo = function () {
+  if (clientInfo == null) {
+    if (DevMode) {
+      clientInfo = require("../../secrets/clientSecret");
+    } else {
+      clientInfo = JSON.parse(process.env.ClientSecretJson);
     }
   }
-  return _clientInfo;
-}
-
-var _oauth = null;
-getOAuth = function () {
-  if (_oauth === null) {
-    var clientInfo = getClientInfo();
-    _oauth = {
-      clientId: clientInfo.client_id.toString(),
-      clientSecret: clientInfo.client_secret.toString(),
-      baseUrl: 'app.vssps.visualstudio.com',
-      authEndpoint: '/oauth2/authorize',
-      tokenEndpoint: '/oauth2/token',
-      redirectUri: clientInfo.redirect_uris[0],
-      scopes: clientInfo.scopes
-    };
-  }
-  return _oauth;
+  return clientInfo;
 };
 
-var dbConfig = null;
-getDbConfig = function () {
-  if (dbConfig === null) {
-    if (PROD) {
-      dbConfig = JSON.parse(process.env.dbConfigJson);
-    }
-    else {
-      dbConfig = require('../../../secrets/dbConfig.js')
-    }
+let oauth = null;
+let getOAuth = function () {
+  if (oauth === null) {
+    let info = getClientInfo();
+    oauth = {
+      authEndpoint: "/oauth2/authorize",
+      baseUrl: "app.vssps.visualstudio.com",
+      clientId: info.client_id.toString(),
+      clientSecret: info.client_secret.toString(),
+      redirectUri: info.redirect_uris[0],
+      scopes: info.scopes,
+      tokenEndpoint: "/oauth2/token",
+    };
   }
-  return dbConfig;
-}
-
-var table = PROD ? 'dbo.Users' : 'dbo.TestUsers'
-
-var GET_TOKEN_QUERY = "SELECT TOP 1 x.Token, x.Expiry, x.Refresh FROM " + table + " AS x WHERE Id=@Id"
-var SAVE_TOKEN_QUERY =
-  `IF EXISTS(` + GET_TOKEN_QUERY + `)
-  UPDATE ` + table + ` SET Token=@Token, Expiry=DATEADD(ss, @Expiry, GETDATE()), Refresh=@Refresh WHERE Id=@Id;
-ELSE
-  INSERT INTO ` + table + `(Id, Token, Expiry, Refresh) VALUES (@Id, @Token, DATEADD(ss, @Expiry, GETDATE()), @Refresh);`;
-var DELETE_USER_QUERY = "DELETE FROM " + table + " WHERE Id = @Id";
-
-createConnection = function (reason, callback) {
-  var config = getDbConfig();
-  var connection = new tedious.Connection(config);
-  connection.on('error', (err) => {
-    console.log(err);
-  });
-  connection.on('connect', function (err) {
-    if (err) {
-      console.log(err);
-    }
-    callback(connection);
-  });
-}
+  return oauth;
+};
 
 function beautify(body) {
-  var begin = "-----BEGIN CERTIFICATE-----";
-  var end = "-----END CERTIFICATE-----"
+  let begin = "-----BEGIN CERTIFICATE-----";
+  let end = "-----END CERTIFICATE-----";
 
-  body = body.replace(/-/g, '+');
-  body = body.replace(/_/g, '/');
+  body = body.replace(/-/g, "+");
+  body = body.replace(/_/g, "/");
 
-  var arr = [];
+  let arr = [];
   arr.push(begin);
   while (body.length > 0) {
-    var line = body.slice(0, 64);
+    let line = body.slice(0, 64);
     arr.push(line);
     body = body.slice(64);
   }
   arr.push(end);
-  return arr.join('\n');
+  return arr.join("\n");
 }
 
 function bytesToString(bytes) {
-  var str = "";
-  for (var i = 0; i < bytes.length; i++) {
+  let str = "";
+  for (let i = 0; i < bytes.length; i++) {
     str += String.fromCharCode(bytes[i]);
   }
   return str;
 }
 
-router.getUID = function(token, callback) {
-  var decoded = jwt.decode(token, { complete: true });
-  var appctx = JSON.parse(decoded.payload.appctx);
+export function getUID(token: string, callback: (token: string) => any): void {
+  let decoded = jwt.decode(token, { complete: true });
+  let appctx = JSON.parse(decoded.payload.appctx);
   https.get(appctx.amurl, (response) => {
-    var output = "";
-    response.on('data', (d) => {
+    let output = "";
+    response.on("data", (d) => {
       output += d;
     });
 
-    response.on('end', () => {
-      var responseBlob = JSON.parse(output);
+    response.on("end", () => {
+      let responseBlob = JSON.parse(output);
       responseBlob.keys.forEach((key) => {
         if (key.keyinfo.x5t === decoded.header.x5t) {
-          var public = beautify(key.keyvalue.value);
-          jwt.verify(token, public, { algorithms: ['RS256'] }, (err, verified) => {
+          let publicKey = beautify(key.keyvalue.value);
+          jwt.verify(token, publicKey, { algorithms: ["RS256"] }, (err, verified) => {
             if (!verified) {
               callback("");
             }
-            var id = appctx.msexchuid;
-            var url = appctx.amurl;
-            var input = bytesToString(getSalt()) + id + url;
-            var hash = crypto.createHash('sha256');
+            let id = appctx.msexchuid;
+            let url = appctx.amurl;
+            let input = bytesToString(getSalt()) + id + url;
+            let hash = Crypto.createHash("sha256");
             hash.update(input);
-            var body = hash.digest('base64');
-            body = body.replace(/\+/g, '-');
-            body = body.replace(/\//g, '_');
+            let body = hash.digest("base64");
+            body = body.replace(/\+/g, "-");
+            body = body.replace(/\//g, "_");
             callback(body);
           });
         }
-      })
-    })
-  });
-}
-
-router.getToken = function (uid, callback) {
-  createConnection("getToken", (connection) => {
-    var request = new tedious.Request(GET_TOKEN_QUERY, function (err, rowcount, rows) {
-      if (err) {
-        callback({ success: false, error: err });
-      }
-      if (rows == null || rowcount == 0) {
-        callback({ success: false });
-      }
-      else {
-        var row = rows[0]; //There should only be 1 row
-
-        var data = {
-          token: row[0].value,
-          expiry: Date.parse(row[1].value),
-          refresh: row[2].value
-        };
-        callback({ success: true, data: data })
-      }
-      connection.close();
+      });
     });
-    request.addParameter('Id', TYPES.VarChar, uid);
-    connection.execSql(request);
   });
 }
 
-router.newToken = function (assertion, refresh, callback) {
-  var oauth = getOAuth();
-  var data = {
+export function getToken(uid: string, callback: (token: Token) => any): void {
+  connection.select(Token.TokenKey, Token.ExpiryKey, Token.RefreshKey).from(Token.TableName).where(Token.IdKey, uid).then((output: Token[]) => {
+    if (output == null || output.length === 0) {
+      callback(null);
+    } else {
+      let token: Token = output[0]; // There should only be 1 row
+
+      callback(token);
+    }
+
+  });
+};
+
+function newToken(assertion, refresh, callback) {
+  let auth = getOAuth();
+  let data = {
     assertion: assertion,
+    client_assertion: auth.clientSecret,
     client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
     grant_type: refresh ? "refresh_token" : "urn:ietf:params:oauth:grant-type:jwt-bearer",
-    client_assertion: oauth.clientSecret,
-    redirect_uri: oauth.redirectUri
+    redirect_uri: auth.redirectUri,
   };
-  var options = {
-    host: oauth.baseUrl,
-    path: oauth.tokenEndpoint,
-    method: 'POST',
+  let options = {
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    }
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    host: oauth.baseUrl,
+    method: "POST",
+    path: oauth.tokenEndpoint,
   };
-  var request = https.request(options, function (response) {
-    var str = '';
-    var errored = false;
+  let request = https.request(options, function (response) {
+    let str = "";
+    let errored = false;
 
-    response.on('data', function (chunk) {
-      str += chunk
+    response.on("data", function (chunk) {
+      str += chunk;
     });
 
-    response.on('end', function () {
+    response.on("end", function () {
       if (!errored) {
-        var result = JSON.parse(str);
+        let result = JSON.parse(str);
         callback(null, result.access_token, result.refresh_token, result);
       }
     });
 
-    response.on('error', function (err) {
+    response.on("error", function (err) {
       errored = true;
       callback(err);
     });
@@ -220,97 +173,79 @@ router.newToken = function (assertion, refresh, callback) {
   request.end();
 }
 
-
-
-router.db = function (req, res) {
-  router.getUID(req.query.user, (uid) => {
-    router.getToken(uid, (response) => {
-      if (response.success) { // recieved row
-        var data = response.data;
-        var expiryLimit = new Date();
+function db(req, res) {
+  getUID(req.query.user, (uid) => {
+    getToken(uid, (token: Token) => {
+      if (token != null) { // recieved row
+        let expiryLimit = new Date();
         expiryLimit.setMinutes(expiryLimit.getMinutes() + REFRESH_MINIMUM);
-        if (data.expiry > expiryLimit) { // if the token doesn't expire before our limit
+        if (token.expiry > expiryLimit) { // if the token doesn't expire before our limit
           res.send("success");
+        } else {
+          refreshToken(uid, token.refresh, res);
         }
-        else {
-          router.refreshToken(uid, data.refresh, res);
-        }
-      }
-      else {
+      } else {
         res.send("failure");
       }
     });
   });
 };
-router.use('/db', router.db);
+router.use("/db", db);
 
-router.callback = function (req, res) {
-  user = req.query.state;
-  router.newToken(req.query.code, false, (err, access_token, refresh_token, results) => {
+function callback(req, res) {
+  let user = req.query.state;
+  newToken(req.query.code, false, (err, accessToken, refreshToken, results) => {
     if (err) {
       console.log(err);
     } else {
       res.redirect("../done");
-      saveToken(user, access_token, results['expires_in'], refresh_token);
+      saveToken(Token.getInstance(user, accessToken, results["expires_in"], refreshToken));
     }
   });
 
 };
-router.use('/callback', router.callback);
+router.use("/callback", callback);
 
-router.authorize = function (req, res) {
+function authorize(req, res) {
 
-  router.getUID(req.query.user, (uid) => {
-    var oauth = getOAuth();
-    var authParams = {
-      client_id: oauth.clientId,
-      response_type: 'Assertion',
+  getUID(req.query.user, (uid) => {
+    let auth = getOAuth();
+    let authParams = {
+      client_id: auth.clientId,
+      redirect_uri: auth.redirectUri,
+      response_type: "Assertion",
+      scope: auth.scopes,
       state: uid,
-      scope: oauth.scopes,
-      redirect_uri: oauth.redirectUri,
     };
-    res.redirect("https://" + oauth.baseUrl + oauth.authEndpoint + '?' + querystring.stringify(authParams));
+    res.redirect("https://" + oauth.baseUrl + oauth.authEndpoint + "?" + querystring.stringify(authParams));
   });
 };
-router.use('/', router.authorize);
+router.use("/", authorize);
 
-router.disconnect = function (user, callback) {
-  createConnection("disconnect", (connection) => {
-    var request = new tedious.Request(DELETE_USER_QUERY, function (err, rowcount, rows) {
-      if (err) {
-        callback(err);
-      }
-      callback();
-      connection.close();
-    });
-    request.addParameter('Id', TYPES.VarChar, user);
-    connection.execSql(request);
-  });
+export function disconnect(user, callback) {
+  deleteToken(user).then(() => callback()).catch((error) => callback(error));
 }
 
-router.refreshToken = function (user, refresh, res) {
-  router.newToken(refresh, true, (err, access_token, refresh_token, results) => {
+function refreshToken(user, refresh, res) {
+  newToken(refresh, true, (err, accessToken, refreshToken, results) => {
     if (err) {
       console.log(err);
     } else {
-      res.send("success");
-      saveToken(user, access_token, results['expires_in'], refresh_token);
+      deleteToken(user)
+        .then(() => saveToken(Token.getInstance(user, accessToken, results["expires_in"], refreshToken)))
+        .then(() => res.send("success"));
     }
   });
 };
 
-function saveToken(user, access_token, expires_in, refresh_token) {
-  createConnection("save Token", (connection) => {
-    var request = new tedious.Request(SAVE_TOKEN_QUERY, function (err) {
-      if (err) {
-        console.log(err);
-      }
-      connection.close();
-    });
-    request.addParameter('Id', TYPES.VarChar, user);
-    request.addParameter('Token', TYPES.VarChar, access_token);
-    request.addParameter('Expiry', TYPES.Int, expires_in);
-    request.addParameter('Refresh', TYPES.VarChar, refresh_token);
-    connection.execSql(request);
+async function deleteToken(id: string): Bluebird<void> {
+  return connection.delete().from(Token.TableName).where(Token.IdKey, id).then(() => {
+    console.log(`Removed: ${id}`);
+  });
+}
+
+async function saveToken(token: Token): Bluebird<void> {
+  return connection.insert(token).into(Token.TableName).then(() => {
+    console.log(`Added: ${JSON.stringify(token)}`);
   });
 }

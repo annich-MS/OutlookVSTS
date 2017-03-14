@@ -95,14 +95,11 @@ call :SelectNodeVersion
 echo npm install
 call :ExecuteCmd !NPM_CMD! install
 
-echo typings install
-call :ExecuteCmd !NPM_CMD! run typings
-
 echo npm build
 call :ExecuteCmd !NPM_CMD! run build
 
 IF /I "%IN_PLACE_DEPLOYMENT%" NEQ "1" (
-  call :ExecuteCmd "%KUDU_SYNC_CMD%" -v 50 -f "%DEPLOYMENT_SOURCE%" -t "%DEPLOYMENT_TARGET%" -n "%NEXT_MANIFEST_PATH%" -p "%PREVIOUS_MANIFEST_PATH%" -i ".git;.hg;.deployment;deploy.cmd;config;App;Manifests;typings;"
+  call :ExecuteCmd "%KUDU_SYNC_CMD%" -v 50 -f "%DEPLOYMENT_SOURCE%" -t "%DEPLOYMENT_TARGET%" -n "%NEXT_MANIFEST_PATH%" -p "%PREVIOUS_MANIFEST_PATH%" -i ".git;.hg;.deployment;deploy.cmd;config;src;Manifests;typings;"
   IF !ERRORLEVEL! NEQ 0 goto error
 )
 

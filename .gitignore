@@ -57,8 +57,9 @@ Temporary Items
 # Other
 # =========================
 *.d.ts
-bin/
 node_modules/
 secrets/
 public/js/app.js
 public/js/app.js.map
+bin/
+dev.sqlite3
