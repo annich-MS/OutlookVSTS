@@ -1,83 +1,53 @@
 import * as Bluebird from "bluebird";
 import * as Crypto from "crypto";
-import * as Knex from "knex";
-import connections from "../db/connections";
-import Token from "../db/token";
-import * as express from "express";
+import * as Express from "express";
 import * as https from "https";
-import * as querystring from "querystring";
 import * as jwt from "jsonwebtoken";
+import * as Knex from "knex";
+import * as querystring from "querystring";
+
+import connections from "../auth/connections";
+import Token from "../auth/token";
+import AuthInfo from "../auth/authInfo";
 
 const DevMode: boolean = process.env.NODE_ENV === "development";
+const Salt: number[] = JSON.parse(process.env.SALT);
+const Auth: AuthInfo = AuthInfo.getInstance();
 
-let REFRESH_MINIMUM = 60;
-
-let router = express.Router({ mergeParams: true });
-export default router;
+const RefreshMinimumInHours: number = 1;
+const RefreshMinimum: number = RefreshMinimumInHours * 60 * 60 * 1000; // min/hr * sec/min * ms/sec => ms/hr
 
 const connection: Knex = Knex(connections[process.env.NODE_ENV]);
 connection.migrate.latest(connections);
 
-let salt = null;
-function getSalt() {
-  if (salt === null) {
-    if (DevMode) {
-      salt = [];
-    } else {
-      salt = JSON.parse(process.env.salt);
-    }
-  }
-  return salt;
-}
+const router = Express.Router({ mergeParams: true });
+export default router;
 
-let clientInfo = null;
-let getClientInfo = function () {
-  if (clientInfo == null) {
-    if (DevMode) {
-      clientInfo = require("../../secrets/clientSecret");
-    } else {
-      clientInfo = JSON.parse(process.env.ClientSecretJson);
-    }
-  }
-  return clientInfo;
-};
-
-let oauth = null;
-let getOAuth = function () {
-  if (oauth === null) {
-    let info = getClientInfo();
-    oauth = {
-      authEndpoint: "/oauth2/authorize",
-      baseUrl: "app.vssps.visualstudio.com",
-      clientId: info.client_id.toString(),
-      clientSecret: info.client_secret.toString(),
-      redirectUri: info.redirect_uris[0],
-      scopes: info.scopes,
-      tokenEndpoint: "/oauth2/token",
-    };
-  }
-  return oauth;
-};
-
-function beautify(body) {
-  let begin = "-----BEGIN CERTIFICATE-----";
-  let end = "-----END CERTIFICATE-----";
+/**
+ * Converts an Auth Certificate recieved by the AppContext to the form required by jwt
+ * @param body the Auth Certificate to be converted
+ */
+function beautify(body: string): string {
 
   body = body.replace(/-/g, "+");
   body = body.replace(/_/g, "/");
 
-  let arr = [];
-  arr.push(begin);
+  let arr: string[] = [];
+  arr.push("-----BEGIN CERTIFICATE-----");
   while (body.length > 0) {
     let line = body.slice(0, 64);
     arr.push(line);
     body = body.slice(64);
   }
-  arr.push(end);
+  arr.push("-----END CERTIFICATE-----");
   return arr.join("\n");
 }
 
-function bytesToString(bytes) {
+/**
+ * helper function to turn a byteArray into a string
+ * @param bytes 
+ */
+function bytesToString(bytes: number[]): string {
   let str = "";
   for (let i = 0; i < bytes.length; i++) {
     str += String.fromCharCode(bytes[i]);
@@ -85,7 +55,12 @@ function bytesToString(bytes) {
   return str;
 }
 
-export function getUID(token: string, callback: (token: string) => any): void {
+/**
+ * processes and validates an office.js UserIdentityToken and converts to a internal UID for authentication
+ * @param token a UserIdentityToken to be processed
+ * @param callback a function that takes in the UID as a string
+ */
+export function getUID(token: string, callback: (token: string) => void): void {
   let decoded = jwt.decode(token, { complete: true });
   let appctx = JSON.parse(decoded.payload.appctx);
   https.get(appctx.amurl, (response) => {
@@ -105,7 +80,7 @@ export function getUID(token: string, callback: (token: string) => any): void {
             }
             let id = appctx.msexchuid;
             let url = appctx.amurl;
-            let input = bytesToString(getSalt()) + id + url;
+            let input = bytesToString(Salt) + id + url;
             let hash = Crypto.createHash("sha256");
             hash.update(input);
             let body = hash.digest("base64");
@@ -119,6 +94,11 @@ export function getUID(token: string, callback: (token: string) => any): void {
   });
 }
 
+/**
+ * querys the database for a valid token given a UID
+ * @param uid the UID to recieve a token for
+ * @param callback a function that takes in a Token, or null if the token is not found
+ */
 export function getToken(uid: string, callback: (token: Token) => any): void {
   connection.select(Token.TokenKey, Token.ExpiryKey, Token.RefreshKey).from(Token.TableName).where(Token.IdKey, uid).then((output: Token[]) => {
     if (output == null || output.length === 0) {
@@ -132,22 +112,27 @@ export function getToken(uid: string, callback: (token: Token) => any): void {
   });
 };
 
-function newToken(assertion, refresh, callback) {
-  let auth = getOAuth();
+/**
+ * Querys VSTS for a new token
+ * @param assertion the assertion token
+ * @param refresh a flag to determine if the assertion is a refresh or new token request
+ * @param callback 
+ */
+function newToken(uid: string, assertion: string, refresh: boolean, callback: (error: any, token?: Token) => void) {
   let data = {
     assertion: assertion,
-    client_assertion: auth.clientSecret,
+    client_assertion: Auth.secret,
     client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
     grant_type: refresh ? "refresh_token" : "urn:ietf:params:oauth:grant-type:jwt-bearer",
-    redirect_uri: auth.redirectUri,
+    redirect_uri: Auth.redirect,
   };
   let options = {
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
-    host: oauth.baseUrl,
+    host: Auth.baseUrl,
     method: "POST",
-    path: oauth.tokenEndpoint,
+    path: `/${Auth.tokenEndpoint}`,
   };
   let request = https.request(options, function (response) {
     let str = "";
@@ -160,7 +145,7 @@ function newToken(assertion, refresh, callback) {
     response.on("end", function () {
       if (!errored) {
         let result = JSON.parse(str);
-        callback(null, result.access_token, result.refresh_token, result);
+        callback(null, Token.getInstance(uid, result.access_token, result.expires_in, result.refresh_token));
       }
     });
 
@@ -173,12 +158,17 @@ function newToken(assertion, refresh, callback) {
   request.end();
 }
 
-function db(req, res) {
+/**
+ * Entry point to check if user exists
+ * @param req the request recieved
+ * @param res the response to be sent
+ */
+function db(req: Express.Request, res: Express.Response) {
   getUID(req.query.user, (uid) => {
     getToken(uid, (token: Token) => {
-      if (token != null) { // recieved row
+      if (token != null) {
         let expiryLimit = new Date();
-        expiryLimit.setMinutes(expiryLimit.getMinutes() + REFRESH_MINIMUM);
+        expiryLimit.setMinutes(expiryLimit.getMinutes() + RefreshMinimum);
         if (token.expiry > expiryLimit) { // if the token doesn't expire before our limit
           res.send("success");
         } else {
@@ -192,58 +182,85 @@ function db(req, res) {
 };
 router.use("/db", db);
 
+/**
+ * Entry point for returning authentication
+ * @param req the request recieved
+ * @param res the response to be sent
+ */
 function callback(req, res) {
-  let user = req.query.state;
-  newToken(req.query.code, false, (err, accessToken, refreshToken, results) => {
+  newToken(req.query.state, req.query.code, false, (err: any, token: Token) => {
     if (err) {
       console.log(err);
     } else {
       res.redirect("../done");
-      saveToken(Token.getInstance(user, accessToken, results["expires_in"], refreshToken));
+      saveToken(token);
     }
   });
 
 };
 router.use("/callback", callback);
 
+/**
+ * Entry point for requesting authentication
+ * @param req the request recieved
+ * @param res the response to be sent
+ */
 function authorize(req, res) {
 
   getUID(req.query.user, (uid) => {
-    let auth = getOAuth();
     let authParams = {
-      client_id: auth.clientId,
-      redirect_uri: auth.redirectUri,
+      client_id: Auth.id,
+      redirect_uri: Auth.redirect,
       response_type: "Assertion",
-      scope: auth.scopes,
+      scope: Auth.scopes,
       state: uid,
     };
-    res.redirect("https://" + oauth.baseUrl + oauth.authEndpoint + "?" + querystring.stringify(authParams));
+    res.redirect(`https://${Auth.baseUrl}/${Auth.authEndpoint}?${querystring.stringify(authParams)}`);
   });
 };
 router.use("/", authorize);
 
+/**
+ * Entry point function for removing a user from the database
+ * @param user 
+ * @param callback 
+ */
 export function disconnect(user, callback) {
   deleteToken(user).then(() => callback()).catch((error) => callback(error));
 }
 
-function refreshToken(user, refresh, res) {
-  newToken(refresh, true, (err, accessToken, refreshToken, results) => {
+/**
+ * Gets a new token, then replaces the expired token with the new one
+ * @param user the user to replace a token for
+ * @param refresh the refresh token
+ * @param res the response to be sent
+ */
+function refreshToken(user: string, refresh: string, res: Express.Response) {
+  newToken(user, refresh, true, (err: any, token: Token) => {
     if (err) {
       console.log(err);
     } else {
       deleteToken(user)
-        .then(() => saveToken(Token.getInstance(user, accessToken, results["expires_in"], refreshToken)))
+        .then(() => saveToken(token))
         .then(() => res.send("success"));
     }
   });
 };
 
+/**
+ * Removes the token for a given user from the db
+ * @param id the UID to remove from the db
+ */
 async function deleteToken(id: string): Bluebird<void> {
   return connection.delete().from(Token.TableName).where(Token.IdKey, id).then(() => {
     console.log(`Removed: ${id}`);
   });
 }
 
+/**
+ * Insert a token into the database
+ * @param token the token to be added to the db
+ */
 async function saveToken(token: Token): Bluebird<void> {
   return connection.insert(token).into(Token.TableName).then(() => {
     console.log(`Added: ${JSON.stringify(token)}`);

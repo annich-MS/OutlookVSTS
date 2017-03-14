@@ -1,5 +1,5 @@
 import * as Authenticate from "./authenticate";
-import Token from "../db/token";
+import Token from "../auth/token";
 let express = require("express");
 let fs = require("fs");
 let url = require("url");
@@ -11,7 +11,7 @@ let stream = require("string-to-stream");
 let flow = require("xml-flow");
 
 let router = express.Router({ mergeParams: true });
-module.exports = router;
+export default router;
 let API1_0 = "1.0";
 let API2_0_Preview = "2.0-preview.1";
 let API2_0 = "2.0";

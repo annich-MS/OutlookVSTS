@@ -1,8 +1,8 @@
 import authenticate from "./routes/authenticate";
+import rest from "./routes/vstsRest";
 let path = require("path");
 let express = require("express");
 let bodyParser = require("body-parser");
-let rest = require("./routes/VstsRest");
 let PROD = process.env.prod;
 
 let app = express();
@@ -33,8 +33,8 @@ if (PROD != true) {
   let fs = require("fs");
 
   const options = {
-    cert: fs.readFileSync("secrets/cert.pem"),
-    key: fs.readFileSync("secrets/key.pem"),
+    cert: fs.readFileSync("cert.pem"),
+    key: fs.readFileSync("key.pem"),
   };
 
   https.createServer(options, app).listen(port, function () {

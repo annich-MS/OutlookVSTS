@@ -64,3 +64,5 @@ public/js/app.js.map
 bin/
 dev.sqlite3
 .vscode
+# ssl tokens
+*.pem
