@@ -63,3 +63,4 @@ public/js/app.js
 public/js/app.js.map
 bin/
 dev.sqlite3
+.vscode
