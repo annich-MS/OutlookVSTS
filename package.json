@@ -21,6 +21,18 @@
     "url": "git+https://github.com/annich-ms/OutlookVSTS"
   },
   "dependencies": {
+    "body-parser": "^1.15.1",
+    "express": "^4.13.4",
+    "jsonwebtoken": "^7.1.9",
+    "knex": "^0.12.7",
+    "mssql": "^3.3.0",
+    "request": "*",
+    "request-promise": "^4.1.1",
+    "string-to-stream": "^1.1.0",
+    "xml-flow": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/es6-shim": "^0.31.32",
     "@types/jquery": "^2.0.40",
     "@types/jsonwebtoken": "^7.2.0",
     "@types/knex": "0.0.41",
@@ -29,15 +41,12 @@
     "@types/react-dom": "^0.14.22",
     "@types/react-redux": "^4.4.36",
     "@types/react-router": "^3.0.0",
-    "body-parser": "^1.15.1",
-    "debug": "^2.6.3",
-    "express": "^4.13.4",
-    "http": "*",
-    "https": "*",
+    "awesome-typescript-loader": "^3.1.2",
+    "es6-shim": "^0.35.3",
+    "gulp": "^3.9.1",
+    "gulp-sourcemaps": "^2.4.1",
+    "gulp-typescript": "^3.1.5",
     "jquery": "^3.1.1",
-    "jsonwebtoken": "^7.1.9",
-    "knex": "^0.12.7",
-    "mssql": "^3.3.0",
     "office-ui-fabric-react": "^1.5.5",
     "react": "^0.14.7",
     "react-contenteditable": "^2.0.2",
@@ -47,21 +56,14 @@
     "react-router": "^2.4.1",
     "redux": "^3.1.5",
     "redux-thunk": "^2.2.0",
-    "request": "*",
-    "request-promise": "^4.1.1",
     "rimraf": "^2.5.2",
     "source-map": "^0.5.6",
     "source-map-loader": "^0.1.6",
-    "string-to-stream": "^1.1.0",
-    "tedious": "^1.14.0",
-    "ts-loader": "^2.0.0",
+    "sqlite3": "^3.1.8",
     "tslint": "^3.3.0",
     "tslint-loader": "^2.1.0",
     "typescript": "^2.1.5",
     "webpack": "^1.13.2",
-    "xml-flow": "^1.0.1"
-  },
-  "devDependencies": {
-    "sqlite": "^2.3.0"
+    "webpack-stream": "^3.2.0"
   }
 }

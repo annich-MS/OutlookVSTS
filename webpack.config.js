@@ -1,7 +1,8 @@
 module.exports = {
     entry: "./src/client/Index.tsx",
     output: {
-        filename: "./public/js/app.js",
+        filename: "app.js",
+        path: __dirname + "/public/js"
     },
 
     // Enable sourcemaps for debugging webpack's output.
@@ -14,9 +15,8 @@ module.exports = {
 
     module: {
         loaders: [
-            // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
-            { test: /\.tsx?$/, loader: "ts-loader" },
-            { test: /\.json$/, loader: "json" } 
+            // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
+            { test: /\.tsx?$/, loader: "awesome-typescript-loader" }
         ],
 
         preLoaders: [

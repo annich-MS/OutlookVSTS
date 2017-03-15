@@ -53,7 +53,6 @@ class Main extends React.Component<{}, {}> {
   }
 
   public render(): React.ReactElement<Provider> {
-    this.addPolyfill();
     if (this.getDomain().indexOf('outlookvsts') !== -1) {
       return (<Dogfood />);
     }
@@ -70,34 +69,6 @@ class Main extends React.Component<{}, {}> {
     }
   }
 
-  private addPolyfill(): void {
-    if (!String.prototype.includes) {
-      String.prototype.includes = function(): boolean {
-        'use strict';
-        return String.prototype.indexOf.apply(this, arguments) !== -1;
-      };
-    }
-    if (typeof Object.assign !== 'function') {
-      Object.assign = function(target: Object): Object {
-        if (target == null) {
-          throw new TypeError('Cannot convert undefined or null to object');
-        }
-
-        target = Object(target);
-        for (let index: number = 1; index < arguments.length; index++) {
-          let source: any = arguments[index];
-          if (source != null) {
-            for (let key in source) {
-              if (Object.prototype.hasOwnProperty.call(source, key)) {
-                target[key] = source[key];
-              }
-            }
-          }
-        }
-        return target;
-      };
-    }
-  }
 }
 
 ReactDOM.render(<Main />, document.getElementById('app'));

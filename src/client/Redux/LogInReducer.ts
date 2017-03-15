@@ -1,4 +1,4 @@
-import { IUserProfileAction, SettingsInfo} from './LogInActions';
+import { IUserProfileAction, SettingsInfo} from "./LogInActions";
 
 /**
  * Represents the currently selected area path and lists in the store
@@ -34,9 +34,9 @@ const initialSettingsState: ISettingsAndListsReducer = {
       teamList: [],
     },
     settings: {
-      account: '',
-      project: '',
-      team: '',
+      account: "",
+      project: "",
+      team: "",
     },
 };
 
@@ -47,15 +47,15 @@ const initialSettingsState: ISettingsAndListsReducer = {
 export function updateSettingsAndListsReducer(state: ISettingsAndListsReducer = initialSettingsState,
                                               action: any): ISettingsAndListsReducer {
   switch (action.type) {
-    case 'ACCOUNT_SETTINGS':
+    case "ACCOUNT_SETTINGS":
       return Object.assign({}, state, {
         lists: {accountList: action.accountList, projectList: state.lists.projectList, teamList: state.lists.teamList},
         settings: {account: action.account, project: state.settings.project, team: state.settings.team}});
-    case 'PROJECT_SETTINGS':
+    case "PROJECT_SETTINGS":
       return Object.assign({}, state, {
         lists: {accountList: state.lists.accountList, projectList: action.projectList, teamList: state.lists.teamList},
         settings: {account: state.settings.account, project: action.project, team: state.settings.team}});
-    case 'TEAM_SETTINGS':
+    case "TEAM_SETTINGS":
       return Object.assign({}, state, {
         lists: {accountList: state.lists.accountList, projectList: state.lists.projectList, teamList: action.teamList},
         settings: {account: state.settings.account, project: state.settings.project, team: action.team}});
@@ -65,7 +65,7 @@ export function updateSettingsAndListsReducer(state: ISettingsAndListsReducer = 
 }
 
 /**
- * Represents the user's profile information in the store
+ * Represents the user"s profile information in the store
  * @interface IUserProfileReducer
  */
 export interface IUserProfileReducer { // naming convention here??? 
@@ -78,13 +78,13 @@ export interface IUserProfileReducer { // naming convention here???
 }
 
 /**
- * Represents the initial state for the user's profile information
+ * Represents the initial state for the user"s profile information
  * @type {IUserProfileReducer}
  */
 const initialStateUser: IUserProfileReducer = {
-      displayName: '',
-      email: '',
-      memberID: '',
+      displayName: "",
+      email: "",
+      memberID: "",
 };
 
 /**
@@ -93,7 +93,7 @@ const initialStateUser: IUserProfileReducer = {
  */
 export function updateUserProfileReducer(state: IUserProfileReducer = initialStateUser, action: IUserProfileAction): IUserProfileReducer {
   switch (action.type) {
-    case 'USER_PROFILE':
+    case "USER_PROFILE":
       return Object.assign({}, state, {displayName: action.displayName, email: action.email, memberID: action.memberID});
     default:
       return state;

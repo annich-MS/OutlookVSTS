@@ -4,7 +4,7 @@ import { Rest, RestError, WorkItemInfo, IStringCallback} from '../RestHelpers/re
 import { updateStage, Stage, updateSave } from '../Redux/WorkItemActions';
 import { IWorkItem } from '../Redux/WorkItemReducer';
 import { updateNotificationAction, updatePageAction, PageVisibility, PopulationStage, NotificationType } from '../Redux/FlowActions';
-import { IUserProfileReducer, ISettingsAndListsReducer } from '../Redux/LogInReducer';
+import { IUserProfileReducer, ISettingsAndListsReducer } from '../Redux/LoginReducer';
 import { PrimaryButton } from 'office-ui-fabric-react/lib/button';
 
 type Message = Office.MessageRead;
