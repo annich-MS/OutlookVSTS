@@ -24,7 +24,7 @@
     "@types/jquery": "^2.0.40",
     "@types/jsonwebtoken": "^7.2.0",
     "@types/knex": "0.0.41",
-    "@types/office-js": "0.0.37",
+    "@types/office-js": "0.0.39",
     "@types/react": "^0.14.41",
     "@types/react-dom": "^0.14.22",
     "@types/react-redux": "^4.4.36",
@@ -51,7 +51,6 @@
     "rimraf": "^2.5.2",
     "source-map": "^0.5.6",
     "source-map-loader": "^0.1.6",
-    "sqlite": "^2.3.0",
     "string-to-stream": "^1.1.0",
     "tedious": "^1.14.0",
     "ts-loader": "^2.0.0",
@@ -60,5 +59,8 @@
     "typescript": "^2.1.5",
     "webpack": "^1.13.2",
     "xml-flow": "^1.0.1"
+  },
+  "devDependencies": {
+    "sqlite": "^2.3.0"
   }
 }
