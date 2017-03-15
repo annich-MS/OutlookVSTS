@@ -93,7 +93,7 @@ echo select node version
 call :SelectNodeVersion
 
 echo npm install dev
-call :ExecuteCmd !NPM_CMD! install
+call :ExecuteCmd !NPM_CMD! install --only=dev
 
 echo gulp build
 call :ExecuteCmd gulp
