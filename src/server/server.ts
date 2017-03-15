@@ -3,7 +3,8 @@ import rest from "./routes/vstsRest";
 let path = require("path");
 let express = require("express");
 let bodyParser = require("body-parser");
-let PROD = process.env.prod;
+
+const DevMode: boolean = process.env.NODE_ENV === "development";
 
 let app = express();
 let port = process.env.PORT || 3001;
@@ -28,7 +29,7 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "public/html", "index.html"));
 });
 
-if (PROD != true) {
+if (DevMode) {
   let https = require("https");
   let fs = require("fs");
 
