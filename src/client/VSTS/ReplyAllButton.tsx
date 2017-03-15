@@ -75,7 +75,7 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, { savi
         props.dispatch(updateNotificationAction(NotificationType.Success, 'Reply Sent!'));
       });
     } else {
-      (Office.context.mailbox.item as Office.Types.MessageRead).displayReplyAllForm(this.addSignature(this.props.workItemHyperlink));
+      (Office.context.mailbox.item as Office.MessageRead).displayReplyAllForm(this.addSignature(this.props.workItemHyperlink));
     }
   }
 }

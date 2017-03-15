@@ -327,7 +327,7 @@ export abstract class Rest {
     public static autoReply(msg: string, callback: IRestCallback): void {
         Office.context.mailbox.getCallbackTokenAsync((asyncResult: Office.AsyncResult) => {
             let args: any = {
-                item: Office.context.mailbox.item.itemId,
+                item: (Office.context.mailbox.item as Office.ItemRead).itemId,
                 token: asyncResult.value,
             };
             let body: string = JSON.stringify({'Comment': msg});

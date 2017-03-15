@@ -80,7 +80,7 @@ export class VSTS extends React.Component<IVSTSProps, any> {
   public iosInit(): void {
     if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
       this.props.dispatch(updateAddAsAttachment(false));
-      (Office.context.mailbox.item as Office.Types.MessageCompose).body.getAsync(Office.CoercionType.Text, (result: Office.AsyncResult) => {
+      (Office.context.mailbox.item as Office.MessageCompose).body.getAsync(Office.CoercionType.Text, (result: Office.AsyncResult) => {
         this.props.dispatch(updateDescription(result.value.trim()));
       });
     }

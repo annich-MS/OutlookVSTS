@@ -26,7 +26,7 @@ const connections: IConnection = {
       user: process.env.DB_USER,
     },
     migrations: {
-      directory: __dirname + "bin/db/migrations",
+      directory: `${__dirname}/migrations`,
     },
     pool: {
       max: 10,

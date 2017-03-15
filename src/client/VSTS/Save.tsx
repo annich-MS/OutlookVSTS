@@ -7,7 +7,7 @@ import { updateNotificationAction, updatePageAction, PageVisibility, PopulationS
 import { IUserProfileReducer, ISettingsAndListsReducer } from '../Redux/LogInReducer';
 import { PrimaryButton } from 'office-ui-fabric-react/lib/button';
 
-type Message = Office.Types.MessageRead;
+type Message = Office.MessageRead;
 
 /**
  * Represents the Save Properties
@@ -77,7 +77,7 @@ export class Save extends React.Component<ISaveProps, {}> {
   }
 
   public uploadAttachment(token: string, callback: IStringCallback): void {
-    let id: string = Office.context.mailbox.item.itemId;
+    let id: string = (Office.context.mailbox.item as Office.MessageRead).itemId;
     let url: string = Office.context.mailbox.ewsUrl || 'https://outlook.office365.com/EWS/Exchange.asmx';
     let account: string = this.props.currentSettings.settings.account;
 
