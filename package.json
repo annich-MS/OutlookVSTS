@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "body-parser": "^1.15.1",
+    "debug": "^2.6.3",
     "express": "^4.15.2",
     "jsonwebtoken": "^7.1.9",
     "knex": "^0.12.7",
