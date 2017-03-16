@@ -50,13 +50,14 @@ export class SignInButton extends React.Component<ISignInProps, {}> {
    * @returns {void}
    */
   public authOnClick(): void {
-    Rest.getUser(function (user: string): void {
+    Rest.getUser((user: string): void => {
       Office.context.ui.displayDialogAsync(
         `https://${document.location.host}/authenticate?user=${user}`,
         { height: 50, width: 50 },
         (result: Office.AsyncResult) => {
           let dialog: Office.DialogHandler = result.value;
           dialog.addEventHandler(Office.EventType.DialogMessageReceived, (message: Office.AsyncResult) => {
+            console.log(message.value);
             this.props.dispatch(updateAuthAction(AuthState.Request));
             this.refreshAuth();
             dialog.close();
