@@ -7,15 +7,14 @@ import * as Knex from "knex";
 import * as querystring from "querystring";
 
 import connections from "../auth/connections";
-import Token from "../auth/token";
+import Token, {ServerTokenData} from "../auth/token";
 import AuthInfo from "../auth/authInfo";
 
-const DevMode: boolean = process.env.NODE_ENV === "development";
 const Salt: number[] = JSON.parse(process.env.SALT);
 const Auth: AuthInfo = AuthInfo.getInstance();
 
-const RefreshMinimumInHours: number = 1;
-const RefreshMinimum: number = RefreshMinimumInHours * 60 * 60 * 1000; // min/hr * sec/min * ms/sec => ms/hr
+const RefreshMinimumInMinutes: number = 15;
+const RefreshMinimum: number = RefreshMinimumInMinutes * 60 * 1000; // sec/min * ms/sec => ms/min
 
 const connection: Knex = Knex(connections[process.env.NODE_ENV]);
 connection.migrate.latest();
@@ -144,8 +143,8 @@ function newToken(uid: string, assertion: string, refresh: boolean, callback: (e
 
     response.on("end", function () {
       if (!errored) {
-        let result = JSON.parse(str);
-        callback(null, Token.getInstance(uid, result.access_token, result.expires_in, result.refresh_token));
+        let result: ServerTokenData = JSON.parse(str);
+        callback(null, Token.getInstance(uid, result));
       }
     });
 
@@ -167,8 +166,7 @@ function db(req: Express.Request, res: Express.Response) {
   getUID(req.query.user, (uid) => {
     getToken(uid, (token: Token) => {
       if (token != null) {
-        let expiryLimit = new Date();
-        expiryLimit.setMinutes(expiryLimit.getMinutes() + RefreshMinimum);
+        let expiryLimit: number = Date.now() + RefreshMinimum;
         if (token.expiry > expiryLimit) { // if the token doesn't expire before our limit
           res.send("success");
         } else {
@@ -252,9 +250,7 @@ function refreshToken(user: string, refresh: string, res: Express.Response) {
  * @param id the UID to remove from the db
  */
 async function deleteToken(id: string): Bluebird<void> {
-  return connection.delete().from(Token.TableName).where(Token.IdKey, id).then(() => {
-    console.log(`Removed: ${id}`);
-  });
+  return connection.delete().from(Token.TableName).where(Token.IdKey, id);
 }
 
 /**
@@ -262,7 +258,5 @@ async function deleteToken(id: string): Bluebird<void> {
  * @param token the token to be added to the db
  */
 async function saveToken(token: Token): Bluebird<void> {
-  return connection.insert(token).into(Token.TableName).then(() => {
-    console.log(`Added: ${JSON.stringify(token)}`);
-  });
+  return connection.insert(token).into(Token.TableName);
 }
