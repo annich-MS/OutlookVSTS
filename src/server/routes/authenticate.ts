@@ -18,7 +18,7 @@ const RefreshMinimumInHours: number = 1;
 const RefreshMinimum: number = RefreshMinimumInHours * 60 * 60 * 1000; // min/hr * sec/min * ms/sec => ms/hr
 
 const connection: Knex = Knex(connections[process.env.NODE_ENV]);
-connection.migrate.latest(connections);
+connection.migrate.latest();
 
 const router = Express.Router({ mergeParams: true });
 export default router;
