@@ -18,13 +18,13 @@ export default class Token {
 
     public readonly id: string;
     public readonly token: string;
-    public readonly expiry: number;
+    public readonly expiry: number | Date;
     public readonly refresh: string;
 
     private constructor(id: string, token: string, expiry: number, refresh: string) {
         this.id = id;
         this.token = token;
-        this.expiry = expiry;
+        this.expiry = new Date(expiry);
         this.refresh = refresh;
     }
 

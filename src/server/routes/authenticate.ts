@@ -167,6 +167,7 @@ function db(req: Express.Request, res: Express.Response) {
     getToken(uid, (token: Token) => {
       if (token != null) {
         let expiryLimit: number = Date.now() + RefreshMinimum;
+        console.log(token.expiry);
         if (token.expiry > expiryLimit) { // if the token doesn't expire before our limit
           res.send("success");
         } else {
