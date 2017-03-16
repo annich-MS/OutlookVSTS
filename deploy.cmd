@@ -92,6 +92,8 @@ echo Handling node.js deployment.
 echo select node version
 call :SelectNodeVersion
 
+call :ExecuteCmd rimraf .\node_modules\
+
 echo npm install dev
 call :ExecuteCmd !NPM_CMD! install
 
