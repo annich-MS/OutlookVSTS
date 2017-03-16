@@ -48,7 +48,7 @@
     "gulp-sourcemaps": "^2.4.1",
     "gulp-typescript": "^3.1.5",
     "jquery": "^3.1.1",
-    "office-ui-fabric-react": "^2.5.0",
+    "office-ui-fabric-react": "^2.2.1",
     "react": "^0.14.7",
     "react-contenteditable": "^2.0.2",
     "react-dom": "^0.14.7",
