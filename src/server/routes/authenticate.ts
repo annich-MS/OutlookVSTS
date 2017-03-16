@@ -105,7 +105,7 @@ export function getToken(uid: string, callback: (token: Token) => any): void {
     } else {
       let token: Token = output[0]; // There should only be 1 row
 
-      callback(token);
+      callback(Token.getSanitized(token));
     }
 
   });
@@ -167,7 +167,6 @@ function db(req: Express.Request, res: Express.Response) {
     getToken(uid, (token: Token) => {
       if (token != null) {
         let expiryLimit: number = Date.now() + RefreshMinimum;
-        console.log(token.expiry);
         if (token.expiry > expiryLimit) { // if the token doesn't expire before our limit
           res.send("success");
         } else {

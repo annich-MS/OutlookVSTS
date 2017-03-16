@@ -16,6 +16,13 @@ export default class Token {
         return new Token(id, data.access_token, expiry, data.refresh_token);
     }
 
+    /**
+     * Cleans up expiry from db fromat to JS date object
+     */
+    public static getSanitized(token: Token): Token {
+        return new Token(token.id, token.token, (new Date(token.expiry).getTime()), token.refresh);
+    }
+
     public readonly id: string;
     public readonly token: string;
     public readonly expiry: number | Date;
