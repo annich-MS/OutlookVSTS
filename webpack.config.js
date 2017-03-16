@@ -1,5 +1,5 @@
 module.exports = {
-    entry: "./src/client/Index.tsx",
+    entry: ["babel-polyfill", "./src/client/Index.tsx"],
     output: {
         filename: "app.js",
         path: __dirname + "/public/js"

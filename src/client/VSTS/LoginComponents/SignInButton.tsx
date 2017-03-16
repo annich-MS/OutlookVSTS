@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { AuthState, updateAuthAction, updateNotificationAction, NotificationType } from '../../Redux/FlowActions';
-import { updateUserProfileAction} from '../../Redux/LogInActions';
-import { Rest, RestError, UserProfile} from '../../RestHelpers/rest';
-import { Auth} from '../authMM';
+import { updateUserProfileAction } from '../../Redux/LogInActions';
+import { Rest, RestError, UserProfile } from '../../RestHelpers/rest';
+import { Auth } from '../authMM';
 import { RoamingSettings } from '../RoamingSettings';
 import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
 
@@ -12,16 +12,16 @@ import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
  * @interface ISignInProps
  */
 interface ISignInProps {
-    /**
-     * intermediate to dispatch actions to update the global store
-     * @type {any}
-     */
-    dispatch?: any;
-    /**
-     * interval for checking the database for user token
-     * @type {number}
-     */
-    authState?: AuthState;
+  /**
+   * intermediate to dispatch actions to update the global store
+   * @type {any}
+   */
+  dispatch?: any;
+  /**
+   * interval for checking the database for user token
+   * @type {number}
+   */
+  authState?: AuthState;
 }
 
 /**
@@ -30,7 +30,7 @@ interface ISignInProps {
  */
 function mapStateToProps(state: any): ISignInProps {
   return ({
-      authState: state.controlState.authState,
+    authState: state.controlState.authState,
   });
 }
 
@@ -41,7 +41,7 @@ function mapStateToProps(state: any): ISignInProps {
  * Renders sign in button to connect to authentication flow
  * @class {SignInButton} 
  */
-export class SignInButton extends React.Component<ISignInProps,  {}> {
+export class SignInButton extends React.Component<ISignInProps, {}> {
 
   private authInterval: any = '';
   /**
@@ -50,10 +50,10 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
    * @returns {void}
    */
   public authOnClick(): void {
-    Rest.getUser( (user: string) => {
+    Rest.getUser(function (user: string): void {
       Office.context.ui.displayDialogAsync(
-        'https://' + document.location.host + '/authenticate?user=' + user,
-        {height: 50, width: 50},
+        `https://${document.location.host}/authenticate?user=${user}`,
+        { height: 50, width: 50 },
         (result: Office.AsyncResult) => {
           let dialog: Office.DialogHandler = result.value;
           dialog.addEventHandler(Office.EventType.DialogMessageReceived, (message: Office.AsyncResult) => {
@@ -92,7 +92,7 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
           RoamingSettings.GetInstance().save();
           dispatch(updateUserProfileAction(name, email, profile.id));
           dispatch(updateAuthAction(AuthState.Authorized));
-      });
+        });
       }
     });
   }
@@ -106,10 +106,10 @@ export class SignInButton extends React.Component<ISignInProps,  {}> {
       textAlign: 'center',
     };
 
-    return(
+    return (
       <div style={style_button}>
-      <PrimaryButton onClick = {this.authOnClick.bind(this)}> Sign in to get started </PrimaryButton>
+        <PrimaryButton onClick={this.authOnClick.bind(this)}> Sign in to get started </PrimaryButton>
       </div>);
   }
-  }
+}
 
