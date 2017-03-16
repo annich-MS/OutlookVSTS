@@ -5,7 +5,7 @@ import { updateStage, Stage, updateSave } from '../Redux/WorkItemActions';
 import { IWorkItem } from '../Redux/WorkItemReducer';
 import { updateNotificationAction, updatePageAction, PageVisibility, PopulationStage, NotificationType } from '../Redux/FlowActions';
 import { IUserProfileReducer, ISettingsAndListsReducer } from '../Redux/LoginReducer';
-import { PrimaryButton } from 'office-ui-fabric-react/lib/button';
+import { Button, ButtonType } from 'office-ui-fabric-react';
 
 type Message = Office.MessageRead;
 
@@ -133,9 +133,10 @@ export class Save extends React.Component<ISaveProps, {}> {
     return (
       <div style={{ textAlign: 'center' }} >
         <br/>
-        <PrimaryButton
+        <Button
+          buttonType= {ButtonType.primary}
           disabled = {!this.shouldBeEnabled() }
-          onClick={this.handleSave.bind(this) } > {text} </PrimaryButton>
+          onClick={this.handleSave.bind(this) } > {text} </Button>
       </div>
     );
   }

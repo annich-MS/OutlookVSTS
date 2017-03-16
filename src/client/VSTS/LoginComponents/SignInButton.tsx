@@ -5,7 +5,7 @@ import { updateUserProfileAction } from '../../Redux/LogInActions';
 import { Rest, RestError, UserProfile } from '../../RestHelpers/rest';
 import { Auth } from '../authMM';
 import { RoamingSettings } from '../RoamingSettings';
-import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
+import { Button, ButtonType } from 'office-ui-fabric-react';
 
 /**
  * Properties needed for the SignInButton component
@@ -109,7 +109,7 @@ export class SignInButton extends React.Component<ISignInProps, {}> {
 
     return (
       <div style={style_button}>
-        <PrimaryButton onClick={this.authOnClick.bind(this)}> Sign in to get started </PrimaryButton>
+        <Button buttonType={ButtonType.primary} onClick={this.authOnClick.bind(this)}> Sign in to get started </Button>
       </div>);
   }
 }
