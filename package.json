@@ -7,9 +7,8 @@
   "description": "An add-in for turning emails into bugs",
   "main": "index.js",
   "scripts": {
-    "build": "npm run webpack && npm run tsc",
-    "tsc": "node_modules\\.bin\\tsc.cmd",
-    "webpack": "node_modules\\.bin\\webpack.cmd",
+    "build": "npm run gulp",
+    "gulp": "node_modules\\.bin\\gulp.cmd",
     "rimraf": "node_modules\\.bin\\rimraf.cmd node_modules",
     "start": "node bin\\server.js",
     "test": "echo \"Error: no test specified\" && exit 1"

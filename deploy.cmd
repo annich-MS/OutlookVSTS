@@ -97,8 +97,8 @@ call :ExecuteCmd rimraf .\node_modules\
 echo npm install dev
 call :ExecuteCmd !NPM_CMD! install
 
-echo gulp build
-call :ExecuteCmd gulp
+echo npm build
+call :ExecuteCmd !NPM_CMD! build 
 
 IF /I "%IN_PLACE_DEPLOYMENT%" NEQ "1" (
   call :ExecuteCmd "%KUDU_SYNC_CMD%" -v 50 -f "%DEPLOYMENT_SOURCE%" -t "%DEPLOYMENT_TARGET%" -n "%NEXT_MANIFEST_PATH%" -p "%PREVIOUS_MANIFEST_PATH%" -i ".git;.hg;.deployment;deploy.cmd;config;src;Manifests;typings;node_modules"
