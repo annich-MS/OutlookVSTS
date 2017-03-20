@@ -95,7 +95,7 @@ call :SelectNodeVersion
 call :ExecuteCmd rimraf .\node_modules\
 
 echo npm install dev
-call :ExecuteCmd !NPM_CMD! install
+call :ExecuteCmd !NPM_CMD! install --only=dev
 
 echo npm build
 call :ExecuteCmd !NPM_CMD! run gulp 
@@ -107,7 +107,7 @@ IF /I "%IN_PLACE_DEPLOYMENT%" NEQ "1" (
 
 echo npm install 
 call cd %DEPLOYMENT_TARGET%
-call :ExecuteCmd !NPM_CMD! install --only=production
+call :ExecuteCmd !NPM_CMD! install
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
