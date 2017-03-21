@@ -9,9 +9,11 @@
   margin-bottom: 8px;
   border: 1px solid #c8c8c8;
   padding: 6px 12px 7px 12px;
+  max-height: 200px;
 
   word-wrap: break-word;
   overflow-wrap: break-word;
+  overflow: auto;
   white-space: normal;
 }
 
