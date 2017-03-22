@@ -1,11 +1,11 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import { Store, createStore, applyMiddleware} from 'redux';
-import { Provider } from 'react-redux';
-import { Dogfood } from './Dogfood/dogfood';
-import { VSTS } from './VSTS/VSTS';
-import { Done } from './Authenticate/done';
-import { completeAddInReducer } from './Redux/GlobalReducer';
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import { Store, createStore, applyMiddleware} from "redux";
+import { Provider } from "react-redux";
+import { Dogfood } from "./Dogfood/dogfood";
+import { VSTS } from "./VSTS/VSTS";
+import Done from "./done";
+import { completeAddInReducer } from "./Redux/GlobalReducer";
 import thunkMiddleware from 'redux-thunk';
 declare const require: (name: String) => any;
 
@@ -33,42 +33,32 @@ function configureStore(): Store {
 
 const store: Store = configureStore();
 
-
 class Main extends React.Component<{}, {}> {
 
-  public getRoute(): string {
+  public render(): React.ReactElement<Provider> {
+    const route: string = this.getRoute();
+    switch (route) {
+      case "dogfood":
+        return(<Dogfood />);
+      case "vsts":
+        return(<Provider store = {store}><VSTS /></Provider>);
+      case "done":
+        return(<Done />);
+      default:
+        return(<div>Route: "{route}" is not a valid route!</div>);
+    }
+  }
+
+  private getRoute(): string {
     let url: string = document.URL;
-    let strings: string[] = url.split('/');
+    let strings: string[] = url.split("/");
     let output: string = strings[3];
-    if (output.includes('?')) {
-      output = output.slice(0, strings[3].indexOf('?'));
+    if (output.includes("?")) {
+      output = output.slice(0, strings[3].indexOf("?"));
     }
     return output;
   }
 
-  public getDomain(): string {
-    let url: string = document.URL;
-    let strings: string[] = url.split('/');
-    return strings[2];
-  }
-
-  public render(): React.ReactElement<Provider> {
-    if (this.getDomain().indexOf('outlookvsts') !== -1) {
-      return (<Dogfood />);
-    }
-    const route: string = this.getRoute();
-    switch (route) {
-      case 'dogfood':
-        return(<Dogfood />);
-      case 'vsts':
-        return(<Provider store = {store}><VSTS /></Provider>);
-      case 'done':
-        return(<Done />);
-      default:
-        return(<div>Route: '{route}' is not a valid route!</div>);
-    }
-  }
-
 }
 
-ReactDOM.render(<Main />, document.getElementById('app'));
+ReactDOM.render(<Main />, document.getElementById("app"));
