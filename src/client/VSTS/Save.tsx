@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import { Rest, RestError, WorkItemInfo, IStringCallback} from '../RestHelpers/rest';
+import { Rest, RestError, WorkItemInfo, IStringCallback} from '../rest';
 import { updateStage, Stage, updateSave } from '../Redux/WorkItemActions';
 import { IWorkItem } from '../Redux/WorkItemReducer';
 import { updateNotificationAction, updatePageAction, PageVisibility, PopulationStage, NotificationType } from '../Redux/FlowActions';

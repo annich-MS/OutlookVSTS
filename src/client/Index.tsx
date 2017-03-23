@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Store, createStore, applyMiddleware} from "redux";
 import { Provider } from "react-redux";
-import { Dogfood } from "./Dogfood/dogfood";
+import { Dogfood } from "./dogfood";
 import { VSTS } from "./VSTS/VSTS";
 import Done from "./done";
 import { completeAddInReducer } from "./Redux/GlobalReducer";

@@ -20,11 +20,11 @@ import {
   updatePopulatingAction,
   PopulationStage,
 } from '../Redux/FlowActions';
-import { UserProfile } from '../RestHelpers/rest';
+import { UserProfile } from '../rest';
 import { CreateWorkItem } from './CreateWorkItem';
 import { QuickActions } from './QuickActions';
 import { RoamingSettings } from './RoamingSettings';
-import { Rest, RestError } from '../RestHelpers/rest';
+import { Rest, RestError } from '../rest';
 
 interface IRefreshCallback { (): void; }
 interface IUserProfileCallback { (profile: UserProfile): void; }

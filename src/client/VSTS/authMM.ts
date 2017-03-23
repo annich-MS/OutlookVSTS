@@ -1,4 +1,4 @@
-import { Rest } from '../RestHelpers/rest';
+import { Rest } from '../rest';
 
 /**
  * interface for callback

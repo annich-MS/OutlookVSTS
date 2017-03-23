@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { updateAccountSettingsAction, SettingsInfo } from '../../Redux/LogInActions';
 import { updateNotificationAction, updatePopulatingAction, PopulationStage, NotificationType } from '../../Redux/FlowActions';
-import { Rest, RestError, Account } from '../../RestHelpers/rest';
+import { Rest, RestError, Account } from '../../rest';
 import { RoamingSettings } from '../RoamingSettings';
 import { Dropdown } from 'office-ui-fabric-react';
 

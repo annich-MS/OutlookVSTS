@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Provider, connect } from 'react-redux';
 import { AuthState, updateAuthAction, updateNotificationAction, NotificationType } from '../../Redux/FlowActions';
 import { updateUserProfileAction } from '../../Redux/LogInActions';
-import { Rest, RestError, UserProfile } from '../../RestHelpers/rest';
+import { Rest, RestError, UserProfile } from '../../rest';
 import { Auth } from '../authMM';
 import { RoamingSettings } from '../RoamingSettings';
 import { Button, ButtonType } from 'office-ui-fabric-react';

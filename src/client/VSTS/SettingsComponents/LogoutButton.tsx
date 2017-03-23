@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Provider, connect } from 'react-redux';
-import { Rest, RestError } from '../../RestHelpers/rest';
+import { Rest, RestError } from '../../rest';
 import { AuthState, updateAuthAction, updateNotificationAction, NotificationType } from '../../Redux/FlowActions';
 import { RoamingSettings } from '../RoamingSettings';
 import { Button, ButtonType } from 'office-ui-fabric-react';

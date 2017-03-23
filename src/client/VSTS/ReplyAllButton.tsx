@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Provider } from 'react-redux';
 import { Button, ButtonType, Spinner, SpinnerType } from 'office-ui-fabric-react';
 import { updateNotificationAction, NotificationType } from '../Redux/FlowActions';
-import { Rest } from '../RestHelpers/rest';
+import { Rest } from '../rest';
 import { Constants } from './Constants';
 
 /**
