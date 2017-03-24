@@ -1,21 +1,15 @@
-import * as React from 'react';
-import { Provider, connect } from 'react-redux';
-import { updatePageAction, PageVisibility, updateNotificationAction, NotificationType } from '../Redux/FlowActions';
-import { Button, ButtonType } from 'office-ui-fabric-react';
+import * as React from "react";
+import { Button, ButtonType } from "office-ui-fabric-react";
+import NavigationStore from "../stores/navigationStore";
+import NavigationPage from "../models/navigationPage";
 
 /**
  * Represents the Gear Properties
- * @interface IGearProps
  */
 export interface IGearProps {
-  /**
-   * dispatch to map dispatch to props
-   * @type {any}
-   */
-  dispatch?: any;
+  navigationStore: NavigationStore;
 }
 
-@connect()
 /**
  * Renders the Gear Icon and the button underneath
  * @class { Gear }
@@ -24,10 +18,10 @@ export class Gear extends React.Component<IGearProps, {}> {
   /**
    * Renders the Gear Icon and the button underneath
    */
-  public render(): React.ReactElement<Provider> {
+  public render(): JSX.Element {
     return (
-      <div style={{float: 'right'}}>
-        <Button buttonType={ButtonType.icon} icon='Settings' title='Settings' onClick={this.handleGearClick}/>
+      <div style={{float: "right"}}>
+        <Button buttonType={ButtonType.icon} icon="Settings" title="Settings" onClick={this.handleGearClick.bind(this)}/>
       </div>
     );
   }
@@ -36,8 +30,8 @@ export class Gear extends React.Component<IGearProps, {}> {
    * Dispatches the action to change the pageVisibility value in the store
    * @ returns {void}
    */
-  private handleGearClick: () => void = () => {
-    this.props.dispatch(updateNotificationAction(NotificationType.Hide, ''));
-    this.props.dispatch(updatePageAction(PageVisibility.Settings));
+  private handleGearClick(): void {
+    this.props.navigationStore.clearNotification();
+    this.props.navigationStore.navigate(NavigationPage.Settings);
   }
 }

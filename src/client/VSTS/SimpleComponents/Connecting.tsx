@@ -1,6 +1,5 @@
-import * as React from 'react';
-import { Provider } from 'react-redux';
-import {Spinner, SpinnerType} from 'office-ui-fabric-react';
+import * as React from "react";
+import { Spinner, SpinnerType } from "office-ui-fabric-react";
 
 /**
  * Dumb component
@@ -12,25 +11,25 @@ export class Connecting extends React.Component<{}, {}> {
   /**
    * Renders Connecting page
    */
-  public render(): React.ReactElement<Provider> {
+  public render(): JSX.Element {
     let overlayStyle: any = {
       bottom: 0,
-      display: 'block',
+      display: "block",
       left: 0,
-      position: 'absolute',
+      position: "absolute",
       right: 0,
       top: 0,
     };
     let divStyle: any = {
-      alignItems: 'center',
-      display: 'flex',
-      height: '100%',
-      justifyContent: 'center',
+      alignItems: "center",
+      display: "flex",
+      height: "100%",
+      justifyContent: "center",
     };
     return (
       <div style={overlayStyle}>
         <div style={divStyle}>
-          <Spinner type={ SpinnerType.large } label='Connecting...'/>
+          <Spinner type={SpinnerType.large} label="Connecting..." />
         </div>
       </div>);
   }

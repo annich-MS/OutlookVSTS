@@ -1,5 +1,6 @@
-import * as React from 'react';
-import { Button, ButtonType } from 'office-ui-fabric-react';
+import * as React from "react";
+import { Button, ButtonType } from "office-ui-fabric-react";
+import Constants from "../models/constants";
 
 /**
  * Props for CopyButton Component
@@ -29,14 +30,14 @@ export class CopyButton extends React.Component<ICopyButtonProps, {}> {
    * @returns { React.ReactElement } ReactHTML div 
    */
   public render(): React.ReactElement<{}> {
-    if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
+    if (Office.context.mailbox.diagnostics.hostName === Constants.IOS_HOST_NAME) {
       return (<div/>);
     }
     return (
       <div>
         <Button
           buttonType={ButtonType.command}
-          icon='Copy'
+          icon="Copy"
           onClick={this.handleClick}>
           Copy to Clipboard
         </Button>
@@ -50,18 +51,18 @@ export class CopyButton extends React.Component<ICopyButtonProps, {}> {
    */
   private handleClick: () => void = () => {
     // select the email link anchor text
-    let emailLink: Element = document.querySelector('.WorkItemLink');
+    let emailLink: Element = document.querySelector(".WorkItemLink");
     let range: Range = document.createRange();
     range.selectNode(emailLink);
     window.getSelection().addRange(range);
 
     try {
-      // now that we've selected the anchor text, execute the copy command
-      let successful: boolean = document.execCommand('copy');
-      let msg: string = successful ? 'successful' : 'unsuccessful';
-      console.log('Copy email command was ' + msg);
+      // now that we"ve selected the anchor text, execute the copy command
+      let successful: boolean = document.execCommand("copy");
+      let msg: string = successful ? "successful" : "unsuccessful";
+      console.log("Copy email command was " + msg);
     } catch (err) {
-      console.log('Oops, unable to copy');
+      console.log("Oops, unable to copy");
     }
     // remove the selections - NOTE: Should use
     // removeRange(range) when it is supported  

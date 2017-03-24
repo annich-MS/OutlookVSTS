@@ -1,53 +1,41 @@
-import * as React from 'react';
-import { Provider, connect } from 'react-redux';
-import { AuthState, updateAuthAction, updateNotificationAction, NotificationType } from '../../Redux/FlowActions';
-import { updateUserProfileAction } from '../../Redux/LogInActions';
-import { Rest, RestError, UserProfile } from '../../rest';
-import { Auth } from '../authMM';
-import { RoamingSettings } from '../RoamingSettings';
-import { Button, ButtonType } from 'office-ui-fabric-react';
+// libs
+import * as React from "react";
+import { Button, ButtonType } from "office-ui-fabric-react";
+// utils
+import { Rest, RestError, UserProfile } from "../../rest";
+// models
+import { RoamingSettings } from "../RoamingSettings";
+import { AppNotificationType } from "../../models/appNotification";
+import NavigationPage from "../../models/navigationPage";
+// stores
+import NavigationStore from "../../stores/navigationStore";
 
 /**
  * Properties needed for the SignInButton component
- * @interface ISignInProps
  */
 interface ISignInProps {
   /**
-   * intermediate to dispatch actions to update the global store
-   * @type {any}
+   * The navigation store, in order to redirect on successful authentication
    */
-  dispatch?: any;
-  /**
-   * interval for checking the database for user token
-   * @type {number}
-   */
-  authState?: AuthState;
+  navigationStore: NavigationStore;
 }
 
 /**
- * maps state in application store to properties for the component
- * @param {any} state
- */
-function mapStateToProps(state: any): ISignInProps {
-  return ({
-    authState: state.controlState.authState,
-  });
-}
-
-@connect(mapStateToProps)
-
-/**
- * Dumb component
  * Renders sign in button to connect to authentication flow
- * @class {SignInButton} 
  */
 export class SignInButton extends React.Component<ISignInProps, {}> {
 
-  private authInterval: any = '';
+  /**
+   * constructor for signInButton
+   */
+  public constructor() {
+    super();
+    this.refreshAuth = this.refreshAuth.bind(this);
+  }
+
   /**
    * On-click response for sign in button
-   * Opens browser window for user to authenticate
-   * @returns {void}
+   * Opens popout window for user to authenticate
    */
   public authOnClick(): void {
     Rest.getUser((user: string): void => {
@@ -57,8 +45,6 @@ export class SignInButton extends React.Component<ISignInProps, {}> {
         (result: Office.AsyncResult) => {
           let dialog: Office.DialogHandler = result.value;
           dialog.addEventHandler(Office.EventType.DialogMessageReceived, (message: Office.AsyncResult) => {
-            console.log(message.value);
-            this.props.dispatch(updateAuthAction(AuthState.Request));
             this.refreshAuth();
             dialog.close();
           });
@@ -66,49 +52,45 @@ export class SignInButton extends React.Component<ISignInProps, {}> {
     });
   }
 
-  public constructor() {
-    super();
-    this.refreshAuth = this.refreshAuth.bind(this);
-  }
 
   /**
    * Calls function that determines user authentication state and updates authState if user token is present
    * Saves user's VSTS member id to Office Roaming Settings on success
-   * @return {void}
    */
   public refreshAuth(): void {
-    let authKey: any = this.authInterval;
-    const name: string = Office.context.mailbox.userProfile.displayName;
-    const email: string = Office.context.mailbox.userProfile.emailAddress;
-    let dispatch: any = this.props.dispatch;
-    Auth.getAuthState(function (state: string): void {
-      if (state === 'success') {
-        clearInterval(authKey);
-        Rest.getUserProfile((error: RestError, profile: UserProfile) => {
-          if (error) {
-            this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('get user profile')));
-            return;
-          }
-          RoamingSettings.GetInstance().id = profile.id;
-          RoamingSettings.GetInstance().save();
-          dispatch(updateUserProfileAction(name, email, profile.id));
-          dispatch(updateAuthAction(AuthState.Authorized));
-        });
-      }
-    });
+    this.props.navigationStore.navigate(NavigationPage.Connecting);
+    Rest.getIsAuthenticated()
+      .then((isAuthenticated: boolean) => {
+        if (isAuthenticated) {
+          Rest.getUserProfile((error: RestError, profile: UserProfile) => {
+            if (error) {
+              this.props.navigationStore.updateNotification({ message: error.toString("get user profile"), type: AppNotificationType.Error });
+              return;
+            }
+            RoamingSettings.GetInstance().id = profile.id;
+            RoamingSettings.GetInstance().save();
+            this.props.navigationStore.navigate(NavigationPage.Settings);
+          });
+        } else {
+          this.props.navigationStore.updateNotification({ message: "Did not find auth info, please reauthenticate", type: AppNotificationType.Warning });
+          this.props.navigationStore.navigate(NavigationPage.LogIn);
+        }
+      }).catch((error) => {
+        console.log(`ASSERT: getIsAuthenticated rejected promise in refreshAuth ${error}`);
+      });
   }
 
   /**
    * Renders the sign in button
    */
-  public render(): React.ReactElement<Provider> {
+  public render(): JSX.Element {
 
-    let style_button: any = {
-      textAlign: 'center',
+    let buttonStyle: any = {
+      textAlign: "center",
     };
 
     return (
-      <div style={style_button}>
+      <div style={buttonStyle}>
         <Button buttonType={ButtonType.primary} onClick={this.authOnClick.bind(this)}> Sign in to get started </Button>
       </div>);
   }

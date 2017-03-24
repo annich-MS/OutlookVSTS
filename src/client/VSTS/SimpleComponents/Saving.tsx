@@ -1,6 +1,5 @@
-import * as React from 'react';
-import { Provider } from 'react-redux';
-import {Spinner, SpinnerType, Overlay} from 'office-ui-fabric-react';
+import * as React from "react";
+import {Spinner, SpinnerType, Overlay} from "office-ui-fabric-react";
 
 /**
  * Dumb component
@@ -12,12 +11,12 @@ export class Saving extends React.Component<{}, {}> {
   /**
    * Renders saving overlay
    */
-  public render(): React.ReactElement<Provider> {
+  public render(): JSX.Element {
     let divStyle: any = {
-      alignItems: 'center',
-      display: 'flex',
-      height: '100%',
-      justifyContent: 'center',
+      alignItems: "center",
+      display: "flex",
+      height: "100%",
+      justifyContent: "center",
     };
     return (
       <Overlay isDarkThemed={true}>

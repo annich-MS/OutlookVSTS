@@ -1,3 +1,5 @@
+import * as Agent from "superagent";
+
 export class UserProfile {
     public displayName: string;
     public publicAlias: string;
@@ -14,18 +16,22 @@ export class UserProfile {
     }
 }
 
-export class Project {
-    public id: string;
-    public name: string;
-    public description: string;
-    public url: string;
-    public state: string;
-
+export abstract class DropdownParseable {
     public static compare(a: Project, b: Project): number {
         return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
     }
 
+    public name: string;
+    public id: string;
+}
+
+export class Project extends DropdownParseable {
+    public description: string;
+    public url: string;
+    public state: string;
+
     public constructor(blob: any) {
+        super();
         this.id = blob.id;
         this.name = blob.name;
         this.description = blob.description;
@@ -35,31 +41,21 @@ export class Project {
 
 }
 
-export class Account {
-    public id: string;
-    public name: string;
+export class Account extends DropdownParseable {
     public uri: string;
 
-    public static compare(a: Account, b: Account): number {
-        return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
-    }
-
     public constructor(blob: any) {
+        super();
         this.id = blob.accountId;
         this.name = blob.accountName;
         this.uri = blob.accountUri;
     }
 }
 
-export class Team {
-    public id: string;
-    public name: string;
-
-    public static compare(a: Team, b: Team): number {
-        return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
-    }
+export class Team extends DropdownParseable {
 
     public constructor(blob: any) {
+        super();
         this.id = blob.id;
         this.name = blob.name;
     }
@@ -75,7 +71,7 @@ export class WorkItemInfo {
     }
 }
 
-interface VSTSErrorBody{
+interface VSTSErrorBody {
     message: string;
     typeKey: string;
 }
@@ -121,13 +117,27 @@ interface IWorkItemCallback { (error: RestError, workItemInfo: WorkItemInfo): vo
 
 export abstract class Rest {
 
+    public static getIsAuthenticated(): Promise<Boolean> {
+        return new Promise((resolve) => {
+            Rest.getUser((user: string) => {
+                Agent.get(`./authenticate/db`)
+                    // zzGarbage property to prevent IE caching the result
+                    .query({ user: user, zzGarbage: Math.random() * 1000 })
+                    .then((value: Agent.Response) => {
+                        resolve(value.text === "success");
+                    }).catch((reason) => {
+                        resolve(false);
+                    });
+            });
+        });
+    }
+
     private static userProfile: UserProfile;
     private static accounts: Account[];
     private static uidToken: string = '';
     private static tokenRefresh: Date = new Date();
     private static tokenRequests: number = 0;
     private static tokenCacheHits: number = 0;
-
 
     public static getItem(item: number, callback: IItemCallback): void {
         this.makeRestCallWithArgs('getItem', { fields: 'System.TeamProject', ids: item, instance: 'o365exchange' }, (output) => {
@@ -236,7 +246,7 @@ export abstract class Rest {
                 if (parsed.backlogIteration.id !== '00000000-0000-0000-0000-000000000000') {
                     callback(null, parsed.backlogIteration.path);
                 } else {
-                    callback(new RestError({ more: 'Missing Backlog Iteration', type: 'Missing Backlog Iteration'}), '');
+                    callback(new RestError({ more: 'Missing Backlog Iteration', type: 'Missing Backlog Iteration' }), '');
                 }
             });
         });
@@ -330,7 +340,7 @@ export abstract class Rest {
                 item: (Office.context.mailbox.item as Office.ItemRead).itemId,
                 token: asyncResult.value,
             };
-            let body: string = JSON.stringify({'Comment': msg});
+            let body: string = JSON.stringify({ 'Comment': msg });
             Rest.makePostRestCallWithArgs('reply', args, body, callback);
         });
     }

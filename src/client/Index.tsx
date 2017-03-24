@@ -1,51 +1,25 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Store, createStore, applyMiddleware} from "redux";
-import { Provider } from "react-redux";
 import { Dogfood } from "./dogfood";
 import { VSTS } from "./VSTS/VSTS";
 import Done from "./done";
-import { completeAddInReducer } from "./Redux/GlobalReducer";
-import thunkMiddleware from 'redux-thunk';
-declare const require: (name: String) => any;
-
-interface IHotModule {
-  hot?: { accept: (path: string, callback: () => void) => void };
-};
-
-declare const module: IHotModule;
-
-function configureStore(): Store {
-  const store: Store = createStore(completeAddInReducer, applyMiddleware(
-    thunkMiddleware // lets us dispatch() functions
-    // neat middleware that logs actions
-  ));
-
-  if (module.hot) {
-    module.hot.accept('./reducers', () => {
-      const nextRootReducer: any = require('./Redux/LoginReducer').completeAddInReducer;
-      store.replaceReducer(nextRootReducer);
-    });
-  }
-
-  return store;
-}
-
-const store: Store = configureStore();
+import { aptCache } from "./stores/aptCache";
+import { navigationStore } from "./stores/navigationStore";
+import { workItemStore } from "./stores/workItemStore";
 
 class Main extends React.Component<{}, {}> {
 
-  public render(): React.ReactElement<Provider> {
+  public render(): JSX.Element {
     const route: string = this.getRoute();
     switch (route) {
       case "dogfood":
-        return(<Dogfood />);
+        return (<Dogfood />);
       case "vsts":
-        return(<Provider store = {store}><VSTS /></Provider>);
+        return (<VSTS aptCache={aptCache} navigationStore={navigationStore} workItemStore={workItemStore} />);
       case "done":
-        return(<Done />);
+        return (<Done />);
       default:
-        return(<div>Route: "{route}" is not a valid route!</div>);
+        return (<div>Route: "{route}" is not a valid route!</div>);
     }
   }
 

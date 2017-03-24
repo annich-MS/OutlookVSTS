@@ -1,31 +1,35 @@
-import * as React from 'react';
-import { Provider} from 'react-redux';
-import { SignInButton } from './SignInButton';
-import { AddInDescription } from './AddInDescription';
+import * as React from "react";
+import { SignInButton } from "./SignInButton";
+import { AddInDescription } from "./AddInDescription";
+import NavigationStore from "../../stores/navigationStore";
+
+interface ILogInPageProps {
+  // child dependancy
+  navigationStore: NavigationStore;
+}
 
 /**
  * Dumb component
  * Renders the add-in description and sign in button
- * @class {LogInPage} 
  */
-export class LogInPage extends React.Component<{}, {}> {
+export class LogInPage extends React.Component<ILogInPageProps, {}> {
 
   /**
    * Renders the add-in description and sign in button
    */
-  public render(): React.ReactElement<Provider> {
-    let style_image: any = {
-      display: 'block',
-      margin: 'auto',
-      maxWidth: '325px',
-      width: '100%',
+  public render(): JSX.Element {
+    let imageStyle: any = {
+      display: "block",
+      margin: "auto",
+      maxWidth: "325px",
+      width: "100%",
     };
 
 
-    return(<div>
-            <image style = {style_image} src = '../../../public/Images/VSTSLogo_Long.png'/>
-            <AddInDescription />
-            <SignInButton />
-            </div>);
+    return (<div>
+      <image style={imageStyle} src="../../../public/Images/VSTSLogo_Long.png" />
+      <AddInDescription />
+      <SignInButton navigationStore={this.props.navigationStore} />
+    </div>);
   }
 }

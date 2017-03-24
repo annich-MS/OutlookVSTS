@@ -1,73 +1,35 @@
-import * as React from 'react';
-import { Provider, connect } from 'react-redux';
-import { Rest, RestError, WorkItemInfo, IStringCallback} from '../rest';
-import { updateStage, Stage, updateSave } from '../Redux/WorkItemActions';
-import { IWorkItem } from '../Redux/WorkItemReducer';
-import { updateNotificationAction, updatePageAction, PageVisibility, PopulationStage, NotificationType } from '../Redux/FlowActions';
-import { IUserProfileReducer, ISettingsAndListsReducer } from '../Redux/LoginReducer';
-import { Button, ButtonType } from 'office-ui-fabric-react';
+import * as React from "react";
+import { Rest, RestError, WorkItemInfo, IStringCallback } from "../rest";
+import { Button, ButtonType } from "office-ui-fabric-react";
+import WorkItemStore from "../stores/workItemStore";
+import NavigationStore from "../stores/navigationStore";
+import APTCache from "../stores/aptCache";
+import { AppNotificationType } from "../models/appNotification";
+import APTPopulateStage from "../models/aptPopulateStage";
+
+import { observer } from "mobx-react";
+import { computed } from "mobx";
 
 type Message = Office.MessageRead;
 
 /**
  * Represents the Save Properties
- * @interface ISaveProps
  */
 export interface ISaveProps {
-  /**
-   * dispatch to map dispatch to props
-   * @type {any}
-   */
-  dispatch?: any;
-  /**
-   * the entire work item property
-   * @type {IWorkItem}
-   */
-  workItem?: IWorkItem;
-  /**
-   * the user profile information
-   * @type {IUserProfile}
-   */
-  userProfile?: IUserProfileReducer;
-  /**
-   * the current settings information
-   * @type {ISettingsAndListsReducer}
-   */
-  currentSettings?: ISettingsAndListsReducer;
-
-  /**
-   * Represents what tier is currently being populated
-   * @type {number}
-   */
-  populationStage?: PopulationStage;
-
-  errorActive?: boolean;
+  cache: APTCache;
+  navigationStore: NavigationStore;
+  workItem: WorkItemStore;
 }
 
-/**
- * Renders the Save button and makes REST api calls
- * @class { Save }
- */
-function mapStateToProps(state: any): ISaveProps {
-  return {
-    currentSettings: state.currentSettings,
-    errorActive: state.controlState.notification.notificationType === NotificationType.Error ||
-                  state.controlState.notification.notificationType === NotificationType.Warning,
-    populationStage: state.controlState.populationStage,
-    userProfile: state.userProfile,
-    workItem: state.workItem,
-  };
-}
-
-@connect(mapStateToProps)
+@observer
 export class Save extends React.Component<ISaveProps, {}> {
   /**
    * Dispatches the action to change the Stage and make the REST call to create the work item
    * @returns {void}
    */
   public handleSave(): void {
-    this.props.dispatch(updateStage(Stage.Saved));
-    if (this.props.workItem.addAsAttachment) {
+    this.props.navigationStore.startSave();
+    if (this.props.workItem.attachEmail) {
       Office.context.mailbox.getCallbackTokenAsync((tokenResult) => {
         this.uploadAttachment(tokenResult.value, (error, attachmentUrl) => { this.createWorkItem(attachmentUrl); });
       });
@@ -78,19 +40,19 @@ export class Save extends React.Component<ISaveProps, {}> {
 
   public uploadAttachment(token: string, callback: IStringCallback): void {
     let id: string = (Office.context.mailbox.item as Office.MessageRead).itemId;
-    let url: string = Office.context.mailbox.ewsUrl || 'https://outlook.office365.com/EWS/Exchange.asmx';
-    let account: string = this.props.currentSettings.settings.account;
+    let url: string = Office.context.mailbox.ewsUrl || "https://outlook.office365.com/EWS/Exchange.asmx";
+    let account: string = this.props.cache.account;
 
     Rest.getMessage(id, url, token, (error, data) => {
       if (error) {
-        this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('download message from Exchange')));
-        this.props.dispatch(updateStage(Stage.New));
+        this.props.navigationStore.updateNotification({ message: error.toString("download message from Exchange"), type: AppNotificationType.Error });
+        this.props.navigationStore.endSave(false);
         return;
       }
-      Rest.uploadAttachment(data, account, (Office.context.mailbox.item as Message).normalizedSubject + '.eml', (err, link) => {
+      Rest.uploadAttachment(data, account, (Office.context.mailbox.item as Message).normalizedSubject + ".eml", (err, link) => {
         if (err) {
-          this.props.dispatch(updateNotificationAction(NotificationType.Error, err.toString('upload attachment to VSTS')));
-          this.props.dispatch(updateStage(Stage.New));
+          this.props.navigationStore.updateNotification({ message: error.toString("upload attachment"), type: AppNotificationType.Error });
+          this.props.navigationStore.endSave(false);
           return;
         }
         callback(null, link);
@@ -101,25 +63,23 @@ export class Save extends React.Component<ISaveProps, {}> {
 
   public createWorkItem(attachmentUrl: string): void {
     let options: any = {
-      account: this.props.currentSettings.settings.account,
+      account: this.props.cache.account,
       attachment: attachmentUrl,
-      project: this.props.currentSettings.settings.project,
-      team: this.props.currentSettings.settings.team,
+      project: this.props.cache.project,
+      team: this.props.cache.team,
       title: this.props.workItem.title,
-      type: this.props.workItem.workItemType,
+      type: this.props.workItem.type,
     };
-    let dispatch: any = this.props.dispatch;
     let body: string = this.props.workItem.description;
 
 
     Rest.createTask(options, body, (error: RestError, workItemInfo: WorkItemInfo) => {
       if (error) {
-        this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('create task')));
-        this.props.dispatch(updateStage(Stage.New));
+        this.props.navigationStore.updateNotification({ message: error.toString("create task"), type: AppNotificationType.Error });
+        this.props.navigationStore.endSave(false);
         return;
       }
-      dispatch(updateSave(workItemInfo.VSTShtmlLink, workItemInfo.id));
-      dispatch(updatePageAction(PageVisibility.QuickActions));
+      this.props.navigationStore.endSave(true);
     });
   }
 
@@ -127,23 +87,25 @@ export class Save extends React.Component<ISaveProps, {}> {
   /**
    * Renders the Save button and disables it on click
    */
-  public render(): React.ReactElement<Provider> {
+  public render(): JSX.Element {
 
-    let text: string = this.isSaving ? 'Creating...' : 'Create work item';
+    let text: string = this.props.navigationStore.isSaving ? "Creating..." : "Create work item";
     return (
-      <div style={{ textAlign: 'center' }} >
-        <br/>
+      <div style={{ textAlign: "center" }} >
+        <br />
         <Button
-          buttonType= {ButtonType.primary}
-          disabled = {!this.shouldBeEnabled() }
-          onClick={this.handleSave.bind(this) } > {text} </Button>
+          buttonType={ButtonType.primary}
+          disabled={!this.shouldBeEnabled}
+          onClick={this.handleSave.bind(this)} > {text} </Button>
       </div>
     );
   }
 
-  private get isSaving(): boolean { return this.props.workItem.stage === Stage.Saved; }
 
-  private shouldBeEnabled(): boolean {
-    return !(this.isSaving || this.props.populationStage < PopulationStage.teamReady || this.props.errorActive);
+  @computed private get shouldBeEnabled(): boolean {
+    return !(
+      this.props.navigationStore.isSaving ||
+      this.props.cache.populateStage < APTPopulateStage.PostPopulate ||
+      this.props.navigationStore.notification != null);
   }
 }

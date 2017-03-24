@@ -1,30 +1,30 @@
-import * as React from 'react';
-import { Provider, connect } from 'react-redux';
-import { LogInPage } from './LoginComponents/LogInPage';
-import { Settings } from './SettingsComponents/Settings';
-import { Connecting } from './SimpleComponents/Connecting';
-import { Saving } from './SimpleComponents/Saving';
-import { Auth } from './authMM';
-import {
-  updateUserProfileAction, updateTeamSettingsAction, updateAccountSettingsAction, updateProjectSettingsAction, SettingsInfo
-} from '../Redux/LogInActions';
-import { Stage, updateAddAsAttachment, updateDescription } from '../Redux/WorkItemActions';
-import {
-  PageVisibility,
-  AuthState,
-  updateAuthAction,
-  INotificationStateAction,
-  updatePageAction,
-  updateNotificationAction,
-  NotificationType,
-  updatePopulatingAction,
-  PopulationStage,
-} from '../Redux/FlowActions';
-import { UserProfile } from '../rest';
-import { CreateWorkItem } from './CreateWorkItem';
-import { QuickActions } from './QuickActions';
-import { RoamingSettings } from './RoamingSettings';
-import { Rest, RestError } from '../rest';
+// libraries
+import * as React from "react";
+import { observer } from "mobx-react";
+
+// components
+import { LogInPage } from "./LoginComponents/LogInPage";
+import { Settings } from "./SettingsComponents/Settings";
+import { Connecting } from "./SimpleComponents/Connecting";
+import { Saving } from "./SimpleComponents/Saving";
+import { CreateWorkItem } from "./CreateWorkItem";
+import { QuickActions } from "./QuickActions";
+
+// utilities
+import { Rest, RestError, UserProfile } from "../rest";
+
+// models
+import { RoamingSettings } from "./RoamingSettings";
+import APTPopulationStage from "../models/aptPopulateStage";
+import { AppNotificationType } from "../models/appNotification";
+import Constants from "../models/constants";
+import NavigationPage from "../models/navigationPage";
+
+// stores
+import APTCache from "../stores/aptCache";
+import NavigationStore from "../stores/navigationStore";
+import WorkItemStore from "../stores/workItemStore";
+
 
 interface IRefreshCallback { (): void; }
 interface IUserProfileCallback { (profile: UserProfile): void; }
@@ -34,153 +34,115 @@ interface IUserProfileCallback { (profile: UserProfile): void; }
  * @interface IVSTSProps
  */
 interface IVSTSProps {
-  dispatch?: any;
-  authState?: AuthState;
-  pageState?: PageVisibility;
-  stage?: Stage;
-  notification?: INotificationStateAction;
+  aptCache: APTCache;
+  navigationStore: NavigationStore;
+  workItemStore: WorkItemStore;
 }
 
-/**
- * maps state in application store to properties for the component
- * @param {any} state
- */
-function mapStateToProps(state: any): IVSTSProps {
-  return ({
-    authState: state.controlState.authState,
-    notification: state.controlState.notification,
-    pageState: state.controlState.pageState,
-    stage: state.workItem.stage,
-  });
-}
-
-@connect(mapStateToProps)
-
+@observer
 export class VSTS extends React.Component<IVSTSProps, any> {
 
   private roamingSettings: RoamingSettings;
+  private item: Office.MessageRead;
 
   public constructor() {
     super();
-    this.Initialize = this.Initialize.bind(this);
-    Office.initialize = this.Initialize;
-  }
-
-  /**
-   * determines whether or not the component should re-render based on changes in state
-   * @param {any} nextProps
-   * @param {any} nextState
-   */
-  public shouldComponentUpdate(nextProps: any, nextState: any): boolean {
-    return (this.props.authState !== nextProps.authState) ||
-      (this.props.pageState !== nextProps.pageState) ||
-      (this.props.stage !== nextProps.stage);
+    Office.initialize = this.Initialize.bind(this);
   }
 
   public iosInit(): void {
-    if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
-      this.props.dispatch(updateAddAsAttachment(false));
-      (Office.context.mailbox.item as Office.MessageCompose).body.getAsync(Office.CoercionType.Text, (result: Office.AsyncResult) => {
-        this.props.dispatch(updateDescription(result.value.trim()));
+    if (Office.context.mailbox.diagnostics.hostName === Constants.IOS_HOST_NAME) {
+      this.props.workItemStore.toggleAttachEmail();
+      this.item.body.getAsync(Office.CoercionType.Text, (result: Office.AsyncResult) => {
+        this.props.workItemStore.setDescription = result.value;
       });
     }
   }
 
   public authInit(): void {
-    let dispatch: any = this.props.dispatch;
     let roamingSettings: RoamingSettings = this.roamingSettings;
-    const email: string = Office.context.mailbox.userProfile.emailAddress;
-    const name: string = Office.context.mailbox.userProfile.displayName;
-    Auth.getAuthState(function (state: string): void {
-      if (state === 'success') {
-        if (roamingSettings.id) {
-          dispatch(updateUserProfileAction(name, email, roamingSettings.id));
-          dispatch(updateAuthAction(AuthState.Authorized));
+    Rest.getIsAuthenticated()
+      .then((isAuthenticated: boolean) => {
+        if (isAuthenticated) {
+          // TODO: manage roamingSettings
           if (roamingSettings.isValid) {
-            dispatch(updatePageAction(PageVisibility.CreateItem)); // todo - may cause issues here
+            this.props.navigationStore.navigate(NavigationPage.CreateWorkItem);
+          } else {
+            Rest.getUserProfile((error: RestError, profile: UserProfile) => {
+              if (error) {
+                this.props.navigationStore.updateNotification({ message: error.toString("retrieve user profile"), type: AppNotificationType.Error });
+                return;
+              }
+              roamingSettings.id = profile.id;
+              roamingSettings.save();
+              this.props.navigationStore.navigate(NavigationPage.Settings);
+            });
           }
         } else {
-          Rest.getUserProfile((error: RestError, profile: UserProfile) => {
-            if (error) {
-              dispatch(updateNotificationAction(NotificationType.Error, error.toString('retrieve user profile')));
-              return;
-            }
-            roamingSettings.id = profile.id;
-            roamingSettings.save();
-            dispatch(updateUserProfileAction(name, email, profile.id));
-            dispatch(updateAuthAction(AuthState.Authorized));
-          });
-          if (roamingSettings.isValid) {
-            dispatch(updatePageAction(PageVisibility.CreateItem)); // todo - may cause issues here
-          }
+          this.props.navigationStore.navigate(NavigationPage.LogIn);
         }
-      } else {
-        dispatch(updateAuthAction(AuthState.NotAuthorized));
-      }
-    });
+      }).catch((error) => {
+        console.log(`ASSERT: getIsAuthenticated rejected promise in AuthInit ${error}`);
+      });
   }
 
   public prepopDropdowns(): void {
-    this.props.dispatch(updatePopulatingAction(PopulationStage.prepopulate));
+    this.props.aptCache.setPopulateStage(APTPopulationStage.PrePopulate);
     if (this.roamingSettings.isValid) {
-      console.log('prepopulating');
-      this.props.dispatch(updateAccountSettingsAction(this.roamingSettings.account, this.roamingSettings.accounts));
-      this.props.dispatch(updateProjectSettingsAction(this.roamingSettings.project, this.roamingSettings.projects));
-      this.props.dispatch(updateTeamSettingsAction(this.roamingSettings.team, this.roamingSettings.teams));
+      console.log("prepopulating");
+      this.props.aptCache.setAccounts(this.roamingSettings.accounts, this.roamingSettings.account);
+      this.props.aptCache.setProjects(this.roamingSettings.projects, this.roamingSettings.project);
+      this.props.aptCache.setTeams(this.roamingSettings.teams, this.roamingSettings.team);
+      this.props.aptCache.setPopulateStage(APTPopulationStage.PostPopulate);
     }
   }
-
 
   /**
    * Executed after Office.initialize is complete. 
    * Initial check for user authentication token and determines correct first page to show
    */
   public Initialize(): void {
-    console.log('Initiating');
+    console.log("Initiating");
     this.roamingSettings = RoamingSettings.GetInstance();
+    this.item = Office.context.mailbox.item as Office.MessageRead;
     this.iosInit();
     this.prepopDropdowns();
+    this.workItemInit();
     this.authInit();
   }
 
   /**
    * Renders the add-in. Contains logic to determine which component/page to display
    */
-  public render(): React.ReactElement<Provider> {
-    let bodyStyle: any = {
-      padding: '2.25%',
-    };
-    let body: any;
-    switch (this.props.authState) {
-      case AuthState.NotAuthorized:
-        body = (<LogInPage />);
+  public render(): JSX.Element {
+    let body: JSX.Element = (<div />);
+    let saving: JSX.Element = (<div />);
+    switch (this.props.navigationStore.currentPage) {
+      case NavigationPage.Connecting:
+        body = <Connecting />;
         break;
-      case AuthState.None:
-      case AuthState.Request:
-        body = (<Connecting />);
+      case NavigationPage.LogIn:
+        body = <LogInPage navigationStore={this.props.navigationStore} />;
         break;
-      case AuthState.Authorized:
-        {
-          switch (this.props.pageState) {
-            case PageVisibility.CreateItem:
-              body = [<CreateWorkItem />];
-              if (this.props.stage === Stage.Saved) {
-                body.push(<Saving />);
-              }
-              break;
-            case PageVisibility.QuickActions:
-              body = (<QuickActions />);
-              break;
-            // case PageVisibility.Settings:
-            default:
-              body = (<Settings />);
-              break;
-          }
-        }
+      case NavigationPage.CreateWorkItem:
+        body = <CreateWorkItem cache={this.props.aptCache} navigationStore={this.props.navigationStore} workItem={this.props.workItemStore} />;
+        break;
+      case NavigationPage.Settings:
+        body = <Settings cache={this.props.aptCache} navigationStore={this.props.navigationStore} />;
+        break;
+      case NavigationPage.QuickActions:
+        body = <QuickActions navigationStore={this.props.navigationStore} workItem={this.props.workItemStore} />;
         break;
       default:
-        body = (<LogInPage />);
+        body = <div>Invalid navigationPage</div>;
     }
-    return (<div style={bodyStyle}> {body} </div>);
+    if (this.props.navigationStore.isSaving) {
+      saving = <Saving />;
+    }
+    return (<div> {body}{saving} </div>);
+  }
+
+  private workItemInit(): void {
+    this.props.workItemStore.setTitle(this.item.normalizedSubject);
   }
 }

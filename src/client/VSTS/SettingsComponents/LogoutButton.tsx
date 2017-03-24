@@ -1,45 +1,21 @@
-import * as React from 'react';
-import { Provider, connect } from 'react-redux';
-import { Rest, RestError } from '../../rest';
-import { AuthState, updateAuthAction, updateNotificationAction, NotificationType } from '../../Redux/FlowActions';
-import { RoamingSettings } from '../RoamingSettings';
-import { Button, ButtonType } from 'office-ui-fabric-react';
+import * as React from "react";
+import { Rest, RestError } from "../../rest";
+import { RoamingSettings } from "../RoamingSettings";
+import { Button, ButtonType } from "office-ui-fabric-react";
+import NavigationPage from "../../models/navigationPage";
+import NavigationStore from "../../stores/navigationStore";
+import { AppNotificationType } from "../../models/appNotification";
 
-/**
- * Properties needed for the LogoutButton component
- * @interface IAreaProps
- */
-interface ILogoutProps {
-  /**
-   * intermediate to dispatch actions to update the global store
-   * @type {any}
-   */
-  dispatch?: any;
-  /**
-   * user's email address
-   * @type {string}
-   */
-  email?: string;
+interface ILogoutButtonProps {
+    navigationStore: NavigationStore;
 }
 
-/**
- * maps state in application store to properties for the component
- * @param {any} state
- */
-function mapStateToProps(state: any): ILogoutProps {
-  return ({
-    email: state.userProfile.email,
-  });
-}
+export class LogoutButton extends React.Component<ILogoutButtonProps, any> {
 
-@connect(mapStateToProps)
-
-export class LogoutButton extends React.Component<ILogoutProps, any> {
-
-    public render(): React.ReactElement<Provider> {
+    public render(): JSX.Element {
 
         return (
-            <div style={{margin:'auto', width:'75%', textAlign:'center'}}>
+            <div style={{ margin: "auto", textAlign: "center", width: "75%" }}>
                 <Button buttonType={ButtonType.command} onClick={this.logout.bind(this)}>
                     Disconnect From VSTS
                 </Button>
@@ -47,15 +23,14 @@ export class LogoutButton extends React.Component<ILogoutProps, any> {
     }
 
     private logout(): void {
-        let dispatch: any = this.props.dispatch;
 
         Rest.removeUser((error: RestError) => {
             if (error) {
-                this.props.dispatch(updateNotificationAction(NotificationType.Error, error.toString('disconnect')));
+                this.props.navigationStore.updateNotification({message: error.toString("disconnect user"), type: AppNotificationType.Error});
                 return;
             } else {
                 RoamingSettings.GetInstance().clear();
-                dispatch(updateAuthAction(AuthState.NotAuthorized));
+                this.props.navigationStore.navigate(NavigationPage.LogIn);
             }
         });
     }

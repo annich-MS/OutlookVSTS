@@ -1,27 +1,24 @@
-import * as React from 'react';
-import { Provider } from 'react-redux';
-import { Button, ButtonType, Spinner, SpinnerType } from 'office-ui-fabric-react';
-import { updateNotificationAction, NotificationType } from '../Redux/FlowActions';
-import { Rest } from '../rest';
-import { Constants } from './Constants';
+import * as React from "react";
+import { Button, ButtonType, Spinner } from "office-ui-fabric-react";
+import { Rest } from "../rest";
+import Constants from "../models/constants";
+import NavigationStore from "../stores/navigationStore";
+import { AppNotificationType } from "../models/appNotification";
 
 /**
  * Props for ReplyAllButton Component
- * @interface { IReplyAllButtonProps }
  */
 interface IReplyAllButtonProps {
   /**
    * workItemHyperlink
-   * @type { string }
    */
   workItemHyperlink: string;
 
-  dispatch?: Function;
+  navigationStore: NavigationStore;
 }
 
 /**
  * Renders a button that on-click, opens a reply-all form with the item hyperlink inserted in-line
- * @class { ReplyAllButton }
  */
 export class ReplyAllButton extends React.Component<IReplyAllButtonProps, { saving: boolean }> {
 
@@ -32,15 +29,14 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, { savi
 
   /**
    * Renders the ReplyAllButton Component and reads IReplyAllButtonProps
-   * @returns { React.ReactElement } ReactHTML div
    */
-  public render(): React.ReactElement<Provider> {
+  public render(): JSX.Element {
 
     let item: any = (
       <Button
         buttonType={ButtonType.command}
-        icon='ReplyAll'
-        onClick={this.handleClick.bind(this) }>
+        icon="ReplyAll"
+        onClick={this.handleClick.bind(this)}>
         Reply All with Work Item
       </Button>);
 
@@ -57,22 +53,19 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, { savi
 
   /**
    * Adds signature line to the HTML body
-   * @returns { string } Full HTML body with signature line
    */
   public addSignature(workItemHyperlink: string): string {
     return workItemHyperlink + Constants.CREATED_STRING;
   }
   /**
    * Handles the click and displays a reply-all form
-   * @private
    */
   private handleClick(): void {
-    let props: IReplyAllButtonProps = this.props;
-    if (Office.context.mailbox.diagnostics.hostName === 'OutlookIOS') {
+    if (Office.context.mailbox.diagnostics.hostName === Constants.IOS_HOST_NAME) {
       this.setState({ saving: true });
-      Rest.autoReply('I have created the following bug:<br/><br/>' + this.addSignature(this.props.workItemHyperlink), (output: string) => {
-        this.setState({ saving: false});
-        props.dispatch(updateNotificationAction(NotificationType.Success, 'Reply Sent!'));
+      Rest.autoReply("I have created the following bug:<br/><br/>" + this.addSignature(this.props.workItemHyperlink), (output: string) => {
+        this.setState({ saving: false });
+        this.props.navigationStore.updateNotification({ message: "Message Sent!", type: AppNotificationType.Success });
       });
     } else {
       (Office.context.mailbox.item as Office.MessageRead).displayReplyAllForm(this.addSignature(this.props.workItemHyperlink));

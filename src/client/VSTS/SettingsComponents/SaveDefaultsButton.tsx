@@ -1,66 +1,23 @@
-import * as React from 'react';
-import { Provider, connect } from 'react-redux';
-import { SettingsInfo } from '../../Redux/LogInActions';
-import { PageVisibility, updatePageAction, PopulationStage } from '../../Redux/FlowActions';
-import { RoamingSettings } from '../RoamingSettings';
-import { Button, ButtonType } from 'office-ui-fabric-react';
+import * as React from "react";
+import { observer } from "mobx-react";
+import { RoamingSettings } from "../RoamingSettings";
+import { Button, ButtonType } from "office-ui-fabric-react";
+import APTCache from "../../stores/aptCache";
+import NavigationStore from "../../stores/navigationStore";
+import NavigationPage from "../../models/navigationPage";
+import APTPopulateStage from "../../models/aptPopulateStage";
 
 interface ISettingsProps {
-  /**
-   * intermediate to dispatch actions to update the global store
-   * @type {any}
-   */
-  dispatch?: any;
-  /**
-   * currently selected account option
-   * @type {string}
-   */
-  account?: string;
-  /**
-   * currently selected project option
-   * @type {string}
-   */
-  project?: string;
-  /**
-   * currently selected team option
-   * @type {string}
-   */
-  team?: string;
-
-  accounts?: SettingsInfo[];
-  projects?: SettingsInfo[];
-  teams?: SettingsInfo[];
-
-  /**
-   * Represents what tier is currently being populated
-   * @type {number}
-   */
-  populationStage?: PopulationStage;
+  cache: APTCache;
+  navigationStore: NavigationStore;
 }
-
-/**
- * maps state in application store to properties for the component
- * @param {any} state
- */
-function mapStateToProps(state: any): ISettingsProps {
-  return ({
-    account: state.currentSettings.settings.account,
-    accounts: state.currentSettings.lists.accountList,
-    populationStage: state.controlState.populationStage,
-    project: state.currentSettings.settings.project,
-    projects: state.currentSettings.lists.projectList,
-    team: state.currentSettings.settings.team,
-    teams: state.currentSettings.lists.teamList,
-  });
-}
-
-@connect(mapStateToProps)
 
 /**
  * Smart component
  * Renders area path dropdowns and save button
  * @class {Settings} 
  */
+@observer
 export class SaveDefaultsButton extends React.Component<ISettingsProps, any> {
 
   /**
@@ -70,28 +27,22 @@ export class SaveDefaultsButton extends React.Component<ISettingsProps, any> {
    */
   public saveDefaults(): void {
     let rs: RoamingSettings = RoamingSettings.GetInstance();
-    rs.account = this.props.account;
-    rs.project = this.props.project;
-    rs.team = this.props.team;
-    rs.accounts = this.props.accounts;
-    rs.projects = this.props.projects;
-    rs.teams = this.props.teams;
+    rs.updateFromCache(this.props.cache);
     rs.save();
-
-    this.props.dispatch(updatePageAction(PageVisibility.CreateItem));
+    this.props.navigationStore.navigate(NavigationPage.CreateWorkItem);
   }
 
   /**
    * Renders the area path dropdowns and save button
    */
-  public render(): React.ReactElement<Provider> {
+  public render(): JSX.Element {
     return (
-      <div style={{ float: 'left' }}>
+      <div style={{ float: "left" }}>
         <Button
           buttonType={ButtonType.command}
-          icon='Save'
+          icon="Save"
           onClick={this.saveDefaults.bind(this)}
-          disabled={this.props.populationStage < PopulationStage.teamReady}>
+          disabled={this.props.cache.populateStage < APTPopulateStage.PostPopulate}>
           Save and continue
           </Button>
       </div>
