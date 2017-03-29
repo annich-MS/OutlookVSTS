@@ -1,7 +1,7 @@
 import * as React from "react";
-import { SignInButton } from "./SignInButton";
-import { AddInDescription } from "./AddInDescription";
-import NavigationStore from "../../stores/navigationStore";
+import { SignInButton } from "./logIn/SignInButton";
+import { AddInDescription } from "./logIn/AddInDescription";
+import NavigationStore from "../stores/navigationStore";
 
 interface ILogInPageProps {
   // child dependancy
@@ -12,7 +12,7 @@ interface ILogInPageProps {
  * Dumb component
  * Renders the add-in description and sign in button
  */
-export class LogInPage extends React.Component<ILogInPageProps, {}> {
+export default class LogInPage extends React.Component<ILogInPageProps, {}> {
 
   /**
    * Renders the add-in description and sign in button

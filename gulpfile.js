@@ -1,7 +1,7 @@
 "use strict";
 var gulp = require('gulp');
 var sourcemaps = require('gulp-sourcemaps');
-var webpack = require('webpack-stream')(require('./webpack.config.js'));
+var webpack = require('webpack-stream')(require('./webpack.config.js'), require("webpack"));
 var typescript = require('gulp-typescript').createProject('tsconfig.json');
 var clientSrc = "src/client/**/*";
 var serverSrc = "src/server/**/*";

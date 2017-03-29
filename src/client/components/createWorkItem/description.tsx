@@ -2,8 +2,8 @@ import * as React from "react";
 import { observer } from "mobx-react";
 import { Checkbox } from "office-ui-fabric-react";
 import * as Editable from "react-contenteditable";
-import WorkItemStore from "../stores/workItemStore";
-import Constants from "../models/constants";
+import WorkItemStore from "../../stores/workItemStore";
+import Constants from "../../models/constants";
 
 /**
  * Represents the Description Properties

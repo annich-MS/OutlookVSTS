@@ -1,8 +1,10 @@
 import * as React from "react";
 import { observer } from "mobx-react";
 import { Dropdown, IDropdownOption } from "office-ui-fabric-react";
-import IDropdownConfig from "./dropdownConfig";
+
+import IDropdownConfig from "../../stores/dropdownConfigStore";
 import NavigationStore from "../../stores/navigationStore";
+
 import { AppNotificationType } from "../../models/appNotification";
 
 interface IConfigurableDropdownProps {

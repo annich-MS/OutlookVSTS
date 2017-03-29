@@ -2,8 +2,8 @@ import { action, observable, computed } from "mobx";
 import { IDropdownOption } from "office-ui-fabric-react";
 
 import APTPopulateStage from "../models/aptPopulateStage";
-import { RoamingSettings } from "../VSTS/RoamingSettings";
-import { Rest, DropdownParseable } from "../rest";
+import RoamingSettings from "../models/roamingSettings";
+import { Rest, DropdownParseable } from "../utils/rest";
 
 export default class APTCache {
     @computed get accounts(): IDropdownOption[] { return this._accounts; };
@@ -30,7 +30,7 @@ export default class APTCache {
 
     @action public async populate(fromRoamingSettings: boolean = true): Promise<void> {
         if (fromRoamingSettings) {
-            let roamingSettings: RoamingSettings = RoamingSettings.GetInstance();
+            let roamingSettings: RoamingSettings = await RoamingSettings.GetInstance();
             this.setAccounts(roamingSettings.accounts, roamingSettings.account);
             this.setProjects(roamingSettings.projects, roamingSettings.project);
             this.setTeams(roamingSettings.teams, roamingSettings.team);
@@ -44,7 +44,8 @@ export default class APTCache {
     @action public async populateAccounts(): Promise<void> {
         this.setPopulateStage(APTPopulateStage.MidAccount);
         try {
-            let list: DropdownParseable[] = await Rest.getAccounts(RoamingSettings.GetInstance().id);
+            let rs: RoamingSettings = await RoamingSettings.GetInstance();
+            let list: DropdownParseable[] = await Rest.getAccounts(rs.id);
             let output = this.convert(list, this._account);
             this.setAccounts(output.options, output.selected);
             this.setPopulateStage(APTPopulateStage.PostAccount);

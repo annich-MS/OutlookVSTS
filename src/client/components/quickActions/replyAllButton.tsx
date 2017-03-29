@@ -1,9 +1,9 @@
 import * as React from "react";
 import { Button, ButtonType, Spinner } from "office-ui-fabric-react";
-import { Rest } from "../rest";
-import Constants from "../models/constants";
-import NavigationStore from "../stores/navigationStore";
-import { AppNotificationType } from "../models/appNotification";
+import { Rest } from "../../utils/rest";
+import Constants from "../../models/constants";
+import NavigationStore from "../../stores/navigationStore";
+import { AppNotificationType } from "../../models/appNotification";
 
 /**
  * Props for ReplyAllButton Component

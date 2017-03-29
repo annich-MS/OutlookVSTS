@@ -1,14 +1,18 @@
 import * as React from "react";
-import { Provider } from "react-redux";
-import { ItemHyperlink } from "./ItemHyperlink";
-import { ReplyAllButton } from "./ReplyAllButton";
-import { CopyButton } from "./CopyButton";
-import { Feedback } from "./SimpleComponents/Feedback";
 import * as ReactDOM from "react-dom/server";
+import { Provider } from "react-redux";
 import { Label, Link } from "office-ui-fabric-react";
-import { Notification } from "./SimpleComponents/Notification";
+
+import { ItemHyperlink } from "./quickActions/itemHyperlink";
+import { ReplyAllButton } from "./quickActions/replyAllButton";
+import { CopyButton } from "./quickActions/copyButton";
+
+import { Feedback } from "./shared/feedback";
+import { Notification } from "./shared/notification";
+
 import WorkItemStore from "../stores/workItemStore";
 import NavigationStore from "../stores/navigationStore";
+
 import { typeToString } from "../models/workItemType";
 
 /**
@@ -23,7 +27,7 @@ interface IQuickActionProps {
  * Builds the formatted work item HTML element
  * Renders all Components
  */
-export class QuickActions extends React.Component<IQuickActionProps, {}> {
+export default class QuickActions extends React.Component<IQuickActionProps, {}> {
   /**
    * Builds the HTML element in the form <item type><item ID>: <item title>
    */

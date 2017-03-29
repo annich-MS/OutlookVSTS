@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Rest, RestError } from "../../rest";
-import { RoamingSettings } from "../RoamingSettings";
+import { Rest, RestError } from "../../utils/rest";
+import RoamingSettings from "../../models/roamingSettings";
 import { Button, ButtonType } from "office-ui-fabric-react";
 import NavigationPage from "../../models/navigationPage";
 import NavigationStore from "../../stores/navigationStore";
@@ -27,7 +27,8 @@ export class LogoutButton extends React.Component<ILogoutButtonProps, any> {
     private async logout(): Promise<void> {
         try {
             await Rest.removeUser();
-            await RoamingSettings.GetInstance().clear();
+            let rs: RoamingSettings = await RoamingSettings.GetInstance();
+            rs.clear();
             this.props.aptCache.clear();
             this.props.navigationStore.navigate(NavigationPage.LogIn);
         } catch (error) {

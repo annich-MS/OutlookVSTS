@@ -17,6 +17,7 @@ export class AddInDescription extends React.Component<{}, {}> {
       <div>
         <p className={titleClasses} > Create work items</p>
         <p className={bodyClasses}>Turn an email thread into a work item directly from Outlook!</p>
+
       </div>
       <div>
         <p className={titleClasses}> Communicate with your team </p>

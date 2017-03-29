@@ -1,5 +1,5 @@
 import * as Agent from "superagent";
-import VSTSInfo from "./models/vstsInfo";
+import VSTSInfo from "../models/vstsInfo";
 
 export class UserProfile {
     public displayName: string;

@@ -1,11 +1,8 @@
 import { computed, observe } from "mobx";
 import { IDropdownOption } from "office-ui-fabric-react";
 
-import { DropdownParseable, Rest } from "../../rest";
-
-import { RoamingSettings } from "../RoamingSettings";
-import APTPopulateStage from "../../models/aptPopulateStage";
-import APTCache from "../../stores/aptCache";
+import APTPopulateStage from "../models/aptPopulateStage";
+import APTCache from "./aptCache";
 
 abstract class DropdownConfig {
     public static createAccountConfig(cache: APTCache): DropdownConfig {

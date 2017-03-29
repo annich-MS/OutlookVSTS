@@ -6,7 +6,7 @@ import {Spinner, SpinnerType, Overlay} from "office-ui-fabric-react";
  * Renders saving overlay
  * @class {Saving} 
  */
-export class Saving extends React.Component<{}, {}> {
+export default class Saving extends React.Component<{}, {}> {
 
   /**
    * Renders saving overlay

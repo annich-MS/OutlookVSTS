@@ -1,7 +1,7 @@
 import * as React from "react";
 import { TextField } from "office-ui-fabric-react";
-import WorkItemStore from "../stores/workItemStore";
 import { observer } from "mobx-react";
+import WorkItemStore from "../../stores/workItemStore";
 
 /**
  * Represents the Title Properties
@@ -32,4 +32,3 @@ export class Title extends React.Component<ITitleProps, {}> {
     );
   }
 }
-

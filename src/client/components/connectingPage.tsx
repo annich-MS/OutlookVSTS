@@ -6,7 +6,7 @@ import { Spinner, SpinnerType } from "office-ui-fabric-react";
  * Renders connecting page
  * @class {Connecting} 
  */
-export class Connecting extends React.Component<{}, {}> {
+export default class Connecting extends React.Component<{}, {}> {
 
   /**
    * Renders Connecting page

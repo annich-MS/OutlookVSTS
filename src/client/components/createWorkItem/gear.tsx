@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Button, ButtonType } from "office-ui-fabric-react";
-import NavigationStore from "../stores/navigationStore";
-import NavigationPage from "../models/navigationPage";
+import NavigationStore from "../../stores/navigationStore";
+import NavigationPage from "../../models/navigationPage";
 
 /**
  * Represents the Gear Properties

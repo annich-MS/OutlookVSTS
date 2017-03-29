@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Notification } from "../SimpleComponents/Notification";
-import { Classification } from "./Classification";
-import { SaveDefaultsButton } from "./SaveDefaultsButton";
-import { CancelButton } from "./CancelButton";
-import { LogoutButton } from "./LogoutButton";
-import NavigationStore from "../../stores/navigationStore";
-import APTCache from "../../stores/aptCache";
+import { Notification } from "./shared/notification";
+import { Classification } from "./addConfig/classification";
+import { SaveDefaultsButton } from "./addConfig/saveConfigButton";
+import { CancelButton } from "./settings/cancelButton";
+import { LogoutButton } from "./settings/logoutButton";
+import NavigationStore from "../stores/navigationStore";
+import APTCache from "../stores/aptCache";
 
 interface ISettingsProps {
   cache: APTCache;
@@ -17,7 +17,7 @@ interface ISettingsProps {
  * Renders area path dropdowns and save button
  * @class {Settings} 
  */
-export class Settings extends React.Component<ISettingsProps, any> {
+export default class Settings extends React.Component<ISettingsProps, any> {
   /**
    * Renders the area path dropdowns and save button
    */

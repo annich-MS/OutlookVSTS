@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Button, ButtonType } from "office-ui-fabric-react";
-import Constants from "../models/constants";
+import Constants from "../../models/constants";
 
 /**
  * Props for CopyButton Component

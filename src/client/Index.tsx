@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Dogfood } from "./dogfood";
-import { VSTS } from "./VSTS/VSTS";
+import { VSTS } from "./VSTS";
 import Done from "./done";
 import { aptCache } from "./stores/aptCache";
 import { navigationStore } from "./stores/navigationStore";

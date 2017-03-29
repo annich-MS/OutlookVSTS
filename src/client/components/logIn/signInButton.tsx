@@ -2,9 +2,9 @@
 import * as React from "react";
 import { Button, ButtonType } from "office-ui-fabric-react";
 // utils
-import { Rest, RestError, UserProfile } from "../../rest";
+import { Rest, RestError } from "../../utils/rest";
 // models
-import { RoamingSettings } from "../RoamingSettings";
+import RoamingSettings from "../../models/roamingSettings";
 import { AppNotificationType } from "../../models/appNotification";
 import NavigationPage from "../../models/navigationPage";
 // stores
@@ -62,8 +62,9 @@ export class SignInButton extends React.Component<ISignInProps, {}> {
       let authenticated: boolean = await Rest.getIsAuthenticated();
       if (authenticated) {
         let userProfile = await Rest.getUserProfile();
-        RoamingSettings.GetInstance().id = userProfile.id;
-        await RoamingSettings.GetInstance().save();
+        let roamingSettings: RoamingSettings = await RoamingSettings.GetInstance();
+        roamingSettings.id = userProfile.id;
+        await roamingSettings.save();
         this.props.navigationStore.navigate(NavigationPage.Settings);
       } else {
         this.props.navigationStore.updateNotification({ message: "Did not find auth info, please reauthenticate", type: AppNotificationType.Warning });

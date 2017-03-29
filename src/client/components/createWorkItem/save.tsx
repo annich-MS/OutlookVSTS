@@ -3,16 +3,16 @@ import { observer } from "mobx-react";
 import { computed } from "mobx";
 import { Button, ButtonType } from "office-ui-fabric-react";
 
-import { Rest } from "../rest";
+import { Rest } from "../../utils/rest";
 
-import WorkItemStore from "../stores/workItemStore";
-import NavigationStore from "../stores/navigationStore";
-import APTCache from "../stores/aptCache";
+import WorkItemStore from "../../stores/workItemStore";
+import NavigationStore from "../../stores/navigationStore";
+import APTCache from "../../stores/aptCache";
 
-import { AppNotificationType } from "../models/appNotification";
-import APTPopulateStage from "../models/aptPopulateStage";
-import { typeToString } from "../models/workItemType";
-import VSTSInfo from "../models/vstsInfo";
+import { AppNotificationType } from "../../models/appNotification";
+import APTPopulateStage from "../../models/aptPopulateStage";
+import { typeToString } from "../../models/workItemType";
+import VSTSInfo from "../../models/vstsInfo";
 
 type Message = Office.MessageRead;
 

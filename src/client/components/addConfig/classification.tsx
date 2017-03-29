@@ -1,6 +1,6 @@
 import * as React from "react";
 import ConfigurableDropdown from "./configurableDropdown";
-import DropdownConfiguration from "./dropdownConfig";
+import DropdownConfiguration from "../../stores/dropdownConfigStore";
 import NavigationStore from "../../stores/navigationStore";
 import APTCache from "../../stores/aptCache";
 

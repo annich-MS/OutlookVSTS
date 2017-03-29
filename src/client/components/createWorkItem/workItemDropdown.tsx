@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Dropdown, IDropdownOption } from "office-ui-fabric-react";
 import { observer } from "mobx-react";
-import { typeFromString, typeToString } from "../models/workItemType";
-import WorkItemStore from "../stores/workItemStore";
+import { typeFromString, typeToString } from "../../models/workItemType";
+import WorkItemStore from "../../stores/workItemStore";
 
 /**
  * Represents the WorkItemType Properties

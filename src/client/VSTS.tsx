@@ -3,27 +3,27 @@ import * as React from "react";
 import { observer } from "mobx-react";
 
 // components
-import { LogInPage } from "./LoginComponents/LogInPage";
-import { Settings } from "./SettingsComponents/Settings";
-import { Connecting } from "./SimpleComponents/Connecting";
-import { Saving } from "./SimpleComponents/Saving";
-import { CreateWorkItem } from "./CreateWorkItem";
-import { QuickActions } from "./QuickActions";
+import LogInPage from "./components/logInPage";
+import Settings from "./components/settingsPage";
+import Connecting from "./components/connectingPage";
+import Saving from "./components/savingOverlay";
+import CreateWorkItem from "./components/createWorkItemPage";
+import QuickActions from "./components/quickActionsPage";
 
 // utilities
-import { Rest, RestError, UserProfile } from "../rest";
+import { Rest, RestError, UserProfile } from "./utils/rest";
 
 // models
-import { RoamingSettings } from "./RoamingSettings";
-import APTPopulationStage from "../models/aptPopulateStage";
-import { AppNotificationType } from "../models/appNotification";
-import Constants from "../models/constants";
-import NavigationPage from "../models/navigationPage";
+import RoamingSettings from "./models/roamingSettings";
+import APTPopulationStage from "./models/aptPopulateStage";
+import { AppNotificationType } from "./models/appNotification";
+import Constants from "./models/constants";
+import NavigationPage from "./models/navigationPage";
 
 // stores
-import APTCache from "../stores/aptCache";
-import NavigationStore from "../stores/navigationStore";
-import WorkItemStore from "../stores/workItemStore";
+import APTCache from "./stores/aptCache";
+import NavigationStore from "./stores/navigationStore";
+import WorkItemStore from "./stores/workItemStore";
 
 
 /**
@@ -102,8 +102,8 @@ export class VSTS extends React.Component<IVSTSProps, any> {
    * Executed after Office.initialize is complete. 
    * Initial check for user authentication token and determines correct first page to show
    */
-  public Initialize(): void {
-    this.roamingSettings = RoamingSettings.GetInstance();
+  public async Initialize(): Promise<void> {
+    this.roamingSettings = await RoamingSettings.GetInstance();
     this.item = Office.context.mailbox.item as Office.MessageRead;
     this.iosInit();
     this.prepopDropdowns();

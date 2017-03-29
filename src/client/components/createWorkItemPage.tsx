@@ -1,12 +1,12 @@
 import * as React from "react";
-import { Description } from "./Description";
-import { Title } from "./Title";
-import { Save } from "./Save";
-import { WorkItemDropdown } from "./WorkItemDropdown";
-import { Classification } from "./SettingsComponents/Classification";
-import { Gear } from "./Gear";
-import { Feedback } from "./SimpleComponents/Feedback";
-import { Notification } from "./SimpleComponents/Notification";
+import { Description } from "./createWorkItem/description";
+import { Title } from "./createWorkItem/title";
+import { Save } from "./createWorkItem/save";
+import { WorkItemDropdown } from "./createWorkitem/WorkItemDropdown";
+import { Classification } from "./addConfig/classification";
+import { Gear } from "./createWorkItem/gear";
+import { Feedback } from "./shared/feedback";
+import { Notification } from "./shared/notification";
 import APTCache from "../stores/aptCache";
 import NavigationStore from "../stores/navigationStore";
 import WorkItemStore from "../stores/workItemStore";
@@ -20,7 +20,7 @@ interface ICreateWorkItemProps {
 /**
  * Renders all components of the Create page
  */
-export class CreateWorkItem extends React.Component<ICreateWorkItemProps, {}> {
+export default class CreateWorkItem extends React.Component<ICreateWorkItemProps, {}> {
   /**
    * Renders the div that contains all the components of the Create page
    */

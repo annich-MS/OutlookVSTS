@@ -24,8 +24,27 @@ abstract class BaseRoamingSettings {
 
 class RoamingSettings01 extends BaseRoamingSettings {
 
-    // constants
     public static readonly VERSION: number = 1;
+
+    public static async _getInstance(): Promise<RoamingSettings01> {
+        let rs: RoamingSettings01 = new RoamingSettings01();
+        let version: number = rs.get<number>(RoamingSettings.VERSION_KEY);
+        if (version === undefined || version < RoamingSettings01.VERSION) {
+            rs.isValid = false;
+        } else {
+            rs.isValid = true;
+            rs.account = rs.get<string>(RoamingSettings01.ACCOUNT_KEY) || "";
+            rs.project = rs.get<string>(RoamingSettings01.PROJECT_KEY) || "";
+            rs.team = rs.get<string>(RoamingSettings01.TEAM_KEY) || "";
+            rs.accounts = rs.get<IDropdownOption[]>(RoamingSettings01.ACCOUNTS_KEY) || [];
+            rs.projects = rs.get<IDropdownOption[]>(RoamingSettings01.PROJECTS_KEY) || [];
+            rs.teams = rs.get<IDropdownOption[]>(RoamingSettings01.TEAMS_KEY) || [];
+            rs.id = rs.get<string>(RoamingSettings01.ID_KEY);
+        }
+        return rs;
+    }
+
+    // constants
     private static readonly ACCOUNT_KEY: string = "default_account";
     private static readonly PROJECT_KEY: string = "default_project";
     private static readonly TEAM_KEY: string = "default_team";
@@ -43,23 +62,6 @@ class RoamingSettings01 extends BaseRoamingSettings {
     public projects: IDropdownOption[] = [];
     public teams: IDropdownOption[] = [];
     public id: string;
-
-    public constructor() {
-        super();
-        let version: number = this.get<number>(RoamingSettings.VERSION_KEY);
-        if (version === undefined || version < RoamingSettings01.VERSION) {
-            this.isValid = false;
-        } else {
-            this.isValid = true;
-            this.account = this.get<string>(RoamingSettings01.ACCOUNT_KEY) || "";
-            this.project = this.get<string>(RoamingSettings01.PROJECT_KEY) || "";
-            this.team = this.get<string>(RoamingSettings01.TEAM_KEY) || "";
-            this.accounts = this.get<IDropdownOption[]>(RoamingSettings01.ACCOUNTS_KEY) || [];
-            this.projects = this.get<IDropdownOption[]>(RoamingSettings01.PROJECTS_KEY) || [];
-            this.teams = this.get<IDropdownOption[]>(RoamingSettings01.TEAMS_KEY) || [];
-            this.id = this.get<string>(RoamingSettings01.ID_KEY);
-        }
-    }
 
     public updateFromCache(cache: APTCache): void {
         this.account = cache.account;
@@ -119,23 +121,23 @@ class RoamingSettings02 extends BaseRoamingSettings {
 
     public static readonly VERSION: number = 2;
 
+    public static async _getInstance(): Promise<RoamingSettings02> {
+        let rs: RoamingSettings02 = new RoamingSettings02();
+        let version: number = rs.get<number>(RoamingSettings.VERSION_KEY);
+        switch (version) {
+            case RoamingSettings01.VERSION:
+                await rs.migrateFromRS01();
+            case RoamingSettings02.VERSION:
+                rs.fromRoamingSettings();
+            default:
+                rs.preload();
+        }
+        return rs;
+    }
+
     private static readonly CONFIGS_KEY: string = "configs";
 
     public configs: IVSTSConfig[];
-
-    public constructor() {
-        super();
-        let version: number = this.get<number>(RoamingSettings.VERSION_KEY);
-        switch (version) {
-            case RoamingSettings01.VERSION:
-                this.migrateFromRS01();
-            case RoamingSettings02.VERSION:
-                this.populate();
-            default:
-                this.preload();
-        }
-
-    }
 
     public save(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
@@ -164,32 +166,33 @@ class RoamingSettings02 extends BaseRoamingSettings {
         });
     }
 
-    private preload() {
+    private preload(): void {
         this.configs = [];
     }
 
-    private populate() {
+    private fromRoamingSettings(): void {
         this.configs = this.get<IVSTSConfig[]>(RoamingSettings02.CONFIGS_KEY);
     }
 
-    private migrateFromRS01() {
-        let rs: RoamingSettings01 = new RoamingSettings01();
+    private async migrateFromRS01(): Promise<void> {
+        let rs: RoamingSettings01 = await RoamingSettings01._getInstance();
         this.configs = [{
             account: rs.account,
             name: rs.team,
             project: rs.project,
             team: rs.team,
         }];
-        rs.clear();
+        await rs.clear();
+        return;
     }
 }
 
-export class RoamingSettings extends RoamingSettings01 {
+export default class RoamingSettings extends RoamingSettings01 {
 
-    public static GetInstance(): RoamingSettings {
+    public static async GetInstance(): Promise<RoamingSettings> {
         if (!RoamingSettings.instance) {
 
-            RoamingSettings.instance = new RoamingSettings01();
+            RoamingSettings.instance = (await RoamingSettings01._getInstance()) as RoamingSettings;
         }
         return RoamingSettings.instance;
     }
