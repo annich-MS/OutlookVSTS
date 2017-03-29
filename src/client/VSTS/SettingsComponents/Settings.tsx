@@ -41,7 +41,7 @@ export class Settings extends React.Component<ISettingsProps, any> {
         </div>
         <br />
         <div>
-          <LogoutButton navigationStore={this.props.navigationStore} />
+          <LogoutButton aptCache={this.props.cache} navigationStore={this.props.navigationStore} />
         </div>
       </div>
     );

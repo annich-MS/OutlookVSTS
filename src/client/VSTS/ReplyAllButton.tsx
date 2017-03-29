@@ -60,13 +60,18 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, { savi
   /**
    * Handles the click and displays a reply-all form
    */
-  private handleClick(): void {
+  private async handleClick(): Promise<void> {
     if (Office.context.mailbox.diagnostics.hostName === Constants.IOS_HOST_NAME) {
       this.setState({ saving: true });
-      Rest.autoReply("I have created the following bug:<br/><br/>" + this.addSignature(this.props.workItemHyperlink), (output: string) => {
-        this.setState({ saving: false });
+      try {
+        await Rest.autoReply("I have created the following bug:<br/><br/>" + this.addSignature(this.props.workItemHyperlink));
         this.props.navigationStore.updateNotification({ message: "Message Sent!", type: AppNotificationType.Success });
-      });
+      } catch (error) {
+        this.props.navigationStore.updateNotification({ message: "Message Send Failed", type: AppNotificationType.Error});
+      } finally {
+
+        this.setState({ saving: false });
+      }
     } else {
       (Office.context.mailbox.item as Office.MessageRead).displayReplyAllForm(this.addSignature(this.props.workItemHyperlink));
     }

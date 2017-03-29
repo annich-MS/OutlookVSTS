@@ -1,33 +1,32 @@
 import * as Authenticate from "./authenticate";
 import Token from "../auth/token";
-let express = require("express");
-let fs = require("fs");
-let url = require("url");
-let https = require("https");
-let querystring = require("querystring");
+import * as Express from "express";
+import * as querystring from "querystring";
 import * as Buffer from "buffer";
-let request = require("request-promise");
-let stream = require("string-to-stream");
-let flow = require("xml-flow");
+import * as request from "request-promise";
+import * as stream from "string-to-stream";
+import * as flow from "xml-flow";
 
-let router = express.Router({ mergeParams: true });
+let router = Express.Router({ mergeParams: true });
 export default router;
 let API1_0 = "1.0";
-let API2_0_Preview = "2.0-preview.1";
+let API2_0_PREVIEW = "2.0-preview.1";
 let API2_0 = "2.0";
-let API3_0_Preview = "3.0-preview";
+let API3_0_PREVIEW = "3.0-preview";
+
+let BATCH_SIZE: number = 100;
 
 let FIELDS = {
+  AREA_PATH: "/fields/System.AreaPath",
+  DESCRIPTION: "/fields/System.Description",
+  ITERATION_PATH: "/fields/System.IterationPath",
+  RELATIONS: "/relations/-",
   REPRO_STEPS: "/fields/Microsoft.VSTS.TCM.ReproSteps",
   TITLE: "/fields/System.Title",
-  DESCRIPTION: "/fields/System.Description",
-  AREA_PATH: "/fields/System.AreaPath",
-  ITERATION_PATH: "/fields/System.IterationPath",
-  RELATIONS: "/relations/-"
 };
 
 function createError(type, more) {
-  return JSON.stringify({ error: { type: type, more: more } });
+  return JSON.stringify({ error: { more: more, type: type } });
 }
 
 /**
@@ -37,10 +36,10 @@ function createError(type, more) {
  * @param {Object} options - options to use in the https request
  * @param {requestCallback} callback - the callback to make upon completion
  */
-function makeAuthenticatedRequest(user, options, callback) {
-  Authenticate.getUID(user, (uid) => {
-    Authenticate.getToken(uid, (token: Token) => { handleAuthentication(token, options, callback); });
-  });
+async function makeAuthenticatedRequest(user, options): Promise<string> {
+  let uid: string = await Authenticate.getUID(user);
+  let token: Token = await Authenticate.getToken(uid);
+  return await handleAuthentication(token, options);
 }
 
 /**
@@ -50,48 +49,43 @@ function makeAuthenticatedRequest(user, options, callback) {
  * @param {Object} context
  * @param {Object} context.callback
  */
-function handleAuthentication(token: Token, options, callback) {
-
+async function handleAuthentication(token: Token, options): Promise<string> {
   if (token != null) {
     options.headers.Authorization = `Bearer ${token.token}`;
-    makeHttpsRequest(options, callback);
-
+    return await makeHttpsRequest(options);
   } else {
     console.log(`could not find token for user ${token.id}`);
-    callback(null);
-
+    return null;
   }
 }
 
 function toUTF8Array(str) {
-    let utf8 = [];
-    for (let i=0; i < str.length; i++) {
-        let charcode = str.charCodeAt(i);
-        if (charcode < 0x80) utf8.push(charcode);
-        else if (charcode < 0x800) {
-            utf8.push(0xc0 | (charcode >> 6), 
-                      0x80 | (charcode & 0x3f));
-        }
-        else if (charcode < 0xd800 || charcode >= 0xe000) {
-            utf8.push(0xe0 | (charcode >> 12), 
-                      0x80 | ((charcode>>6) & 0x3f), 
-                      0x80 | (charcode & 0x3f));
-        }
-        // surrogate pair
-        else {
-            i++;
-            // UTF-16 encodes 0x10000-0x10FFFF by
-            // subtracting 0x10000 and splitting the
-            // 20 bits of 0x0-0xFFFFF into two halves
-            charcode = 0x10000 + (((charcode & 0x3ff)<<10)
-                      | (str.charCodeAt(i) & 0x3ff));
-            utf8.push(0xf0 | (charcode >>18), 
-                      0x80 | ((charcode>>12) & 0x3f), 
-                      0x80 | ((charcode>>6) & 0x3f), 
-                      0x80 | (charcode & 0x3f));
-        }
+  let utf8 = [];
+  for (let i = 0; i < str.length; i++) {
+    let charcode = str.charCodeAt(i);
+    if (charcode < 0x80) {
+      utf8.push(charcode);
+    } else if (charcode < 0x800) {
+      utf8.push(0xc0 | (charcode >> 6),
+        0x80 | (charcode & 0x3f));
+    } else if (charcode < 0xd800 || charcode >= 0xe000) {
+      utf8.push(0xe0 | (charcode >> 12),
+        0x80 | ((charcode >> 6) & 0x3f),
+        0x80 | (charcode & 0x3f));
+    } else { // surrogate pair
+      i++;
+      // UTF-16 encodes 0x10000-0x10FFFF by
+      // subtracting 0x10000 and splitting the
+      // 20 bits of 0x0-0xFFFFF into two halves
+      charcode = 0x10000 + (((charcode & 0x3ff) << 10)
+        | (str.charCodeAt(i) & 0x3ff));
+      utf8.push(0xf0 | (charcode >> 18),
+        0x80 | ((charcode >> 12) & 0x3f),
+        0x80 | ((charcode >> 6) & 0x3f),
+        0x80 | (charcode & 0x3f));
     }
-    return utf8;
+  }
+  return utf8;
 }
 
 /**
@@ -100,28 +94,26 @@ function toUTF8Array(str) {
  * @param {any} options
  * @param {any} callback
  */
-function makeHttpsRequest(options, callback) {
-
+async function makeHttpsRequest(options): Promise<string> {
   // add derived headers
   if (options.body) {
     options.headers["Content-Length"] = toUTF8Array(options.body).length;
   }
-
   console.log(options.method + ": " + options.uri);
-
-  request(options).then((output) => {
-    if(!options.isXML) {
+  try {
+    let output: string = await request(options);
+    if (!options.isXML) {
       try {
         JSON.parse(output);
       } catch (e) {
         output = createError("Unparseable output", output);
       }
     }
-    callback(output);
-  }, (error) => {
+    return output;
+  } catch (error) {
     console.log(JSON.stringify(error));
-    callback(createError("Request Error", error));
-  });
+    return createError("Request Error", error);
+  }
 
 }
 
@@ -137,10 +129,10 @@ function makeHttpsRequest(options, callback) {
  */
 function createOptions(input, method) {
   return {
-    uri: "https://" + input.host + encodeURI(input.path) + "?" + querystring.stringify(input.query),
-    method: method,
+    body: input.body,
     headers: input.headers || {},
-    body: input.body
+    method: method,
+    uri: "https://" + input.host + encodeURI(input.path) + "?" + querystring.stringify(input.query),
   };
 }
 
@@ -166,8 +158,8 @@ router.getItem = function (req, res) {
   input.query["api-version"] = API1_0;
   input.host = input.host + ".visualstudio.com";
   input.path = "/DefaultCollection/_apis/wit/workitems";
-  makeAuthenticatedRequest(input.user, createOptions(input, "GET"), (output) => { res.send(output); });
-}
+  makeAuthenticatedRequest(input.user, createOptions(input, "GET")).then((output) => { res.send(output); });
+};
 router.use("/getItem", router.getItem);
 
 /**
@@ -182,8 +174,8 @@ router.me = function (req, res) {
   input.query["api-version"] = API1_0;
   input.host = "app.vssps.visualstudio.com";
   input.path = "/_apis/profile/profiles/me";
-  makeAuthenticatedRequest(input.user, createOptions(input, "GET"), (output) => { res.send(output); });
-}
+  makeAuthenticatedRequest(input.user, createOptions(input, "GET")).then((output) => { res.send(output); });
+};
 router.use("/me", router.me);
 
 /**
@@ -199,8 +191,8 @@ router.accounts = function (req, res) {
   input.query["api-version"] = API1_0;
   input.host = "app.vssps.visualstudio.com";
   input.path = "/_apis/Accounts";
-  makeAuthenticatedRequest(input.user, createOptions(input, "GET"), (output) => { res.send(output); });
-}
+  makeAuthenticatedRequest(input.user, createOptions(input, "GET")).then((output) => { res.send(output); });
+};
 router.use("/accounts", router.accounts);
 
 /**
@@ -216,9 +208,9 @@ router.projects = function (req, res) {
   input.query["api-version"] = API1_0;
   input.host = input.account + ".visualstudio.com";
   input.path = "/DefaultCollection/_apis/projects";
-  makeAuthenticatedRequest(input.user, createOptions(input, "GET"), (output) => { res.send(output); });
+  makeAuthenticatedRequest(input.user, createOptions(input, "GET")).then((output) => { res.send(output); });
 
-}
+};
 router.use("/projects", router.projects);
 
 /**
@@ -227,16 +219,35 @@ router.use("/projects", router.projects);
  * @param {any} req
  * @param {any} res
  */
-router.getTeams = function (req, res) {
+router.getTeams = async function (req, res) {
   let input = req.query;
   if (!input.query) { input.query = {}; }
 
   input.query["api-version"] = API1_0;
-  input.query["$top"] = 500;
   input.host = input.account + ".visualstudio.com";
   input.path = "/DefaultCollection/_apis/projects/" + input.project + "/teams";
-  makeAuthenticatedRequest(input.user, createOptions(input, "GET"), (output) => { res.send(output); });
-}
+
+  let uid: string = await Authenticate.getUID(input.user);
+  let token: Token = await Authenticate.getToken(uid);
+  let expected: number = 0;
+
+  let teams = [];
+  try {
+
+    while (teams.length === expected) {
+      input.query.$top = BATCH_SIZE;
+      input.query.$skip = expected;
+      let options = createOptions(input, "GET");
+      options.headers.Authorization = `Bearer ${token.token}`;
+      let output = JSON.parse(await makeHttpsRequest(options));
+      teams = teams.concat(output.value);
+      expected += BATCH_SIZE;
+    }
+    res.send({ value: teams });
+  } catch (error) {
+    res.send(error);
+  }
+};
 router.use("/getTeams", router.getTeams);
 
 /**
@@ -249,11 +260,11 @@ router.getTeamField = function (req, res) {
   let input = req.query;
   if (!input.query) { input.query = {}; }
 
-  input.query["api-version"] = API2_0_Preview;
+  input.query["api-version"] = API2_0_PREVIEW;
   input.host = input.account + ".visualstudio.com";
   input.path = "/DefaultCollection/" + input.project + "/" + input.team + "/_apis/Work/TeamSettings/TeamFieldValues";
-  makeAuthenticatedRequest(input.user, createOptions(input, "GET"), (output) => { res.send(output); });
-}
+  makeAuthenticatedRequest(input.user, createOptions(input, "GET")).then((output) => { res.send(output); });
+};
 router.use("/getTeamField", router.getTeamField);
 
 /**
@@ -266,21 +277,21 @@ router.getCurrentIteration = function (req, res) {
   let input = req.query;
   if (!input.query) { input.query = {}; }
   input.query["$timeframe"] = "current";
-  input.query["api-version"] = API2_0_Preview;
+  input.query["api-version"] = API2_0_PREVIEW;
   input.host = input.account + ".visualstudio.com";
   input.path = "/defaultcollection/" + input.project + "/" + input.team + "/_apis/work/teamsettings/iterations";
-  makeAuthenticatedRequest(input.user, createOptions(input, "GET"), (output) => { res.send(output); });
-}
+  makeAuthenticatedRequest(input.user, createOptions(input, "GET")).then((output) => { res.send(output); });
+};
 router.use("/getCurrentIteration", router.getCurrentIteration);
 
-
-router.getMessage = function (req, res) {
+router.getMessage = async function (req, res) {
   let input = req.query;
-  downloadMessageFromEWS(input.ewsId, input.url, input.token, (output) => { res.send(output); });
-}
+  let message: string = await downloadMessageFromEWS(input.ewsId, input.url, input.token);
+  res.send(message);
+};
 router.use("/getMessage", router.getMessage);
 
-function downloadMessageFromEWS(messageId, ewsUrl, token, callback) {
+async function downloadMessageFromEWS(messageId, ewsUrl, token): Promise<string> {
   let body = `<?xml version="1.0" encoding="utf-8"?>` +
     `<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"` +
     `               xmlns:xsd="http://www.w3.org/2001/XMLSchema"` +
@@ -315,21 +326,25 @@ function downloadMessageFromEWS(messageId, ewsUrl, token, callback) {
     method: "POST",
     uri: ewsUrl,
   };
-  makeHttpsRequest(options, (output) => { extractMessageId(output, callback); });
+  let output: string = await makeHttpsRequest(options);
+  let id: string = await extractMessageId(output);
+  return id;
 }
 
-function extractMessageId(response, callback) {
+async function extractMessageId(response): Promise<string> {
   let parser = new flow(stream(response));
   let done = false;
+  let output: string = "";
   parser.on("tag:t:mimecontent", (element) => {
     done = true;
-    callback(element["$text"]);
+    output = element["$text"];
   });
   parser.on("end", () => {
-    if(!done) {
-      callback(createError("Invalid EWS response", response));
+    if (!done) {
+      output = createError("Invalid EWS response", response);
     }
-  })
+  });
+  return output;
 }
 
 router.uploadAttachment = function (req, res) {
@@ -339,10 +354,10 @@ router.uploadAttachment = function (req, res) {
   input.path = "/DefaultCollection/_apis/wit/attachments";
   input.query = {
     "api-version": API1_0,
-    "filename": input.filename
+    "filename": input.filename,
   };
-  makeAuthenticatedRequest(input.user, createOptions(input, "POST"), (output) => { res.send(output); });
-}
+  makeAuthenticatedRequest(input.user, createOptions(input, "POST")).then((output) => { res.send(output); });
+};
 router.use("/uploadAttachment", router.uploadAttachment);
 
 function decodeBase64Data(data) {
@@ -354,11 +369,11 @@ router.createTask = function (req, res) {
   input.host = input.account + ".visualstudio.com";
   input.path = "/DefaultCollection/" + input.project + "/_apis/wit/workitems/$" + input.type;
   input.query = {
-    "api-version": API1_0
-  }
+    "api-version": API1_0,
+  };
   input.headers = {
-    "Content-Type": "application/json-patch+json"
-  }
+    "Content-Type": "application/json-patch+json",
+  };
   input.body = [
     jsonPatchItem(FIELDS.TITLE, input.title),
     jsonPatchItem(FIELDS.AREA_PATH, input.areapath),
@@ -370,22 +385,23 @@ router.createTask = function (req, res) {
   }
 
   input.body = JSON.stringify(input.body);
-  makeAuthenticatedRequest(input.user, createOptions(input, "PATCH"), (output) => { res.send(output); });
-}
+  makeAuthenticatedRequest(input.user, createOptions(input, "PATCH")).then((output) => { res.send(output); });
+};
 router.use("/createTask", router.createTask);
 
-router.reply = function (req, res) {
+router.reply = async function (req, res) {
   let input = req.query;
   input.host = "outlook.office365.com";
   input.path = "/api/v2.0/me/messages/" + input.item + "/replyAll";
   input.headers = {
     "Content-Type": "application/json",
     "Authorization": "Bearer " + input.token,
-  }
+  };
   input.body = req.body;
   input.isXML = true;
-  makeHttpsRequest(createOptions(input, "POST"), (output) => res.send(output));
-}
+  let output: string = await makeHttpsRequest(createOptions(input, "POST"));
+  res.send(output);
+};
 router.use("/reply", router.reply);
 
 router.backlog = function (req, res) {
@@ -393,24 +409,23 @@ router.backlog = function (req, res) {
   input.host = input.account + ".visualstudio.com";
   input.path = "/defaultcollection/" + input.project + "/" + input.team + "/_apis/work/teamsettings";
   input.query = {
-    "api-version": API3_0_Preview
-  }
-  makeAuthenticatedRequest(input.user, createOptions(input, "GET"), (output) => {
+    "api-version": API3_0_PREVIEW,
+  };
+  makeAuthenticatedRequest(input.user, createOptions(input, "GET")).then((output) => {
     res.send(output);
-  })
-}
+  });
+};
 router.use("/backlog", router.backlog);
 
 router.disconnect = function (req, res) {
-  Authenticate.getUID(req.query.user, (uid) => {
+  Authenticate.getUID(req.query.user).then((uid) => {
     Authenticate.disconnect(uid, (err) => {
       let output = "{}";
       if (err) {
         output = createError("Database Error", err);
       }
       res.send(output);
-    })
+    });
   });
-}
+};
 router.use("/disconnect", router.disconnect);
-

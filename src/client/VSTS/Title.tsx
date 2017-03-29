@@ -15,8 +15,8 @@ export class Title extends React.Component<ITitleProps, {}> {
   /**
    * Dipatches the action to change the value of title in the store 
    */
-  public handleChangeTitle(event: any): void {
-    this.props.workItem.setTitle(event.target.value);
+  public handleChangeTitle(value: string): void {
+    this.props.workItem.setTitle(value);
   }
   /**
    * Rendersthe Title heading and the Title textbox

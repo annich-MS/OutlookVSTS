@@ -5,8 +5,10 @@ import { Button, ButtonType } from "office-ui-fabric-react";
 import NavigationPage from "../../models/navigationPage";
 import NavigationStore from "../../stores/navigationStore";
 import { AppNotificationType } from "../../models/appNotification";
+import APTCache from "../../stores/aptCache";
 
 interface ILogoutButtonProps {
+    aptCache: APTCache;
     navigationStore: NavigationStore;
 }
 
@@ -22,16 +24,20 @@ export class LogoutButton extends React.Component<ILogoutButtonProps, any> {
             </div>);
     }
 
-    private logout(): void {
-
-        Rest.removeUser((error: RestError) => {
-            if (error) {
-                this.props.navigationStore.updateNotification({message: error.toString("disconnect user"), type: AppNotificationType.Error});
-                return;
+    private async logout(): Promise<void> {
+        try {
+            await Rest.removeUser();
+            await RoamingSettings.GetInstance().clear();
+            this.props.aptCache.clear();
+            this.props.navigationStore.navigate(NavigationPage.LogIn);
+        } catch (error) {
+            let message: string;
+            if (error instanceof RestError) {
+                message = error.toString("disconnect user");
             } else {
-                RoamingSettings.GetInstance().clear();
-                this.props.navigationStore.navigate(NavigationPage.LogIn);
+                message = error.message;
             }
-        });
+            this.props.navigationStore.updateNotification({ message: message, type: AppNotificationType.Error });
+        }
     }
 }

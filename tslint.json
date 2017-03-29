@@ -11,6 +11,7 @@
             "ban-keywords",
             "check-format",
             "allow-leading-underscore"
-        ]
+        ],
+        "no-bitwise": false
     }
 }

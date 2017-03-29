@@ -1,12 +1,11 @@
 import { computed, observe } from "mobx";
 import { IDropdownOption } from "office-ui-fabric-react";
 
-import { DropdownParseable, Rest, RestError } from "../../rest";
+import { DropdownParseable, Rest } from "../../rest";
 
 import { RoamingSettings } from "../RoamingSettings";
 import APTPopulateStage from "../../models/aptPopulateStage";
 import APTCache from "../../stores/aptCache";
-
 
 abstract class DropdownConfig {
     public static createAccountConfig(cache: APTCache): DropdownConfig {
@@ -45,26 +44,10 @@ abstract class DropdownConfig {
     }
 
     public abstract changeSelected(selected: IDropdownOption);
+    public populateIfNeeded(): void { /* Default Empty Implementation */ }
 
     protected abstract populate(): void;
-    protected convert(list: DropdownParseable[], selected: string): { options: IDropdownOption[], selected: string } {
-        list = list.sort(DropdownParseable.compare);
-        let retSelected: string = selected;
-        // see if selected exists
-        return {
-            options: list.map((element, index) => {
-                let retVal: IDropdownOption = {
-                    key: element.name,
-                    text: element.name,
-                };
-                if (element.name === selected || index === 0) {
-                    retSelected = element.name;
-                }
-                return retVal;
-            }),
-            selected: retSelected,
-        };
-    }
+
 }
 
 class AccountDropdownConfig extends DropdownConfig {
@@ -77,21 +60,18 @@ class AccountDropdownConfig extends DropdownConfig {
         super(cache);
     }
 
+    public populateIfNeeded(): void {
+        if (this._cache.populateStage === APTPopulateStage.PrePopulate) {
+            this.populate();
+        }
+    }
+
     public changeSelected(selected: IDropdownOption) {
         this._cache.setAccount(selected.text);
     }
 
     protected populate(): void {
-        this._cache.setPopulateStage(APTPopulateStage.MidAccount);
-        Rest.getAccounts(RoamingSettings.GetInstance().id, (error, list) => {
-            if (error) {
-                this.handleFailure(error.toString("populate accounts"));
-                return;
-            }
-            let output = this.convert(list, this._cache.account);
-            this._cache.setAccounts(output.options, output.selected);
-            this._cache.setPopulateStage(APTPopulateStage.PostAccount);
-        });
+        this._cache.populateAccounts();
     }
 }
 
@@ -111,16 +91,7 @@ class ProjectDropdownConfig extends DropdownConfig {
     }
 
     protected populate(): void {
-        this._cache.setPopulateStage(APTPopulateStage.MidProject);
-        Rest.getProjects(this._cache.account, (error, list) => {
-            if (error) {
-                this.handleFailure(error.toString("populate projects"));
-                return;
-            }
-            let output = this.convert(list, this._cache.project);
-            this._cache.setProjects(output.options, output.selected);
-            this._cache.setPopulateStage(APTPopulateStage.PostProject);
-        });
+        this._cache.populateProjects();
     }
 }
 
@@ -140,18 +111,8 @@ class TeamDropdownConfig extends DropdownConfig {
     }
 
     protected populate(): void {
-        this._cache.setPopulateStage(APTPopulateStage.MidTeam);
-        Rest.getTeams(this._cache.project, this._cache.account, (error, list) => {
-            if (error) {
-                this.handleFailure(error.toString("populate teams"));
-                return;
-            }
-            let output = this.convert(list, this._cache.team);
-            this._cache.setTeams(output.options, output.selected);
-            this._cache.setPopulateStage(APTPopulateStage.PostPopulate);
-        });
+        this._cache.populateTeams();
     }
 }
 
 export default DropdownConfig;
-

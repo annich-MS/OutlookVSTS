@@ -1,14 +1,18 @@
 import * as React from "react";
-import { Rest, RestError, WorkItemInfo, IStringCallback } from "../rest";
+import { observer } from "mobx-react";
+import { computed } from "mobx";
 import { Button, ButtonType } from "office-ui-fabric-react";
+
+import { Rest } from "../rest";
+
 import WorkItemStore from "../stores/workItemStore";
 import NavigationStore from "../stores/navigationStore";
 import APTCache from "../stores/aptCache";
+
 import { AppNotificationType } from "../models/appNotification";
 import APTPopulateStage from "../models/aptPopulateStage";
-
-import { observer } from "mobx-react";
-import { computed } from "mobx";
+import { typeToString } from "../models/workItemType";
+import VSTSInfo from "../models/vstsInfo";
 
 type Message = Office.MessageRead;
 
@@ -27,62 +31,54 @@ export class Save extends React.Component<ISaveProps, {}> {
    * Dispatches the action to change the Stage and make the REST call to create the work item
    * @returns {void}
    */
-  public handleSave(): void {
-    this.props.navigationStore.startSave();
-    if (this.props.workItem.attachEmail) {
-      Office.context.mailbox.getCallbackTokenAsync((tokenResult) => {
-        this.uploadAttachment(tokenResult.value, (error, attachmentUrl) => { this.createWorkItem(attachmentUrl); });
-      });
-    } else {
-      this.createWorkItem(null);
+  public async handleSave(): Promise<void> {
+    try {
+      let url: string = null;
+      this.props.navigationStore.startSave();
+      if (this.props.workItem.attachEmail) {
+        url = await this.uploadAttachment();
+      }
+      await this.createWorkItem(url);
+      this.props.navigationStore.endSave(true);
+    } catch (e) {
+      this.props.navigationStore.updateNotification(e);
+      this.props.navigationStore.endSave(false);
     }
   }
 
-  public uploadAttachment(token: string, callback: IStringCallback): void {
+  public async uploadAttachment(): Promise<string> {
     let id: string = (Office.context.mailbox.item as Office.MessageRead).itemId;
     let url: string = Office.context.mailbox.ewsUrl || "https://outlook.office365.com/EWS/Exchange.asmx";
-    let account: string = this.props.cache.account;
+    let token: string = await Rest.getCallbackToken();
+    let message: string;
+    try {
+      message = await Rest.getMessage(id, url, token);
+    } catch (e) { throw { message: e.toString("download message from Exchange"), type: AppNotificationType.Error }; }
 
-    Rest.getMessage(id, url, token, (error, data) => {
-      if (error) {
-        this.props.navigationStore.updateNotification({ message: error.toString("download message from Exchange"), type: AppNotificationType.Error });
-        this.props.navigationStore.endSave(false);
-        return;
-      }
-      Rest.uploadAttachment(data, account, (Office.context.mailbox.item as Message).normalizedSubject + ".eml", (err, link) => {
-        if (err) {
-          this.props.navigationStore.updateNotification({ message: error.toString("upload attachment"), type: AppNotificationType.Error });
-          this.props.navigationStore.endSave(false);
-          return;
-        }
-        callback(null, link);
-      });
-    });
-
+    try {
+      return await Rest.uploadAttachment(message, this.props.cache.account, `${(Office.context.mailbox.item as Message).normalizedSubject}.eml`);
+    } catch (e) { throw { message: e.toString("upload attachment"), type: AppNotificationType.Error }; }
   }
 
-  public createWorkItem(attachmentUrl: string): void {
+  public async createWorkItem(attachmentUrl: string): Promise<void> {
     let options: any = {
       account: this.props.cache.account,
       attachment: attachmentUrl,
       project: this.props.cache.project,
       team: this.props.cache.team,
       title: this.props.workItem.title,
-      type: this.props.workItem.type,
+      type: typeToString(this.props.workItem.type),
     };
     let body: string = this.props.workItem.description;
 
-
-    Rest.createTask(options, body, (error: RestError, workItemInfo: WorkItemInfo) => {
-      if (error) {
-        this.props.navigationStore.updateNotification({ message: error.toString("create task"), type: AppNotificationType.Error });
-        this.props.navigationStore.endSave(false);
-        return;
-      }
-      this.props.navigationStore.endSave(true);
-    });
+    try {
+      let info: VSTSInfo = await Rest.createTask(options, body);
+      this.props.workItem.setInfo(info);
+    } catch (error) {
+      throw { message: error.toString("create task"), type: AppNotificationType.Error };
+    }
+    return;
   }
-
 
   /**
    * Renders the Save button and disables it on click
@@ -100,7 +96,6 @@ export class Save extends React.Component<ISaveProps, {}> {
       </div>
     );
   }
-
 
   @computed private get shouldBeEnabled(): boolean {
     return !(

@@ -7,7 +7,7 @@ import * as Knex from "knex";
 import * as querystring from "querystring";
 
 import connections from "../auth/connections";
-import Token, {ServerTokenData} from "../auth/token";
+import Token, { ServerTokenData } from "../auth/token";
 import AuthInfo from "../auth/authInfo";
 
 const Salt: number[] = JSON.parse(process.env.SALT);
@@ -57,37 +57,39 @@ function bytesToString(bytes: number[]): string {
 /**
  * processes and validates an office.js UserIdentityToken and converts to a internal UID for authentication
  * @param token a UserIdentityToken to be processed
- * @param callback a function that takes in the UID as a string
  */
-export function getUID(token: string, callback: (token: string) => void): void {
-  let decoded = jwt.decode(token, { complete: true });
-  let appctx = JSON.parse(decoded.payload.appctx);
-  https.get(appctx.amurl, (response) => {
-    let output = "";
-    response.on("data", (d) => {
-      output += d;
-    });
+export async function getUID(token: string): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
 
-    response.on("end", () => {
-      let responseBlob = JSON.parse(output);
-      responseBlob.keys.forEach((key) => {
-        if (key.keyinfo.x5t === decoded.header.x5t) {
-          let publicKey = beautify(key.keyvalue.value);
-          jwt.verify(token, publicKey, { algorithms: ["RS256"] }, (err, verified) => {
-            if (!verified) {
-              callback("");
-            }
-            let id = appctx.msexchuid;
-            let url = appctx.amurl;
-            let input = bytesToString(Salt) + id + url;
-            let hash = Crypto.createHash("sha256");
-            hash.update(input);
-            let body = hash.digest("base64");
-            body = body.replace(/\+/g, "-");
-            body = body.replace(/\//g, "_");
-            callback(body);
-          });
-        }
+    let decoded = jwt.decode(token, { complete: true });
+    let appctx = JSON.parse(decoded.payload.appctx);
+    https.get(appctx.amurl, (response) => {
+      let output = "";
+      response.on("data", (d) => {
+        output += d;
+      });
+
+      response.on("end", () => {
+        let responseBlob = JSON.parse(output);
+        responseBlob.keys.forEach((key) => {
+          if (key.keyinfo.x5t === decoded.header.x5t) {
+            let publicKey = beautify(key.keyvalue.value);
+            jwt.verify(token, publicKey, { algorithms: ["RS256"] }, (err, verified) => {
+              if (!verified) {
+                reject();
+              }
+              let id = appctx.msexchuid;
+              let url = appctx.amurl;
+              let input = bytesToString(Salt) + id + url;
+              let hash = Crypto.createHash("sha256");
+              hash.update(input);
+              let body = hash.digest("base64");
+              body = body.replace(/\+/g, "-");
+              body = body.replace(/\//g, "_");
+              resolve(body);
+            });
+          }
+        });
       });
     });
   });
@@ -96,19 +98,15 @@ export function getUID(token: string, callback: (token: string) => void): void {
 /**
  * querys the database for a valid token given a UID
  * @param uid the UID to recieve a token for
- * @param callback a function that takes in a Token, or null if the token is not found
  */
-export function getToken(uid: string, callback: (token: Token) => any): void {
-  connection.select(Token.TokenKey, Token.ExpiryKey, Token.RefreshKey).from(Token.TableName).where(Token.IdKey, uid).then((output: Token[]) => {
+export async function getToken(uid: string): Promise<Token> {
+    let output: Token[] = await connection.select(Token.TokenKey, Token.ExpiryKey, Token.RefreshKey).from(Token.TableName).where(Token.IdKey, uid);
     if (output == null || output.length === 0) {
-      callback(null);
+      return null;
     } else {
       let token: Token = output[0]; // There should only be 1 row
-
-      callback(Token.getSanitized(token));
+      return Token.getSanitized(token);
     }
-
-  });
 };
 
 /**
@@ -162,21 +160,19 @@ function newToken(uid: string, assertion: string, refresh: boolean, callback: (e
  * @param req the request recieved
  * @param res the response to be sent
  */
-function db(req: Express.Request, res: Express.Response) {
-  getUID(req.query.user, (uid) => {
-    getToken(uid, (token: Token) => {
-      if (token != null) {
-        let expiryLimit: number = Date.now() + RefreshMinimum;
-        if (token.expiry > expiryLimit) { // if the token doesn't expire before our limit
-          res.send("success");
-        } else {
-          refreshToken(uid, token.refresh, res);
-        }
-      } else {
-        res.send("failure");
-      }
-    });
-  });
+async function db(req: Express.Request, res: Express.Response) {
+  let uid: string = await getUID(req.query.user);
+  let token: Token = await getToken(uid);
+  if (token != null) {
+    let expiryLimit: number = Date.now() + RefreshMinimum;
+    if (token.expiry > expiryLimit) { // if the token doesn't expire before our limit
+      res.send("success");
+    } else {
+      refreshToken(uid, token.refresh, res);
+    }
+  } else {
+    res.send("failure");
+  }
 };
 router.use("/db", db);
 
@@ -205,7 +201,7 @@ router.use("/callback", callback);
  */
 function authorize(req, res) {
 
-  getUID(req.query.user, (uid) => {
+  getUID(req.query.user).then((uid) => {
     let authParams = {
       client_id: Auth.id,
       redirect_uri: Auth.redirect,

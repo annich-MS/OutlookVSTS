@@ -15,6 +15,7 @@ export default class ConfigurableDropdown extends React.Component<IConfigurableD
 
     public componentWillMount() {
         this.props.dropdownConfig.handleFailure = this.handleError.bind(this);
+        this.props.dropdownConfig.populateIfNeeded();
     }
 
     public render(): JSX.Element {

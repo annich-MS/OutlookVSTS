@@ -1,4 +1,5 @@
 import * as Agent from "superagent";
+import VSTSInfo from "./models/vstsInfo";
 
 export class UserProfile {
     public displayName: string;
@@ -61,16 +62,6 @@ export class Team extends DropdownParseable {
     }
 }
 
-export class WorkItemInfo {
-    public id: string;
-    public VSTShtmlLink: string;
-
-    public constructor(blob: any) {
-        this.id = blob.id;
-        this.VSTShtmlLink = blob._links.html.href;
-    }
-}
-
 interface VSTSErrorBody {
     message: string;
     typeKey: string;
@@ -93,7 +84,7 @@ export class RestError {
     }
 
     public toString(action: string): string {
-        let reason: string = '';
+        let reason: string = "";
         if (this.body) {
             reason = `${this.body.typeKey}: ${this.body.message}`;
         } else if (this.more.statusCode) {
@@ -105,275 +96,209 @@ export class RestError {
     }
 }
 
-export interface IRestCallback { (output: string): void; }
-interface IItemCallback { (error: RestError, item: string): void; }
-export interface IStringCallback { (error: RestError, data: string): void; }
-interface IErrorCallback { (error: RestError): void; }
-interface IUserProfileCallback { (error: RestError, profile: UserProfile): void; }
-interface IProjectsCallback { (error: RestError, projects: Project[]): void; }
-interface IAccountsCallback { (error: RestError, accounts: Account[]): void; }
-interface ITeamsCallback { (error: RestError, teams: Team[]): void; }
-interface IWorkItemCallback { (error: RestError, workItemInfo: WorkItemInfo): void; }
-
 export abstract class Rest {
 
-    public static getIsAuthenticated(): Promise<Boolean> {
-        return new Promise((resolve) => {
-            Rest.getUser((user: string) => {
-                Agent.get(`./authenticate/db`)
-                    // zzGarbage property to prevent IE caching the result
-                    .query({ user: user, zzGarbage: Math.random() * 1000 })
-                    .then((value: Agent.Response) => {
-                        resolve(value.text === "success");
-                    }).catch((reason) => {
-                        resolve(false);
-                    });
+    public static async getIsAuthenticated(): Promise<boolean> {
+        let user: string = await Rest.getUser();
+        let res: Agent.Response = await Agent.get(`./authenticate/db`)
+            // zzGarbage property to prevent IE caching the result
+            .query({ user: user, zzGarbage: Math.random() * 1000 });
+        return res.text === "success";
+    }
+
+    public static async getItem(item: number): Promise<string> {
+        return await this.makeRestCallWithArgs("getItem", {
+            fields: "System.TeamProject",
+            ids: item,
+            instance: "o365exchange",
+        });
+    }
+
+
+    public static async getUserProfile(): Promise<UserProfile> {
+        let output: string = await this.makeRestCall("me");
+
+        let parsed: any = JSON.parse(output);
+        if (parsed.error) {
+            throw new RestError(parsed.error);
+        }
+        this.userProfile = new UserProfile(parsed);
+        return this.userProfile;
+    }
+
+    public static async getAccounts(memberId: string): Promise<Account[]> {
+        let output: string = await this.makeRestCallWithArgs("accounts", { memberId: memberId });
+        let parsed: { error?: any, value: any[] } = JSON.parse(output);
+        if (parsed.error) {
+            throw new RestError(parsed.error);
+        }
+        return parsed.value.map(account => { return new Account(account); });
+    }
+
+    public static async getProjects(accountName: string): Promise<Project[]> {
+        let output: string = await this.makeRestCallWithArgs("projects", { account: accountName });
+        let parsed: { error?: any, value: any[] } = JSON.parse(output);
+        if (parsed.error) {
+            throw new RestError(parsed.error);
+        }
+        return parsed.value.map(project => { return new Project(project); });
+    }
+
+    public static async getTeams(projectName: string, accountName: string): Promise<Team[]> {
+        let output: string = await this.makeRestCallWithArgs("getTeams", { account: accountName, project: projectName });
+        let parsed: { error?: any, value: any[] } = JSON.parse(output);
+        if (parsed.error) {
+            throw new RestError(parsed.error);
+        }
+        return parsed.value.map(team => { return new Team(team); });
+    }
+
+    public static async getIteration(teamName: string, project: string, account: string): Promise<string> {
+        let teams: Team[] = await this.getTeams(project, account);
+        let guid: string = teams.filter(team => { return team.name === teamName; })[0].id;
+        let output: string = await this.makeRestCallWithArgs("backlog", { account: account, project: project, team: guid });
+        console.log(output);
+        let parsed: any = JSON.parse(output);
+        if (parsed.error) {
+            throw new RestError(parsed.error);
+        }
+        if (parsed.backlogIteration.id !== "00000000-0000-0000-0000-000000000000") {
+            return parsed.backlogIteration.path;
+        }
+        throw new RestError({ more: "Missing Backlog Iteration", type: "Missing Backlog Iteration" });
+    }
+
+    public static async getTeamAreaPath(account: string, project: string, teamName: string): Promise<string> {
+        let output: string = await this.makeRestCallWithArgs("getTeamField", { account: account, project: project, team: teamName });
+        let parsed: any = JSON.parse(output);
+        if (parsed.error) {
+            throw new RestError(parsed.error);
+        }
+        if (parsed.field.referenceName !== "System.AreaPath") {
+            // we don"t support teams that don't use area path as their team field
+            throw new RestError({
+                more: "The vsts add-in does not support teams that do not have area path as their default field",
+                type: "Missing Area Path",
+            });
+        }
+        return parsed.defaultValue;
+    }
+
+
+    public static async getMessage(ewsId: string, url: string, token: string): Promise<string> {
+        let output: string = await Rest.makeRestCallWithArgs("getMessage", { ewsId: ewsId, token: token, url: url });
+        let parsed: { error?: any } = null;
+        try {
+            parsed = JSON.parse(output); // will only succeed if error returned
+        } catch (e) {
+            return output;
+        }
+
+        throw new RestError(parsed.error);
+    }
+
+    public static async uploadAttachment(data: string, account: string, filename: string): Promise<string> {
+        let output: string = await Rest.makePostRestCallWithArgs("uploadAttachment", { account: account, filename: filename }, data);
+        let parsed: { error?: any, url: string } = JSON.parse(output);
+        if (parsed.error) {
+            throw new RestError(parsed.error);
+        }
+        return parsed.url;
+    }
+
+    public static async createTask(options: any, body: string): Promise<VSTSInfo> {
+        options.areapath = await this.getTeamAreaPath(options.account, options.project, options.team);
+        options.iteration = await this.getIteration(options.team, options.project, options.account);
+        let output: string = await this.makePostRestCallWithArgs("createTask", options, body);
+        let parsed: any = JSON.parse(output);
+        if (parsed.error) {
+            throw new RestError(parsed.error);
+        }
+        return new VSTSInfo(parsed);
+    }
+
+    public static async removeUser(): Promise<void> {
+        let output: string = await Rest.makeRestCall("disconnect");
+        let parsed: any = JSON.parse(output);
+        if (parsed.error) {
+            throw new RestError(parsed.error);
+        } else {
+            return;
+        }
+    }
+
+    public static getUser(): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            Rest.tokenRequests++;
+            if (Rest.uidToken !== "" && Rest.tokenRefresh.getTime() > Date.now()) {
+                resolve(Rest.uidToken);
+                Rest.tokenCacheHits++;
+            } else {
+                Office.context.mailbox.getUserIdentityTokenAsync((asyncResult: Office.AsyncResult) => {
+                    if (asyncResult.error) {
+                        reject(asyncResult.error);
+                    }
+                    Rest.uidToken = asyncResult.value;
+                    Rest.tokenRefresh = new Date(Date.now() + 10 * 60 * 1000); // 10 * sec/min * ms/sec
+                    resolve(asyncResult.value);
+                });
+            }
+        });
+    }
+
+    public static getCallbackToken(): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            Office.context.mailbox.getCallbackTokenAsync((asyncResult: Office.AsyncResult) => {
+                if (asyncResult.error) {
+                    reject(asyncResult.error);
+                } else {
+                    resolve(asyncResult.value);
+                }
             });
         });
     }
 
+    public static async autoReply(msg: string): Promise<void> {
+        let token: string = await Rest.getCallbackToken();
+        let args: any = {
+            item: (Office.context.mailbox.item as Office.ItemRead).itemId,
+            token: token,
+        };
+        let body: string = JSON.stringify({ "Comment": msg });
+        await Rest.makePostRestCallWithArgs("reply", args, body);
+    }
+
+    public static log(msg: string): void {
+        Agent.get(`./log?msg=${encodeURIComponent(msg)}`).end();
+    }
+
     private static userProfile: UserProfile;
-    private static accounts: Account[];
-    private static uidToken: string = '';
+    private static uidToken: string = "";
     private static tokenRefresh: Date = new Date();
     private static tokenRequests: number = 0;
     private static tokenCacheHits: number = 0;
 
-    public static getItem(item: number, callback: IItemCallback): void {
-        this.makeRestCallWithArgs('getItem', { fields: 'System.TeamProject', ids: item, instance: 'o365exchange' }, (output) => {
-            try {
-                let parsed: any = JSON.parse(output); // will only succeed if error returned
-                callback(new RestError(parsed.error), null);
-            } catch (e) {
-                callback(null, output);
-            }
-        });
+    private static makeRestCall(name: string): Promise<string> {
+        return Rest.makeRestCallWithArgs(name, {});
     }
 
-
-    public static getUserProfile(callback: IUserProfileCallback): void {
-        this.makeRestCall('me', (output) => {
-            let parsed: any = JSON.parse(output);
-            if (parsed.error) {
-                callback(new RestError(parsed.error), null);
-                return;
-            }
-            this.userProfile = new UserProfile(parsed);
-            callback(null, this.userProfile);
-        });
-    }
-
-    public static getAccounts(memberId: string, callback: IAccountsCallback): void {
-        this.makeRestCallWithArgs('accounts', { memberId: memberId }, (output) => {
-            let parsed: any = JSON.parse(output);
-            if (parsed.error) {
-                callback(new RestError(parsed.error), null);
-                return;
-            }
-            this.accounts = [];
-            parsed.value.forEach(account => {
-                this.accounts.push(new Account(account));
-            });
-            callback(null, this.accounts);
-        });
-    }
-
-    public static getProjects(accountName: string, callback: IProjectsCallback): void {
-        this.makeRestCallWithArgs('projects', { account: accountName }, (output) => {
-            let parsed: any = JSON.parse(output);
-            if (parsed.error) {
-                callback(new RestError(parsed.error), null);
-                return;
-            }
-            let projects: Project[] = [];
-            parsed.value.forEach(project => {
-                projects.push(new Project(project));
-            });
-            callback(null, projects);
-        });
-    }
-
-    public static getTeams(projectName: string, accountName: string, callback: ITeamsCallback): void {
-        this.makeRestCallWithArgs('getTeams', { account: accountName, project: projectName }, (output) => {
-            let parsed: any = JSON.parse(output);
-            if (parsed.error) {
-                callback(new RestError(parsed.error), null);
-                return;
-            }
-            let teams: Team[] = [];
-            parsed.value.forEach(team => {
-                teams.push(new Team(team));
-            });
-            callback(null, teams);
-        });
-    }
-
-
-    public static getTeamAreaPath(account: string, project: string, teamName: string, callback: IStringCallback): void {
-        this.makeRestCallWithArgs('getTeamField', { account: account, project: project, team: teamName }, (output) => {
-            let parsed: any = JSON.parse(output);
-            if (parsed.error) {
-                callback(new RestError(parsed.error), null);
-                return;
-            }
-            if (parsed.field.referenceName !== 'System.AreaPath') {
-                // we don't support teams that don't use area path as their team field
-                callback(null, '');
-            } else {
-                callback(null, parsed.defaultValue);
-            }
-        });
-    }
-
-    public static getIteration(teamName: string, project: string, account: string, callback: IStringCallback): void {
-        this.getTeams(project, account, (error: RestError, teams: Team[]) => {
-            if (error) {
-                callback(error, null);
-                return;
-            }
-            let guid: string;
-            teams.forEach(team => {
-                if (team.name === teamName) {
-                    guid = team.id
-                }
-            });
-            this.makeRestCallWithArgs('backlog', { account: account, project: project, team: guid }, (output) => {
-                let parsed: any = JSON.parse(output);
-                if (parsed.error) {
-                    callback(new RestError(parsed.error), null);
-                    return;
-                }
-                if (parsed.backlogIteration.id !== '00000000-0000-0000-0000-000000000000') {
-                    callback(null, parsed.backlogIteration.path);
-                } else {
-                    callback(new RestError({ more: 'Missing Backlog Iteration', type: 'Missing Backlog Iteration' }), '');
-                }
-            });
-        });
-    }
-
-    public static getMessage(ewsId: string, url: string, token: string, callback: IStringCallback): void {
-        Rest.makeRestCallWithArgs('getMessage', { ewsId: ewsId, token: token, url: url }, (output) => {
-            try {
-                let parsed: any = JSON.parse(output); // will only succeed if error returned
-                callback(new RestError(parsed.error), null);
-            } catch (e) {
-                callback(null, output);
-            }
-        });
-    }
-
-    public static uploadAttachment(data: string, account: string, filename: string, callback: IStringCallback): void {
-        Rest.makePostRestCallWithArgs('uploadAttachment', { account: account, filename: filename }, data, (output) => {
-            let parsed: any = JSON.parse(output);
-            if (parsed.error) {
-                callback(new RestError(parsed.error), null);
-                return;
-            }
-            callback(null, parsed.url);
-        });
-    }
-
-    public static attachAttachment(account: any, attachmenturl: string, id: string, callback: IStringCallback): void {
-        Rest.makeRestCallWithArgs('attachAttachment', { account: account, attachmenturl: attachmenturl, id: id }, (output) => {
-            try {
-                let parsed: any = JSON.parse(output); // will only succeed if error returned
-                callback(new RestError(parsed.error), null);
-            } catch (e) {
-                callback(null, output);
-            }
-        });
-    }
-
-    public static createTask(options: any, body: string, callback: IWorkItemCallback): void {
-        this.getTeamAreaPath(options.account, options.project, options.team, (err, areapath) => {
-            if (err) {
-                callback(err, null);
-                return;
-            }
-            options.areapath = areapath;
-            this.getIteration(options.team, options.project, options.account, (err2, iteration) => {
-                if (err2) {
-                    callback(err2, null);
-                }
-                options.iteration = iteration;
-                this.makePostRestCallWithArgs('createTask', options, body, (output) => {
-                    let parsed: any = JSON.parse(output);
-                    if (parsed.error) {
-                        callback(new RestError(parsed.error), null);
-                        return;
-                    }
-                    callback(null, new WorkItemInfo(parsed));
-                });
-            });
-        });
-    }
-
-    public static removeUser(callback: IErrorCallback): void {
-        Rest.makeRestCall('disconnect', (output) => {
-            let parsed: any = JSON.parse(output);
-            if (parsed.error) {
-                callback(new RestError(parsed.error));
-            } else {
-                callback(null);
-            }
-        });
-    }
-    public static getUser(callback: IRestCallback): void {
-        Rest.tokenRequests++;
-        if (Rest.uidToken !== '' && Rest.tokenRefresh.getTime() > Date.now()) {
-            callback(Rest.uidToken);
-            Rest.tokenCacheHits++;
-        } else {
-            Office.context.mailbox.getUserIdentityTokenAsync((asyncResult: Office.AsyncResult) => {
-                Rest.uidToken = asyncResult.value;
-                Rest.tokenRefresh = new Date(Date.now() + 10 * 60 * 1000); // 10 * sec/min * ms/sec
-                callback(asyncResult.value);
-            });
-        }
-
-    }
-
-    public static autoReply(msg: string, callback: IRestCallback): void {
-        Office.context.mailbox.getCallbackTokenAsync((asyncResult: Office.AsyncResult) => {
-            let args: any = {
-                item: (Office.context.mailbox.item as Office.ItemRead).itemId,
-                token: asyncResult.value,
-            };
-            let body: string = JSON.stringify({ 'Comment': msg });
-            Rest.makePostRestCallWithArgs('reply', args, body, callback);
-        });
-    }
-
-    public static log(msg: string): void {
-        $.get('./log?msg=' + encodeURIComponent(msg));
-    }
-
-    private static makeRestCall(name: string, callback: IRestCallback): void {
-        Rest.makeRestCallWithArgs(name, {}, callback);
-    }
-
-    private static makeRestCallWithArgs(name: string, args: any, callback: IRestCallback): void {
+    private static async makeRestCallWithArgs(name: string, args: any): Promise<string> {
+        let user: string = await Rest.getUser();
+        args.user = user;
         // the randomized element should prevent IE from caching the response.
         args.ieRandomizer = Math.floor(Math.random() * 100000);
-        Rest.getUser((user: string) => {
-            const path: string = './rest/' + name + '?user=' + user + '&' + $.param(args);
-            $.get(path, callback);
-        });
+
+        let res: Agent.Response = await Agent.get(`./rest/${name}`).query(args);
+        return res.text;
     }
 
-    private static makePostRestCallWithArgs(name: string, args: any, body: string, callback: IRestCallback): void {
-        Rest.getUser((user: string) => {
-            let options: any = {
-                data: body,
-                headers: {
-                    'Content-Type': 'text/plain',
-                },
-                method: 'POST',
-                url: '/rest/' + name + '?user=' + user + '&' + $.param(args),
-            };
-            $.ajax(options).done(callback);
-        });
+    private static async makePostRestCallWithArgs(name: string, args: any, body: string): Promise<string> {
+        args.user = await Rest.getUser();
+        let res: Agent.Response = await Agent.post(`./rest/${name}`)
+            .query(args)
+            .set("Content-Type", "text/plain")
+            .send(body);
+        return res.text;
     }
 
 }

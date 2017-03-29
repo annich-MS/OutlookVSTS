@@ -26,9 +26,6 @@ import NavigationStore from "../stores/navigationStore";
 import WorkItemStore from "../stores/workItemStore";
 
 
-interface IRefreshCallback { (): void; }
-interface IUserProfileCallback { (profile: UserProfile): void; }
-
 /**
  * Properties needed for the main VSTS component
  * @interface IVSTSProps
@@ -59,41 +56,45 @@ export class VSTS extends React.Component<IVSTSProps, any> {
     }
   }
 
-  public authInit(): void {
-    let roamingSettings: RoamingSettings = this.roamingSettings;
-    Rest.getIsAuthenticated()
-      .then((isAuthenticated: boolean) => {
-        if (isAuthenticated) {
-          // TODO: manage roamingSettings
-          if (roamingSettings.isValid) {
-            this.props.navigationStore.navigate(NavigationPage.CreateWorkItem);
-          } else {
-            Rest.getUserProfile((error: RestError, profile: UserProfile) => {
-              if (error) {
-                this.props.navigationStore.updateNotification({ message: error.toString("retrieve user profile"), type: AppNotificationType.Error });
-                return;
-              }
-              roamingSettings.id = profile.id;
-              roamingSettings.save();
-              this.props.navigationStore.navigate(NavigationPage.Settings);
-            });
-          }
+  public async authInit(): Promise<void> {
+    try {
+
+      let roamingSettings: RoamingSettings = this.roamingSettings;
+      let isAuthenticated: boolean = await Rest.getIsAuthenticated();
+      if (isAuthenticated) {
+        // TODO: manage roamingSettings
+        if (roamingSettings.isValid) {
+          this.props.navigationStore.navigate(NavigationPage.CreateWorkItem);
         } else {
-          this.props.navigationStore.navigate(NavigationPage.LogIn);
+          try {
+            let profile: UserProfile = await Rest.getUserProfile();
+            roamingSettings.id = profile.id;
+            roamingSettings.save();
+          } catch (error) {
+            let message: string;
+            if (error instanceof RestError) {
+              message = error.toString("retrieve user profile");
+            } else {
+              message = (error as Office.Error).message;
+            }
+            this.props.navigationStore.updateNotification({ message: message, type: AppNotificationType.Error });
+          }
         }
-      }).catch((error) => {
-        console.log(`ASSERT: getIsAuthenticated rejected promise in AuthInit ${error}`);
-      });
+      } else {
+        this.props.navigationStore.navigate(NavigationPage.LogIn);
+      }
+    } catch (error) {
+      console.log(`ASSERT: getIsAuthenticated rejected promise in AuthInit ${error}`);
+    }
+    return;
   }
 
   public prepopDropdowns(): void {
-    this.props.aptCache.setPopulateStage(APTPopulationStage.PrePopulate);
     if (this.roamingSettings.isValid) {
-      console.log("prepopulating");
-      this.props.aptCache.setAccounts(this.roamingSettings.accounts, this.roamingSettings.account);
-      this.props.aptCache.setProjects(this.roamingSettings.projects, this.roamingSettings.project);
-      this.props.aptCache.setTeams(this.roamingSettings.teams, this.roamingSettings.team);
-      this.props.aptCache.setPopulateStage(APTPopulationStage.PostPopulate);
+      this.props.aptCache.setPopulateStage(APTPopulationStage.PrePopulate);
+      this.props.aptCache.populate(true).then(() => {
+        this.props.aptCache.populate(false);
+      });
     }
   }
 
@@ -102,7 +103,6 @@ export class VSTS extends React.Component<IVSTSProps, any> {
    * Initial check for user authentication token and determines correct first page to show
    */
   public Initialize(): void {
-    console.log("Initiating");
     this.roamingSettings = RoamingSettings.GetInstance();
     this.item = Office.context.mailbox.item as Office.MessageRead;
     this.iosInit();

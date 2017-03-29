@@ -9,6 +9,7 @@ import { Label, Link } from "office-ui-fabric-react";
 import { Notification } from "./SimpleComponents/Notification";
 import WorkItemStore from "../stores/workItemStore";
 import NavigationStore from "../stores/navigationStore";
+import { typeToString } from "../models/workItemType";
 
 /**
  * Props for QuickActions Component
@@ -30,14 +31,14 @@ export class QuickActions extends React.Component<IQuickActionProps, {}> {
     return ReactDOM.renderToStaticMarkup(
       <Label className="WorkItemLink">
         <Link target="_blank" href={this.props.workItem.vstsInfo.vstsUrl}>
-          {this.props.workItem.type} {this.props.workItem.vstsInfo.id}
+          {typeToString(this.props.workItem.type)} {this.props.workItem.vstsInfo.id}
         </Link>
         : {this.props.workItem.title}
       </Label>);
   }
 
   public buildTextOnly(): string {
-    return `${this.props.workItem.type} ${this.props.workItem.vstsInfo.id}: ${this.props.workItem.title}`;
+    return `${typeToString(this.props.workItem.type)} ${this.props.workItem.vstsInfo.id}: ${this.props.workItem.title}`;
   }
 
   /**
