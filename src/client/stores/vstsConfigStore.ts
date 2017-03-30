@@ -20,7 +20,7 @@ export default class VSTSConfigStore {
     }
 
     @action public removeConfig(configName: string): void {
-        this._configs = this._configs.filter((config: IVSTSConfig) => { return config.name === configName; });
+        this._configs = this._configs.filter((config: IVSTSConfig) => { return config.name !== configName; });
         if (this._selected === configName) {
             this.resetSelected();
         }
