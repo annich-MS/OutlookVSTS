@@ -153,14 +153,14 @@ function jsonPatchItem(path, value) {
  * @param {any} req
  * @param {any} res
  */
-router.getItem = function (req, res) {
+let getItem = function (req, res) {
   let input = req.query;
   input.query["api-version"] = API1_0;
   input.host = input.host + ".visualstudio.com";
   input.path = "/DefaultCollection/_apis/wit/workitems";
   makeAuthenticatedRequest(input.user, createOptions(input, "GET")).then((output) => { res.send(output); });
 };
-router.use("/getItem", router.getItem);
+router.use("/getItem", getItem);
 
 /**
  * 
@@ -168,7 +168,7 @@ router.use("/getItem", router.getItem);
  * @param {any} req
  * @param {any} res
  */
-router.me = function (req, res) {
+let me = function (req, res) {
   let input = req.query;
   if (!input.query) { input.query = {}; }
   input.query["api-version"] = API1_0;
@@ -176,7 +176,7 @@ router.me = function (req, res) {
   input.path = "/_apis/profile/profiles/me";
   makeAuthenticatedRequest(input.user, createOptions(input, "GET")).then((output) => { res.send(output); });
 };
-router.use("/me", router.me);
+router.use("/me", me);
 
 /**
  * 
@@ -184,7 +184,7 @@ router.use("/me", router.me);
  * @param {any} req
  * @param {any} res
  */
-router.accounts = function (req, res) {
+let accounts = function (req, res) {
   let input = req.query;
   if (!input.query) { input.query = {}; }
   input.query.memberId = input.memberId;
@@ -193,7 +193,7 @@ router.accounts = function (req, res) {
   input.path = "/_apis/Accounts";
   makeAuthenticatedRequest(input.user, createOptions(input, "GET")).then((output) => { res.send(output); });
 };
-router.use("/accounts", router.accounts);
+router.use("/accounts", accounts);
 
 /**
  * 
@@ -201,7 +201,7 @@ router.use("/accounts", router.accounts);
  * @param {any} req
  * @param {any} res
  */
-router.projects = function (req, res) {
+let projects = function (req, res) {
   let input = req.query;
   if (!input.query) { input.query = {}; }
 
@@ -211,7 +211,7 @@ router.projects = function (req, res) {
   makeAuthenticatedRequest(input.user, createOptions(input, "GET")).then((output) => { res.send(output); });
 
 };
-router.use("/projects", router.projects);
+router.use("/projects", projects);
 
 /**
  * 
@@ -219,7 +219,7 @@ router.use("/projects", router.projects);
  * @param {any} req
  * @param {any} res
  */
-router.getTeams = async function (req, res) {
+let getTeams = async function (req, res) {
   let input = req.query;
   if (!input.query) { input.query = {}; }
 
@@ -248,7 +248,7 @@ router.getTeams = async function (req, res) {
     res.send(error);
   }
 };
-router.use("/getTeams", router.getTeams);
+router.use("/getTeams", getTeams);
 
 /**
  * 
@@ -256,7 +256,7 @@ router.use("/getTeams", router.getTeams);
  * @param {any} req
  * @param {any} res
  */
-router.getTeamField = function (req, res) {
+let getTeamField = function (req, res) {
   let input = req.query;
   if (!input.query) { input.query = {}; }
 
@@ -265,7 +265,7 @@ router.getTeamField = function (req, res) {
   input.path = "/DefaultCollection/" + input.project + "/" + input.team + "/_apis/Work/TeamSettings/TeamFieldValues";
   makeAuthenticatedRequest(input.user, createOptions(input, "GET")).then((output) => { res.send(output); });
 };
-router.use("/getTeamField", router.getTeamField);
+router.use("/getTeamField", getTeamField);
 
 /**
  * 
@@ -273,7 +273,7 @@ router.use("/getTeamField", router.getTeamField);
  * @param {any} req
  * @param {any} res
  */
-router.getCurrentIteration = function (req, res) {
+let getCurrentIteration = function (req, res) {
   let input = req.query;
   if (!input.query) { input.query = {}; }
   input.query["$timeframe"] = "current";
@@ -282,14 +282,14 @@ router.getCurrentIteration = function (req, res) {
   input.path = "/defaultcollection/" + input.project + "/" + input.team + "/_apis/work/teamsettings/iterations";
   makeAuthenticatedRequest(input.user, createOptions(input, "GET")).then((output) => { res.send(output); });
 };
-router.use("/getCurrentIteration", router.getCurrentIteration);
+router.use("/getCurrentIteration", getCurrentIteration);
 
-router.getMessage = async function (req, res) {
+let getMessage = async function (req, res) {
   let input = req.query;
   let message: string = await downloadMessageFromEWS(input.ewsId, input.url, input.token);
   res.send(message);
 };
-router.use("/getMessage", router.getMessage);
+router.use("/getMessage", getMessage);
 
 async function downloadMessageFromEWS(messageId, ewsUrl, token): Promise<string> {
   let body = `<?xml version="1.0" encoding="utf-8"?>` +
@@ -347,7 +347,7 @@ async function extractMessageId(response): Promise<string> {
   return output;
 }
 
-router.uploadAttachment = function (req, res) {
+let uploadAttachment = function (req, res) {
   let input = req.query;
   input.body = decodeBase64Data(req.body);
   input.host = input.account + ".visualstudio.com";
@@ -358,13 +358,13 @@ router.uploadAttachment = function (req, res) {
   };
   makeAuthenticatedRequest(input.user, createOptions(input, "POST")).then((output) => { res.send(output); });
 };
-router.use("/uploadAttachment", router.uploadAttachment);
+router.use("/uploadAttachment", uploadAttachment);
 
 function decodeBase64Data(data) {
   return (new Buffer.Buffer(data, "base64")).toString("utf8");
 }
 
-router.createTask = function (req, res) {
+let createTask = function (req, res) {
   let input = req.query;
   input.host = input.account + ".visualstudio.com";
   input.path = "/DefaultCollection/" + input.project + "/_apis/wit/workitems/$" + input.type;
@@ -387,9 +387,9 @@ router.createTask = function (req, res) {
   input.body = JSON.stringify(input.body);
   makeAuthenticatedRequest(input.user, createOptions(input, "PATCH")).then((output) => { res.send(output); });
 };
-router.use("/createTask", router.createTask);
+router.use("/createTask", createTask);
 
-router.reply = async function (req, res) {
+let reply = async function (req, res) {
   let input = req.query;
   input.host = "outlook.office365.com";
   input.path = "/api/v2.0/me/messages/" + input.item + "/replyAll";
@@ -402,9 +402,9 @@ router.reply = async function (req, res) {
   let output: string = await makeHttpsRequest(createOptions(input, "POST"));
   res.send(output);
 };
-router.use("/reply", router.reply);
+router.use("/reply", reply);
 
-router.backlog = function (req, res) {
+function backlog (req, res) {
   let input = req.query;
   input.host = input.account + ".visualstudio.com";
   input.path = "/defaultcollection/" + input.project + "/" + input.team + "/_apis/work/teamsettings";
@@ -415,9 +415,9 @@ router.backlog = function (req, res) {
     res.send(output);
   });
 };
-router.use("/backlog", router.backlog);
+router.use("/backlog", backlog);
 
-router.disconnect = function (req, res) {
+function disconnect(req, res) {
   Authenticate.getUID(req.query.user).then((uid) => {
     Authenticate.disconnect(uid, (err) => {
       let output = "{}";
@@ -428,4 +428,4 @@ router.disconnect = function (req, res) {
     });
   });
 };
-router.use("/disconnect", router.disconnect);
+router.use("/disconnect", disconnect);
