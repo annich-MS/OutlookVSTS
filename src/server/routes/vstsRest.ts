@@ -332,19 +332,20 @@ async function downloadMessageFromEWS(messageId, ewsUrl, token): Promise<string>
 }
 
 async function extractMessageId(response): Promise<string> {
-  let parser = new flow(stream(response));
-  let done = false;
-  let output: string = "";
-  parser.on("tag:t:mimecontent", (element) => {
-    done = true;
-    output = element["$text"];
+  return new Promise<string>((resolve, reject) => {
+
+    let parser = new flow(stream(response));
+    let done = false;
+    parser.on("tag:t:mimecontent", (element) => {
+      done = true;
+      resolve(element["$text"]);
+    });
+    parser.on("end", () => {
+      if (!done) {
+        resolve(createError("Invalid EWS response", response));
+      }
+    });
   });
-  parser.on("end", () => {
-    if (!done) {
-      output = createError("Invalid EWS response", response);
-    }
-  });
-  return output;
 }
 
 let uploadAttachment = function (req, res) {
@@ -404,7 +405,7 @@ let reply = async function (req, res) {
 };
 router.use("/reply", reply);
 
-function backlog (req, res) {
+function backlog(req, res) {
   let input = req.query;
   input.host = input.account + ".visualstudio.com";
   input.path = "/defaultcollection/" + input.project + "/" + input.team + "/_apis/work/teamsettings";
