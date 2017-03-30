@@ -2,22 +2,22 @@ import * as React from "react";
 import { TextField } from "office-ui-fabric-react";
 import { observer } from "mobx-react";
 
-import WorkItemStore from "../../stores/workItemStore";
+import APTCache from "../../stores/aptCache";
 
 /**
  * Represents the Title Properties
  */
-interface ITitleProps {
-  workItem: WorkItemStore;
+interface IConfigNameProps {
+  cache: APTCache;
 }
 
 @observer
-export default class ConfigName extends React.Component<ITitleProps, {}> {
+export default class ConfigName extends React.Component<IConfigNameProps, {}> {
   /**
    * Dipatches the action to change the value of title in the store 
    */
-  public handleChangeTitle(value: string): void {
-    this.props.workItem.setTitle(value);
+  public handleChange(value: string): void {
+    this.props.cache.setName(value);
   }
   /**
    * Rendersthe Title heading and the Title textbox
@@ -27,8 +27,8 @@ export default class ConfigName extends React.Component<ITitleProps, {}> {
       <div>
         <TextField
           label="Configuration name"
-          onChanged={this.handleChangeTitle.bind(this)}
-          value={this.props.workItem.title} />
+          onChanged={this.handleChange.bind(this)}
+          value={this.props.cache.name} />
       </div>
     );
   }

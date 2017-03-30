@@ -7,12 +7,12 @@ import { Rest } from "../../utils/rest";
 
 import WorkItemStore from "../../stores/workItemStore";
 import NavigationStore from "../../stores/navigationStore";
-import APTCache from "../../stores/aptCache";
 
 import { AppNotificationType } from "../../models/appNotification";
-import APTPopulateStage from "../../models/aptPopulateStage";
 import { typeToString } from "../../models/workItemType";
 import VSTSInfo from "../../models/vstsInfo";
+import IVSTSConfig from "../../models/vstsConfig";
+import VSTSConfigStore from "../../stores/vstsConfigStore";
 
 type Message = Office.MessageRead;
 
@@ -20,13 +20,16 @@ type Message = Office.MessageRead;
  * Represents the Save Properties
  */
 export interface ISaveProps {
-  cache: APTCache;
   navigationStore: NavigationStore;
   workItem: WorkItemStore;
+  vstsConfig: VSTSConfigStore;
 }
 
 @observer
-export class Save extends React.Component<ISaveProps, {}> {
+export default class Save extends React.Component<ISaveProps, {}> {
+
+  private _config: IVSTSConfig = null;
+
   /**
    * Dispatches the action to change the Stage and make the REST call to create the work item
    * @returns {void}
@@ -56,16 +59,16 @@ export class Save extends React.Component<ISaveProps, {}> {
     } catch (e) { throw { message: e.toString("download message from Exchange"), type: AppNotificationType.Error }; }
 
     try {
-      return await Rest.uploadAttachment(message, this.props.cache.account, `${(Office.context.mailbox.item as Message).normalizedSubject}.eml`);
+      return await Rest.uploadAttachment(message, this.config.account, `${(Office.context.mailbox.item as Message).normalizedSubject}.eml`);
     } catch (e) { throw { message: e.toString("upload attachment"), type: AppNotificationType.Error }; }
   }
 
   public async createWorkItem(attachmentUrl: string): Promise<void> {
     let options: any = {
-      account: this.props.cache.account,
+      account: this.config.account,
       attachment: attachmentUrl,
-      project: this.props.cache.project,
-      team: this.props.cache.team,
+      project: this.config.project,
+      team: this.config.team,
       title: this.props.workItem.title,
       type: typeToString(this.props.workItem.type),
     };
@@ -100,7 +103,16 @@ export class Save extends React.Component<ISaveProps, {}> {
   @computed private get shouldBeEnabled(): boolean {
     return !(
       this.props.navigationStore.isSaving ||
-      this.props.cache.populateStage < APTPopulateStage.PostPopulate ||
       this.props.navigationStore.notification != null);
+  }
+
+  private get config(): IVSTSConfig {
+    if (this._config === null || this._config.name !== this.props.vstsConfig.selected) {
+      let configs: IVSTSConfig[] = this.props.vstsConfig.configs.filter((value: IVSTSConfig) => { return value.name === this.props.vstsConfig.selected; });
+      if (configs.length !== 0) {
+        this._config = configs[0];
+      }
+    }
+    return this._config;
   }
 }

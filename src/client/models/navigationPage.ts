@@ -4,6 +4,7 @@ enum NavigationPage {
     CreateWorkItem,
     Settings,
     QuickActions,
+    AddConfig,
 }
 
 export default NavigationPage;

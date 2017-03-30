@@ -34,7 +34,3 @@ export default class Connecting extends React.Component<{}, {}> {
       </div>);
   }
 }
-
-
-
-

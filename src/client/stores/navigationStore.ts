@@ -10,13 +10,19 @@ export default class NavigationStore {
     @computed get notification(): IAppNotification { return this._notification; };
 
     @observable private _currentPage: NavigationPage = NavigationPage.Connecting;
-    @observable private _lastPage: NavigationPage;
+    @observable private _lastPage: NavigationPage = NavigationPage.CreateWorkItem;
     @observable private _isSaving: boolean = false;
     @observable private _notification: IAppNotification = null;
 
-    @action public navigate(newPage: NavigationPage): void {
-        this._lastPage = this._currentPage;
+    @action public navigate(newPage: NavigationPage, updateLast: boolean = true): void {
+        if (updateLast) {
+            this._lastPage = this._currentPage;
+        }
         this._currentPage = newPage;
+    }
+
+    @action public navigateBack() {
+        this._currentPage = this._lastPage;
     }
 
     @action public updateNotification(notification: IAppNotification): void {

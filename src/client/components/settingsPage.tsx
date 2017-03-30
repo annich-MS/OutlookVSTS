@@ -1,15 +1,15 @@
 import * as React from "react";
 import { Notification } from "./shared/notification";
-import { Classification } from "./addConfig/classification";
-import { SaveDefaultsButton } from "./addConfig/saveConfigButton";
-import { CancelButton } from "./settings/cancelButton";
+import { CancelButton } from "./shared/cancelButton";
 import { LogoutButton } from "./settings/logoutButton";
 import NavigationStore from "../stores/navigationStore";
-import APTCache from "../stores/aptCache";
+import ConfigDisplay from "./settings/configDisplay";
+import VSTSConfigStore from "../stores/vstsConfigStore";
+import NavigationPage from "../models/navigationPage";
 
 interface ISettingsProps {
-  cache: APTCache;
   navigationStore: NavigationStore;
+  vstsConfig: VSTSConfigStore;
 }
 
 /**
@@ -28,20 +28,15 @@ export default class Settings extends React.Component<ISettingsProps, any> {
       <div>
         <Notification navigationStore={this.props.navigationStore} />
         <div>
-          <p className={textStyle}> Welcome {Office.context.mailbox.userProfile.displayName}!</p>
-          <p />
-          <p className={textStyle}> Take a moment to configure your default settings for work item creation.</p>
+          <p style={{textAlign: "center"}} className={textStyle}> Configurations </p>
         </div>
         <div>
-          <Classification cache={this.props.cache} navigationStore={this.props.navigationStore}/>
-        </div>
-        <div>
-          <SaveDefaultsButton cache={this.props.cache} navigationStore={this.props.navigationStore} />
-          <CancelButton navigationStore={this.props.navigationStore} />
+          <ConfigDisplay navigationStore={this.props.navigationStore} vstsConfig={this.props.vstsConfig} />
+          <CancelButton navigationStore={this.props.navigationStore} backTarget={NavigationPage.CreateWorkItem} />
         </div>
         <br />
         <div>
-          <LogoutButton aptCache={this.props.cache} navigationStore={this.props.navigationStore} />
+          <LogoutButton navigationStore={this.props.navigationStore} />
         </div>
       </div>
     );

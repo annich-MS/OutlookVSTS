@@ -13,6 +13,7 @@ export default class APTCache {
     @computed get project(): string { return this._project; };
     @computed get team(): string { return this._team; };
     @computed get populateStage(): APTPopulateStage { return this._populateStage; };
+    @computed get name(): string { return this._name; };
 
     public readonly id: number;
 
@@ -22,23 +23,17 @@ export default class APTCache {
     @observable private _account: string = "";
     @observable private _project: string = "";
     @observable private _team: string = "";
+    @observable private _name: string = "";
     @observable private _populateStage: APTPopulateStage = APTPopulateStage.PrePopulate;
 
     public constructor() {
         this.id = Math.floor(Math.random() * 10000);
     }
 
-    @action public async populate(fromRoamingSettings: boolean = true): Promise<void> {
-        if (fromRoamingSettings) {
-            let roamingSettings: RoamingSettings = await RoamingSettings.GetInstance();
-            this.setAccounts(roamingSettings.accounts, roamingSettings.account);
-            this.setProjects(roamingSettings.projects, roamingSettings.project);
-            this.setTeams(roamingSettings.teams, roamingSettings.team);
-        } else {
-            await this.populateAccounts();
-            await this.populateProjects();
-            await this.populateTeams();
-        }
+    @action public async populate(): Promise<void> {
+        await this.populateAccounts();
+        await this.populateProjects();
+        await this.populateTeams();
     }
 
     @action public async populateAccounts(): Promise<void> {
@@ -107,8 +102,12 @@ export default class APTCache {
         this._team = team;
     }
 
-    @action public setPopulateStage(stage: APTPopulateStage) {
+    @action public setPopulateStage(stage: APTPopulateStage): void {
         this._populateStage = stage;
+    }
+
+    @action public setName(name: string): void {
+        this._name = name;
     }
 
     @action public clear() {

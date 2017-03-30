@@ -1,10 +1,11 @@
 import * as React from "react";
 import { Button, ButtonType } from "office-ui-fabric-react";
-import NavigationPage from "../../models/navigationPage";
 import NavigationStore from "../../stores/navigationStore";
+import NavigationPage from "../../models/navigationPage";
 
 interface ISettingsProps {
   navigationStore: NavigationStore;
+  backTarget: NavigationPage;
 }
 
 /**
@@ -13,10 +14,10 @@ interface ISettingsProps {
 export class CancelButton extends React.Component<ISettingsProps, any> {
 
   /**
-   * Redirects to CreateWorkItem page
+   * Redirects to previous page
    */
   public Cancel(): void {
-    this.props.navigationStore.navigate(NavigationPage.CreateWorkItem);
+    this.props.navigationStore.navigate(this.props.backTarget);
   }
 
   /**
@@ -25,7 +26,7 @@ export class CancelButton extends React.Component<ISettingsProps, any> {
   public render(): JSX.Element {
     return (
        <div style={{float: "right"}}>
-          <Button buttonType={ButtonType.command} onClick={this.Cancel.bind(this)}>Cancel</Button>
+          <Button buttonType={ButtonType.command} onClick={this.Cancel.bind(this)}>Back</Button>
       </div>
     );
   }

@@ -62,7 +62,7 @@ export class Team extends DropdownParseable {
     }
 }
 
-interface VSTSErrorBody {
+interface IVSTSErrorBody {
     message: string;
     typeKey: string;
 }
@@ -71,7 +71,7 @@ export class RestError {
 
     public type: string;
     public more: any;
-    public body: VSTSErrorBody;
+    public body: IVSTSErrorBody;
 
     public constructor(blob: any) {
         this.type = blob.type;
@@ -113,7 +113,6 @@ export abstract class Rest {
             instance: "o365exchange",
         });
     }
-
 
     public static async getUserProfile(): Promise<UserProfile> {
         let output: string = await this.makeRestCall("me");
@@ -157,7 +156,6 @@ export abstract class Rest {
         let teams: Team[] = await this.getTeams(project, account);
         let guid: string = teams.filter(team => { return team.name === teamName; })[0].id;
         let output: string = await this.makeRestCallWithArgs("backlog", { account: account, project: project, team: guid });
-        console.log(output);
         let parsed: any = JSON.parse(output);
         if (parsed.error) {
             throw new RestError(parsed.error);
@@ -183,7 +181,6 @@ export abstract class Rest {
         }
         return parsed.defaultValue;
     }
-
 
     public static async getMessage(ewsId: string, url: string, token: string): Promise<string> {
         let output: string = await Rest.makeRestCallWithArgs("getMessage", { ewsId: ewsId, token: token, url: url });

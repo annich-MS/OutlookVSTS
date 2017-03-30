@@ -58,14 +58,16 @@ export class SignInButton extends React.Component<ISignInProps, {}> {
    */
   public async refreshAuth(): Promise<void> {
     try {
-      this.props.navigationStore.navigate(NavigationPage.Connecting);
+      this.props.navigationStore.navigate(NavigationPage.Connecting, false);
       let authenticated: boolean = await Rest.getIsAuthenticated();
       if (authenticated) {
-        let userProfile = await Rest.getUserProfile();
         let roamingSettings: RoamingSettings = await RoamingSettings.GetInstance();
-        roamingSettings.id = userProfile.id;
-        await roamingSettings.save();
-        this.props.navigationStore.navigate(NavigationPage.Settings);
+        if (roamingSettings.id === undefined) {
+          let userProfile = await Rest.getUserProfile();
+          roamingSettings.id = userProfile.id;
+          await roamingSettings.save();
+        }
+        this.props.navigationStore.navigate(NavigationPage.AddConfig, false);
       } else {
         this.props.navigationStore.updateNotification({ message: "Did not find auth info, please reauthenticate", type: AppNotificationType.Warning });
         this.props.navigationStore.navigate(NavigationPage.LogIn);

@@ -5,10 +5,8 @@ import { Button, ButtonType } from "office-ui-fabric-react";
 import NavigationPage from "../../models/navigationPage";
 import NavigationStore from "../../stores/navigationStore";
 import { AppNotificationType } from "../../models/appNotification";
-import APTCache from "../../stores/aptCache";
 
 interface ILogoutButtonProps {
-    aptCache: APTCache;
     navigationStore: NavigationStore;
 }
 
@@ -29,7 +27,6 @@ export class LogoutButton extends React.Component<ILogoutButtonProps, any> {
             await Rest.removeUser();
             let rs: RoamingSettings = await RoamingSettings.GetInstance();
             rs.clear();
-            this.props.aptCache.clear();
             this.props.navigationStore.navigate(NavigationPage.LogIn);
         } catch (error) {
             let message: string;

@@ -6,6 +6,7 @@ import Done from "./done";
 import { aptCache } from "./stores/aptCache";
 import { navigationStore } from "./stores/navigationStore";
 import { workItemStore } from "./stores/workItemStore";
+import { vstsConfig } from "./stores/vstsConfigStore";
 
 class Main extends React.Component<{}, {}> {
 
@@ -15,7 +16,7 @@ class Main extends React.Component<{}, {}> {
       case "dogfood":
         return (<Dogfood />);
       case "vsts":
-        return (<VSTS aptCache={aptCache} navigationStore={navigationStore} workItemStore={workItemStore} />);
+        return (<VSTS aptCache={aptCache} navigationStore={navigationStore} workItemStore={workItemStore} vstsConfig={vstsConfig} />);
       case "done":
         return (<Done />);
       default:
