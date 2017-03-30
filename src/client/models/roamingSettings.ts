@@ -129,10 +129,13 @@ class RoamingSettings02 extends BaseRoamingSettings {
         switch (version) {
             case RoamingSettings01.VERSION:
                 await rs.migrateFromRS01();
+                break;
             case RoamingSettings02.VERSION:
                 rs.fromRoamingSettings();
+                break;
             default:
                 rs.preload();
+                break;
         }
         return rs;
     }
@@ -143,23 +146,18 @@ class RoamingSettings02 extends BaseRoamingSettings {
 
     public save(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            console.log("saving " + JSON.stringify(this));
             try {
                 this.set<IVSTSConfig[]>(RoamingSettings02.CONFIGS_KEY, this.configs);
                 this.set<number>(RoamingSettings.VERSION_KEY, RoamingSettings02.VERSION);
                 this.set<string>(RoamingSettings.ID_KEY, this.id);
                 Office.context.roamingSettings.saveAsync((result: Office.AsyncResult) => {
-                    console.log("Hello");
                     if (result.error) {
-                        console.log("Error " + JSON.stringify(result.error));
                         reject(result.error);
                     } else {
-                        console.log("Success");
                         resolve();
                     }
                 });
             } catch (e) {
-                console.log(e);
             }
         });
     }
@@ -183,7 +181,6 @@ class RoamingSettings02 extends BaseRoamingSettings {
     }
 
     private fromRoamingSettings(): void {
-        console.log("At get:" + this.get<IVSTSConfig[]>(RoamingSettings02.CONFIGS_KEY));
         this.configs = this.get<IVSTSConfig[]>(RoamingSettings02.CONFIGS_KEY);
         this.id = this.get<string>(RoamingSettings.ID_KEY);
     }

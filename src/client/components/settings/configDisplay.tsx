@@ -51,7 +51,7 @@ export default class ConfigDisplay extends React.Component<IConfigDisplayProps, 
 
     public render(): React.ReactElement<any> {
         return (
-            <div style={{overflow: "hidden"}} >
+            <div style={{ overflow: "hidden" }} >
                 <CommandBar items={this.items} />
                 <DetailsList
                     items={this.props.vstsConfig.configs}
@@ -70,6 +70,9 @@ export default class ConfigDisplay extends React.Component<IConfigDisplayProps, 
         if (this.state.selected !== "") {
             this.props.vstsConfig.removeConfig(this.state.selected);
             this.forceUpdate();
+            if (this.props.vstsConfig.configs.length === 0) {
+                this.props.navigationStore.navigate(NavigationPage.AddConfig);
+            }
         }
     }
 

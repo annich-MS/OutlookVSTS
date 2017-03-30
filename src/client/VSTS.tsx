@@ -90,7 +90,6 @@ export class VSTS extends React.Component<IVSTSProps, any> {
    */
   public async Initialize(): Promise<void> {
     this.roamingSettings = await RoamingSettings.GetInstance();
-    console.log(JSON.stringify(this.roamingSettings));
     this.item = Office.context.mailbox.item as Office.MessageRead;
     this.iosInit();
     this.workItemInit();
@@ -133,7 +132,6 @@ export class VSTS extends React.Component<IVSTSProps, any> {
 
   private workItemInit(): void {
     this.props.workItemStore.setTitle(this.item.normalizedSubject);
-    console.log(this.roamingSettings);
     this.props.vstsConfig.setConfigs(this.roamingSettings.configs);
   }
 
