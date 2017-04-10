@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { Notification } from "./shared/notification";
-import { CancelButton } from "./shared/cancelButton";
+import CancelButton from "./shared/cancelButton";
 
 import { Classification } from "./addConfig/classification";
 import SaveConfigButton from "./addConfig/saveConfigButton";

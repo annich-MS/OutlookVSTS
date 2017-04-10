@@ -11,7 +11,7 @@ interface ISettingsProps {
 /**
  * renders the cancel button that redirects to CreateWorkItem
  */
-export class CancelButton extends React.Component<ISettingsProps, any> {
+export default class CancelButton extends React.Component<ISettingsProps, any> {
 
   /**
    * Redirects to previous page

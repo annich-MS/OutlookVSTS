@@ -1,85 +1,54 @@
 import * as React from "react";
-import { CommandBar, DetailsList, IContextualMenuItem, Selection, SelectionMode, IColumn, ConstrainMode } from "office-ui-fabric-react";
+import { List } from "office-ui-fabric-react/lib/List";
+import { PrimaryButton } from "office-ui-fabric-react/lib/Button";
+import { Link } from "office-ui-fabric-react/lib/Link";
 import NavigationStore from "../../stores/navigationStore";
 import NavigationPage from "../../models/navigationPage";
 import IVSTSConfig from "../../models/vstsConfig";
 import VSTSConfigStore from "../../stores/vstsConfigStore";
+import ConfigOption from "./configOption";
 
 interface IConfigDisplayProps {
     navigationStore: NavigationStore;
     vstsConfig: VSTSConfigStore;
 }
 
-interface IConfigDisplayState {
-    selected: string;
-}
-
-export default class ConfigDisplay extends React.Component<IConfigDisplayProps, IConfigDisplayState> {
-
-    private readonly items: IContextualMenuItem[] = [
-        {
-            icon: "Add",
-            key: "addConfig",
-            name: "Add",
-            onClick: this.addConfig.bind(this),
-        },
-        {
-            icon: "Delete",
-            key: "deleteConfig",
-            name: "Remove",
-            onClick: this.removeConfig.bind(this),
-        },
-    ];
-
-    private readonly columns: IColumn[] = [
-        {
-            fieldName: "name",
-            key: "name",
-            minWidth: 1,
-            name: "Config Name",
-        }
-    ];
-
-    private selection: Selection;
-
-    public constructor() {
-        super();
-        this.selection = new Selection({
-            onSelectionChanged: () => this.setState({ selected: this.getSelectionName() }),
-        });
-    }
+export default class ConfigDisplay extends React.Component<IConfigDisplayProps, {}> {
 
     public render(): React.ReactElement<any> {
         return (
             <div style={{ overflow: "hidden" }} >
-                <CommandBar items={this.items} />
-                <DetailsList
-                    items={this.props.vstsConfig.configs}
-                    constrainMode={ConstrainMode.unconstrained}
-                    columns={this.columns}
-                    selection={this.selection}
-                    selectionMode={SelectionMode.single} />
+                <div style={{ verticalAlign: "Center" }}>
+                    <Link onClick={this.back.bind(this)}><i className="ms-Icon ms-Icon--Back" /></Link>  <span className="ms-font-l">Configurations</span>
+                </div>
+                <br />
+                <List items={this.props.vstsConfig.configs} onRenderCell={this.renderCell.bind(this)} />
+                <br />
+                <div style={{ margin: "auto", textAlign: "center", width: "75%" }}>
+                    <PrimaryButton onClick={this.addConfig.bind(this)}>New</PrimaryButton>
+                </div>
             </div>);
+    }
+
+    private renderCell(item: IVSTSConfig, index: number): JSX.Element {
+        return (<ConfigOption item={item} removeConfig={this.removeConfig.bind(this)} />);
+    }
+
+    private back(): void {
+        this.props.navigationStore.navigate(NavigationPage.CreateWorkItem);
+    }
+
+    private removeConfig(name: string): void {
+        this.props.vstsConfig.removeConfig(name);
+        if (this.props.vstsConfig.configs.length === 0) {
+            this.props.navigationStore.navigate(NavigationPage.AddConfig);
+        } else {
+            this.forceUpdate();
+        }
     }
 
     private addConfig(): void {
         this.props.navigationStore.navigate(NavigationPage.AddConfig);
     }
 
-    private removeConfig(): void {
-        if (this.state.selected !== "") {
-            this.props.vstsConfig.removeConfig(this.state.selected);
-            this.forceUpdate();
-            if (this.props.vstsConfig.configs.length === 0) {
-                this.props.navigationStore.navigate(NavigationPage.AddConfig);
-            }
-        }
-    }
-
-    private getSelectionName() {
-        if (this.selection.getSelectedCount() === 0) {
-            return "";
-        }
-        return (this.selection.getSelection()[0] as IVSTSConfig).name;
-    }
 }
