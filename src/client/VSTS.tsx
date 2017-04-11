@@ -107,6 +107,9 @@ export class VSTS extends React.Component<IVSTSProps, any> {
         body = <Connecting />;
         break;
       case NavigationPage.LogIn:
+        // reset all stores that need to be fresh for login
+        this.props.aptCache.clear();
+        this.props.vstsConfig.setConfigs([]);
         body = <LogInPage navigationStore={this.props.navigationStore} />;
         break;
       case NavigationPage.CreateWorkItem:
