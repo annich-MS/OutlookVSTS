@@ -181,8 +181,8 @@ class RoamingSettings02 extends BaseRoamingSettings {
     }
 
     private fromRoamingSettings(): void {
-        this.configs = this.get<IVSTSConfig[]>(RoamingSettings02.CONFIGS_KEY);
-        this.id = this.get<string>(RoamingSettings.ID_KEY);
+        this.configs = this.get<IVSTSConfig[]>(RoamingSettings02.CONFIGS_KEY) || [];
+        this.id = this.get<string>(RoamingSettings.ID_KEY) || "";
     }
 
     private async migrateFromRS01(): Promise<void> {
