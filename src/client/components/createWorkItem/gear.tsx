@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, ButtonType } from "office-ui-fabric-react";
+import { IconButton } from "office-ui-fabric-react/lib/Button";
 import NavigationStore from "../../stores/navigationStore";
 import NavigationPage from "../../models/navigationPage";
 
@@ -20,8 +20,8 @@ export class Gear extends React.Component<IGearProps, {}> {
    */
   public render(): JSX.Element {
     return (
-      <div style={{float: "right"}}>
-        <Button buttonType={ButtonType.icon} icon="Settings" title="Settings" onClick={this.handleGearClick.bind(this)}/>
+      <div style={{ float: "right" }}>
+        <IconButton icon="Settings" title="Settings" onClick={this.handleGearClick.bind(this)} />
       </div>
     );
   }

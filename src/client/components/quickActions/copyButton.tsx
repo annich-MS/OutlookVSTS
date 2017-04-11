@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, ButtonType } from "office-ui-fabric-react";
+import { CommandButton } from "office-ui-fabric-react/lib/Button";
 import Constants from "../../models/constants";
 
 /**
@@ -31,16 +31,11 @@ export class CopyButton extends React.Component<ICopyButtonProps, {}> {
    */
   public render(): React.ReactElement<{}> {
     if (Office.context.mailbox.diagnostics.hostName === Constants.IOS_HOST_NAME) {
-      return (<div/>);
+      return (<div />);
     }
     return (
       <div>
-        <Button
-          buttonType={ButtonType.command}
-          icon="Copy"
-          onClick={this.handleClick}>
-          Copy to Clipboard
-        </Button>
+        <CommandButton icon="Copy" onClick={this.handleClick}>Copy to Clipboard</CommandButton>
       </div>
     );
   }

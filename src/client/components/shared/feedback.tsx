@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, ButtonType } from "office-ui-fabric-react";
+import { CommandButton } from "office-ui-fabric-react/lib/Button";
 import Constants from "../../models/constants";
 
 export class Feedback extends React.Component<{}, {}> {
@@ -10,7 +10,7 @@ export class Feedback extends React.Component<{}, {}> {
         } else {
             return (
                 <div style={{textAlign: "center"}}>
-                    <Button buttonType={ButtonType.command} onClick={this.feedback.bind(this)}>Give Feedback</Button>
+                    <CommandButton onClick={this.feedback.bind(this)}>Give Feedback</CommandButton>
                 </div>);
         }
     }

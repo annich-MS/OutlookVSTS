@@ -1,6 +1,6 @@
 import * as React from "react";
 import { observer } from "mobx-react";
-import { Dropdown, IDropdownOption } from "office-ui-fabric-react";
+import { Dropdown, IDropdownOption } from "office-ui-fabric-react/lib/Dropdown";
 
 import IDropdownConfig from "../../stores/dropdownConfigStore";
 import NavigationStore from "../../stores/navigationStore";

@@ -1,7 +1,8 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/server";
 import { Provider } from "react-redux";
-import { Label, Link } from "office-ui-fabric-react";
+import { Label } from "office-ui-fabric-react/lib/Label";
+import { Link } from "office-ui-fabric-react/lib/Link";
 
 import { ItemHyperlink } from "./quickActions/itemHyperlink";
 import { ReplyAllButton } from "./quickActions/replyAllButton";

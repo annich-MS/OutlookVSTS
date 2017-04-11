@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Spinner, SpinnerType } from "office-ui-fabric-react";
+import { Spinner, SpinnerSize } from "office-ui-fabric-react/lib/Spinner";
 
 /**
  * Dumb component
@@ -29,7 +29,7 @@ export default class Connecting extends React.Component<{}, {}> {
     return (
       <div style={overlayStyle}>
         <div style={divStyle}>
-          <Spinner type={SpinnerType.large} label="Connecting..." />
+          <Spinner size={SpinnerSize.large} label="Connecting..." />
         </div>
       </div>);
   }

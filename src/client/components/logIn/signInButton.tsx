@@ -1,6 +1,6 @@
 // libs
 import * as React from "react";
-import { Button, ButtonType } from "office-ui-fabric-react";
+import { PrimaryButton } from "office-ui-fabric-react/lib/Button";
 // utils
 import { Rest, RestError } from "../../utils/rest";
 // models
@@ -98,7 +98,7 @@ export class SignInButton extends React.Component<ISignInProps, {}> {
 
     return (
       <div style={buttonStyle}>
-        <Button buttonType={ButtonType.primary} onClick={this.authOnClick.bind(this)}> Sign in to get started </Button>
+        <PrimaryButton onClick={this.authOnClick.bind(this)}> Sign in to get started </PrimaryButton>
       </div>);
   }
 }

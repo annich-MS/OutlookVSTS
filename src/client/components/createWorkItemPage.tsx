@@ -6,7 +6,6 @@ import { WorkItemDropdown } from "./createWorkitem/WorkItemDropdown";
 import { Gear } from "./createWorkItem/gear";
 import { Feedback } from "./shared/feedback";
 import { Notification } from "./shared/notification";
-import APTCache from "../stores/aptCache";
 import NavigationStore from "../stores/navigationStore";
 import WorkItemStore from "../stores/workItemStore";
 import ConfigSelector from "./createWorkItem/configSelector";

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { observer } from "mobx-react";
-import { Checkbox } from "office-ui-fabric-react";
+import { Checkbox } from "office-ui-fabric-react/lib/Checkbox";
 import * as Editable from "react-contenteditable";
 import WorkItemStore from "../../stores/workItemStore";
 import Constants from "../../models/constants";

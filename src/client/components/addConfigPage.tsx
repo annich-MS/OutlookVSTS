@@ -13,6 +13,7 @@ import ConfigName from "./addConfig/configName";
 import { Feedback } from "./shared/feedback";
 
 import NavigationPage from "../models/navigationPage";
+import PageTitle from "./shared/pageTitle";
 
 interface ISettingsProps {
     cache: APTCache;
@@ -30,21 +31,20 @@ export default class Settings extends React.Component<ISettingsProps, any> {
      * Renders the area path dropdowns and save button
      */
     public render(): JSX.Element {
-        let textStyle: string = "ms-font-m-plus";
-
         return (
             <div>
                 <Notification navigationStore={this.props.navigationStore} />
                 <div>
-                    <p className={textStyle}> Create a bug creation configuration.</p>
+                    <CancelButton navigationStore={this.props.navigationStore} backTarget={NavigationPage.Settings} />
+                    <br />
+                    <PageTitle>Create a bug creation configuration.</PageTitle>
                 </div>
                 <div>
-                    <ConfigName cache={this.props.cache}/>
+                    <ConfigName cache={this.props.cache} />
                     <Classification cache={this.props.cache} navigationStore={this.props.navigationStore} />
                 </div>
                 <div>
                     <SaveConfigButton cache={this.props.cache} navigationStore={this.props.navigationStore} vstsConfig={this.props.vstsConfig} />
-                    <CancelButton navigationStore={this.props.navigationStore} backTarget={NavigationPage.Settings} />
                 </div>
                 <br />
                 <div>

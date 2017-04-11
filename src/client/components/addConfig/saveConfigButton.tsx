@@ -1,6 +1,6 @@
 import * as React from "react";
 import { observer } from "mobx-react";
-import { Button, ButtonType } from "office-ui-fabric-react";
+import { PrimaryButton } from "office-ui-fabric-react/lib/Button";
 
 import APTCache from "../../stores/aptCache";
 import NavigationStore from "../../stores/navigationStore";
@@ -54,13 +54,8 @@ export default class SaveConfigButton extends React.Component<ISaveConfigButtonP
    */
   public render(): JSX.Element {
     return (
-      <div style={{ float: "left" }}>
-        <Button
-          buttonType={ButtonType.command}
-          icon="Save"
-          onClick={this.save.bind(this)}>
-          Save Configuration
-          </Button>
+      <div style={{ textAlign: "center" }}>
+        <PrimaryButton icon="Save" onClick={this.save.bind(this)}>Save Configuration</PrimaryButton>
       </div>
     );
   }

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { TextField } from "office-ui-fabric-react";
+import { TextField } from "office-ui-fabric-react/lib/TextField";
 import { observer } from "mobx-react";
 
 import APTCache from "../../stores/aptCache";

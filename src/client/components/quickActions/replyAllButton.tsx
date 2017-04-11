@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Button, ButtonType, Spinner } from "office-ui-fabric-react";
+import { CommandButton } from "office-ui-fabric-react/lib/Button";
+import { Spinner } from "office-ui-fabric-react/lib/Spinner";
 import { Rest } from "../../utils/rest";
 import Constants from "../../models/constants";
 import NavigationStore from "../../stores/navigationStore";
@@ -33,12 +34,7 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, { savi
   public render(): JSX.Element {
 
     let item: any = (
-      <Button
-        buttonType={ButtonType.command}
-        icon="ReplyAll"
-        onClick={this.handleClick.bind(this)}>
-        Reply All with Work Item
-      </Button>);
+      <CommandButton icon="ReplyAll" onClick={this.handleClick.bind(this)}>Reply All with Work Item</CommandButton>);
 
     if (this.state.saving) {
       item = <Spinner />;
@@ -67,7 +63,7 @@ export class ReplyAllButton extends React.Component<IReplyAllButtonProps, { savi
         await Rest.autoReply("I have created the following bug:<br/><br/>" + this.addSignature(this.props.workItemHyperlink));
         this.props.navigationStore.updateNotification({ message: "Message Sent!", type: AppNotificationType.Success });
       } catch (error) {
-        this.props.navigationStore.updateNotification({ message: "Message Send Failed", type: AppNotificationType.Error});
+        this.props.navigationStore.updateNotification({ message: "Message Send Failed", type: AppNotificationType.Error });
       } finally {
 
         this.setState({ saving: false });

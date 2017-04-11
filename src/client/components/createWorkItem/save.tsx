@@ -1,7 +1,7 @@
 import * as React from "react";
 import { observer } from "mobx-react";
 import { computed } from "mobx";
-import { Button, ButtonType } from "office-ui-fabric-react";
+import { PrimaryButton } from "office-ui-fabric-react/lib/Button";
 
 import { Rest } from "../../utils/rest";
 
@@ -92,10 +92,9 @@ export default class Save extends React.Component<ISaveProps, {}> {
     return (
       <div style={{ textAlign: "center" }} >
         <br />
-        <Button
-          buttonType={ButtonType.primary}
+        <PrimaryButton
           disabled={!this.shouldBeEnabled}
-          onClick={this.handleSave.bind(this)} > {text} </Button>
+          onClick={this.handleSave.bind(this)} > {text} </PrimaryButton>
       </div>
     );
   }

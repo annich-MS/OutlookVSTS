@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, ButtonType } from "office-ui-fabric-react";
+import { Link } from "office-ui-fabric-react/lib/Link";
 import NavigationStore from "../../stores/navigationStore";
 import NavigationPage from "../../models/navigationPage";
 
@@ -25,9 +25,10 @@ export default class CancelButton extends React.Component<ISettingsProps, any> {
    */
   public render(): JSX.Element {
     return (
-       <div style={{float: "right"}}>
-          <Button buttonType={ButtonType.command} onClick={this.Cancel.bind(this)}>Back</Button>
-      </div>
+      <span><Link onClick={this.back.bind(this)}><i className="ms-Icon ms-Icon--Back" /> Back</Link></span>
     );
   }
+    private back(): void {
+        this.props.navigationStore.navigate(this.props.backTarget);
+    }
 }

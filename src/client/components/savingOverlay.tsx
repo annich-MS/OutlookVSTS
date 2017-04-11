@@ -1,5 +1,6 @@
 import * as React from "react";
-import {Spinner, SpinnerType, Overlay} from "office-ui-fabric-react";
+import { Spinner, SpinnerSize } from "office-ui-fabric-react/lib/Spinner";
+import { Overlay } from "office-ui-fabric-react/lib/Overlay";
 
 /**
  * Dumb component
@@ -21,7 +22,7 @@ export default class Saving extends React.Component<{}, {}> {
     return (
       <Overlay isDarkThemed={true}>
         <div style={divStyle}>
-          <Spinner type={ SpinnerType.large }/>
+          <Spinner size={SpinnerSize.large} />
         </div>
       </Overlay>);
   }
